@@ -1,16 +1,13 @@
 import explanes
 
-e = explanes.Factors()
+nbFactors = 4
+nbModalities = 3
+
+factors = Factors()
+for f in range(nbFactors):
+  e.__setattr__('factor_'+str(f), [*range(nbModalities)])
 
 
-nFactors = 4
-nModalities = 4
-
-e = Factors()
-for f in range(nFactors):
-  e.__setattr__('factor'+str(f), [*range(nModalities)])
-
-
-for ee in e(): #
+for factor in factors(): #
   #print('textureSize %i' % ee.textureSize)
-  print(ee.getId())
+  print(factor.getId())
