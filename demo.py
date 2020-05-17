@@ -18,7 +18,7 @@ else:
 nbRuns = 20
 for setting in factors(): #
     nb=1
-    print(setting.datasetSize)
+    print(setting.getId())
 
     # for _ in range(nbRuns):
     #     data = np.zeros((2, setting.datasetSize), dtype=np.float32)

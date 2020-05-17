@@ -3,7 +3,7 @@ import inspect
 import types
 import re
 import hashlib
-from numpy import numpy.ndarray
+import numpy as np
 
 class Factors():
   pass
@@ -20,7 +20,7 @@ class Factors():
         value = None
       else:
         print(type(inspect.getattr_static(self, name)))
-        if  type(inspect.getattr_static(self, name)) in {list, numpy.ndarray} :
+        if  type(inspect.getattr_static(self, name)) in {list, np.ndarray} :
           # print('filt setting ')
           # print(self._setting)
           # print(value)
