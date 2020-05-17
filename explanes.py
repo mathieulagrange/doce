@@ -3,6 +3,7 @@ import inspect
 import types
 import re
 import hashlib
+from numpy import numpy.ndarray
 
 class Factors():
   pass
@@ -18,7 +19,8 @@ class Factors():
       if self._setting[idx] == -2:
         value = None
       else:
-        if  type(inspect.getattr_static(self, name)) is list :
+        print(type(inspect.getattr_static(self, name)))
+        if  type(inspect.getattr_static(self, name)) in {list, numpy.ndarray} :
           # print('filt setting ')
           # print(self._setting)
           # print(value)
@@ -29,8 +31,8 @@ class Factors():
     # expand the mask to an iterable format aka -1 to full list
     #build a list of settings
     self._settings = self.getSettings(self._mask)
-    # print('all settings')
-    # print(self._settings)
+    print('all settings')
+    print(self._settings)
    # self._settings = self._mask]
     self._currentSetting = 0
     return self
@@ -45,13 +47,14 @@ class Factors():
       return self
 
   def __call__(self, mask=None):
-    nbFactors = len([s for s in self.__dict__.keys() if "_" not in s])
+    nbFactors = len([s for s in self.__dict__.keys() if s[0] is not '_'])
     if mask is None:
        mask = [[-1]*nbFactors]
     for im, m in enumerate(mask):
       if len(m) < nbFactors:
         mask[im] = m+[-2]*(nbFactors-len(m))
     self._mask = mask
+    print(nbFactors)
     return self
 
   def getSettings(self, mask=None):

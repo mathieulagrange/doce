@@ -1,26 +1,33 @@
-import explanes
+import explanes as ex
+import tqdm as tq
+import numpy as np
 
-factors = Factors()
+import inspect
 
-factors.method = ['method1', 'method2', 'method3']
-factors.parameter1 = [0, 1, 2, 3, 4]*10
-factors.parameter2 = [0, 1, 2]*1000
+factors = ex.Factors()
 
-nbRuns = 100
+factors.method = ['estFloat', 'estDouble', 'method3']
+factors.datasetSize = np.array([1, 2, 4, 8])*100000
+factors.meanOffset = np.array([0, 1, 2, 3, 4])*10
 
+if type(inspect.getattr_static(factors, 'meanOffset')) is np.ndarray:
+    print('true')
+else:
+    print('false')
+
+nbRuns = 20
 for setting in factors(): #
-  #print('textureSize %i' % ee.textureSize)
-  print(setting.getId())
+    nb=1
+    print(setting.datasetSize)
 
-
-def method1(p1, p2):
-    return pow(p1, p2)+rand(1)
-
-def method2(p1, p2):
-    return p1**p2+rand(1)
-
-def method3(p1, p2):
-    n = 1
-    for i in range(p2):
-        n=p1*n
-    return n+rand(1)
+    # for _ in range(nbRuns):
+    #     data = np.zeros((2, setting.datasetSize), dtype=np.float32)
+    #     data[0, :] = 1.0+meanOffset*rand(1)
+    #     data[1, :] = 0.1+meanOffset*rand(1)
+    #
+    #     reference = ((1-0.55)**2 + (0.1-0.55)**2)/2
+    #
+    #     if setting.method is 'estFloat':
+    #         estimate = np.var(a)
+    #     elif setting.method is 'estDouble':
+    #         estimate =  np.var(data, dtype=np.float64)

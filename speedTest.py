@@ -1,13 +1,12 @@
-import explanes
+import explanes as ex
 
 nbFactors = 4
 nbModalities = 3
 
-factors = Factors()
+factors = ex.Factors()
 for f in range(nbFactors):
-  e.__setattr__('factor_'+str(f), [*range(nbModalities)])
+  factors.__setattr__('factor'+str(f), [*range(nbModalities)])
 
-
-for factor in factors(): #
+for setting in factors(): #
   #print('textureSize %i' % ee.textureSize)
-  print(factor.getId())
+  print(setting.getId())
