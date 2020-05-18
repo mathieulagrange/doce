@@ -55,6 +55,8 @@ class Factors():
     # print(type(inspect.getattr_static(self, name)))
     if name[0] != '_' and hasattr(self, '_setting') and type(inspect.getattr_static(self, name)) != types.FunctionType:
       idx = list(self.__dict__.keys()).index(name)
+      # print(idx)
+      # print(self._setting)
       if self._setting[idx] == -2:
         value = None
       else:
@@ -91,11 +93,20 @@ class Factors():
 
   def __call__(self, mask=None):
     nbFactors = len([s for s in self.__dict__.keys() if s[0] is not '_'])
-    if mask is None:
+    if mask is None or len(mask)==0 or (len(mask)==1 and len(mask)==0) :
        mask = [[-1]*nbFactors]
+    if isinstance(mask, list) and not isinstance(mask[0], list):
+        mask = [mask]
+
+
     for im, m in enumerate(mask):
       if len(m) < nbFactors:
-        mask[im] = m+[-2]*(nbFactors-len(m))
+        mask[im] = m+[-1]*(nbFactors-len(m))
+      for il, l in enumerate(m):
+          if not isinstance(l, list) and l > -1:
+              mask[im][il] = [l]
+    print('mask')
+    print(mask)
     self._mask = mask
     # print(nbFactors)
     return self
@@ -127,24 +138,36 @@ class Factors():
     return settings
 
   def getSettingsMask(self, mask, done):
-   # print(mask)
-    # check for -1 and replace
+    # print(mask)
     if done == len(mask):
       return []
 
     s = self.getSettingsMask(mask, done+1)
+    # print('mask[done]')
+    # print(mask[done])
+    # print('s')
+    # print(s)
     if isinstance(mask[done], list):
       settings = []
       for mod in mask[done]:
+        # print('mod')
+        # print(mod)
+
         if len(s) > 0:
           for ss in s:
-            mList = list(ss)
+            if isinstance(ss, list):
+                mList = list(ss)
+            else:
+                mList = [ss]
+            mList.insert(0, mod)
+            # print(mList)
+            # print('mList')
+            settings.append(mList)
+            # print(settings)
+        else:
+            mList = list(s)
             mList.insert(0, mod)
             settings.append(mList)
-        else:
-          mList = list(s)
-          mList.insert(0, mod)
-          settings.append(mList)
       return settings
     else:
       if len(s) > 0 and all(isinstance(ss, list) for ss in s):
