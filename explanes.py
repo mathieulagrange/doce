@@ -4,7 +4,6 @@ import types
 import re
 import hashlib
 import numpy as np
-import pandas as pd
 
 class Metrics():
     pass

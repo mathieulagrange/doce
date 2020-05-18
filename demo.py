@@ -1,8 +1,6 @@
 import explanes as ex
 import tqdm as tq
-import numpy as np
-
-import inspect
+import pandas as pd
 
 factors = ex.Factors()
 
