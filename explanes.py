@@ -4,6 +4,46 @@ import types
 import re
 import hashlib
 import numpy as np
+import pandas as pd
+
+class Metrics():
+    pass
+
+    def gather(self, settings, dataPath, naming='long'):
+        print('')
+
+    def reduce(self, settings, data, aggregationStyle = 'capitalize'):
+        # check consistency between settings and data
+        if (len(settings) != data.shape[0]):
+            raise ValueError('the first dimensions of data must be equal to the length of settings')
+        columns = []
+        for factorName in settings[0].getFactorNames():
+            columns.append(factorName)
+        for metric in self.getMetricsNames():
+            for aggregationType in self.__getattribute__(metric):
+                if aggregationStyle is 'capitalize':
+                    name = metric+aggregationType.capitalize()
+                else :
+                    name = metric+'_'+aggregationType
+                columns.append(name)
+
+        table = []
+        for sIndex, setting in enumerate(settings):
+            row = []
+            for factorName in settings.getFactorNames():
+                row.append(setting.__getattribute__(factorName))
+            for mIndex, metric in enumerate(self.getMetricsNames()):
+                for aggregationType in self.__getattribute__(metric):
+                    value = getattr(np, aggregationType)(data[sIndex, mIndex, :])
+                    row.append(value)
+            table.append(row)
+        return (table, columns)
+
+    def getMetricsNames(self):
+      return [s for s in self.__dict__.keys() if s[0] is not '_']
+
+    def __len__(self):
+        return len([s for s in self.__dict__.keys() if s[0] is not '_'])
 
 class Factors():
   pass
@@ -19,7 +59,6 @@ class Factors():
       if self._setting[idx] == -2:
         value = None
       else:
-        print(type(inspect.getattr_static(self, name)))
         if  type(inspect.getattr_static(self, name)) in {list, np.ndarray} :
           # print('filt setting ')
           # print(self._setting)
@@ -31,8 +70,8 @@ class Factors():
     # expand the mask to an iterable format aka -1 to full list
     #build a list of settings
     self._settings = self.getSettings(self._mask)
-    print('all settings')
-    print(self._settings)
+    # print('all settings')
+    # print(self._settings)
    # self._settings = self._mask]
     self._currentSetting = 0
     return self
@@ -46,6 +85,11 @@ class Factors():
       self._currentSetting += 1
       return self
 
+  def __getitem__(self, index):
+      self._settings = self.getSettings(self._mask)
+      self._setting = self._settings[index]
+      return  self
+
   def __call__(self, mask=None):
     nbFactors = len([s for s in self.__dict__.keys() if s[0] is not '_'])
     if mask is None:
@@ -54,8 +98,12 @@ class Factors():
       if len(m) < nbFactors:
         mask[im] = m+[-2]*(nbFactors-len(m))
     self._mask = mask
-    print(nbFactors)
+    # print(nbFactors)
     return self
+
+  def __len__(self):
+      self._settings = self.getSettings(self._mask)
+      return len(self._settings)
 
   def getSettings(self, mask=None):
     settings = []
@@ -107,11 +155,8 @@ class Factors():
         s.insert(0, mask[done])
       return s
 
-  def getFactors(self):
-    factors = []
-    for f in self.__dict__.keys():
-      factors.append(f)
-    return factors
+  def getFactorNames(self):
+    return [s for s in self.__dict__.keys() if s[0] is not '_']
 
   def getId(self, type='long', sep='_'):
     id = []
