@@ -29,42 +29,46 @@ metrics.mse = ['mean', 'std']
 metrics.duration = ['']
 #metrics.units.duration = 'seconds'
 
-settings = factors()
+settings = factors([-1, 0, 0])
 
-print('computing...')
-with trange(len(settings)) as t:
-    for s, setting in enumerate(settings):
-        # print()
-        t.set_description(setting.getId())
-        settingMae = np.zeros((settings.nbRuns))
-        settingMse = np.zeros((settings.nbRuns))
+compute = False
+if compute:
+    print('computing...')
+    with trange(len(settings)) as t:
+        for s, setting in enumerate(settings):
+            # print()
+            t.set_description(setting.getId())
+            settingMae = np.zeros((settings.nbRuns))
+            settingMse = np.zeros((settings.nbRuns))
 
-        tic = time.time()
-        for r in range(settings.nbRuns):
-            data = np.zeros((2, setting.datasetSize), dtype=np.float32)
-            offset = setting.meanOffset*np.random.rand(1)
-            data[0, :] = 1.0+offset
-            data[1, :] = 0.1-offset
+            tic = time.time()
+            for r in range(settings.nbRuns):
+                data = np.zeros((2, setting.datasetSize), dtype=np.float32)
+                offset = setting.meanOffset*np.random.rand(1)
+                data[0, :] = 1.0+offset
+                data[1, :] = 0.1-offset
 
-            reference = ((data[0, 0]-0.55)**2 + (data[1, 0]-0.55)**2)/2
+                reference = ((data[0, 0]-0.55)**2 + (data[1, 0]-0.55)**2)/2
 
-            if setting.dataType is 'float':
-                estimate = np.var(data)
-            elif setting.dataType is 'double':
-                estimate =  np.var(data, dtype=np.float64)
-            settingMse[r] = abs(reference - estimate)
-            settingMae[r] = np.square(reference - estimate)
+                if setting.dataType is 'float':
+                    estimate = np.var(data)
+                elif setting.dataType is 'double':
+                    estimate =  np.var(data, dtype=np.float64)
+                settingMse[r] = abs(reference - estimate)
+                settingMae[r] = np.square(reference - estimate)
 
-        np.save(resultPath+setting.getId('hash')+'_mae.npy', settingMae)
-        np.save(resultPath+setting.getId('hash')+'_mse.npy', settingMse)
-        duration = time.time()-tic
-        np.save(resultPath+setting.getId('hash')+'_duration.npy', duration)
-        sleep(0.1-duration)
-        t.update()
+            np.save(resultPath+setting.getId('hash')+'_mae.npy', settingMae)
+            np.save(resultPath+setting.getId('hash')+'_mse.npy', settingMse)
+            duration = time.time()-tic
+            np.save(resultPath+setting.getId('hash')+'_duration.npy', duration)
+            # sleep(0.1-duration)
+            t.update()
 
-print('done')
+    print('done')
 # reduce from in memory data
 print('Results:')
-# (table, columns) = metrics.reduce(settings, experimentResults)
-# df = DataFrame(table, columns=columns)
-# print(df)
+(table, columns) = metrics.reduce(settings(), resultPath, naming='hash')
+# print(columns)
+# print(table)
+df = DataFrame(table, columns=columns)
+print(df)

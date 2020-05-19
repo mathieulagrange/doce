@@ -9,18 +9,61 @@ class Metrics():
     units = types.SimpleNamespace()
     pass
 
-    # def gather(self, settings, dataPath, naming='long'):
-    #     results = np.zeros(len(settings))
-    #     if dataPath.endswith('.h5'):
-    #         print('')
-    #     else:
-    #         for s in settings:
+    def reduceFromVar(self, settings, data):
+        table = []
+        for sIndex, setting in enumerate(settings):
+            row = []
+            for factorName in settings.getFactorNames():
+                row.append(setting.__getattribute__(factorName))
+            for mIndex, metric in enumerate(self.getMetricsNames()):
+                for aggregationType in self.__getattribute__(metric):
+                    if aggregationType:
+                        value = getattr(np, aggregationType)(data[sIndex, mIndex, :])
+                    else:
+                        value = data[sIndex, mIndex]
+                    row.append(value)
+            table.append(row)
+        return table
 
+    def reduceFromNpy(self, settings, dataPath, naming = 'long'):
+        table = []
+        for sIndex, setting in enumerate(settings):
+            row = []
+            for mIndex, metric in enumerate(self.getMetricsNames()):
+                fileName = dataPath+setting.getId(naming)+'_'+metric+'.npy'
+                if os.path.exists(fileName):
+                    for aggregationType in self.__getattribute__(metric):
+                        data = np.load(fileName)
+                        if aggregationType:
+                            value = getattr(np, aggregationType)(data)
+                        else:
+                            value = float(data)
+                        row.append(value)
+            if len(row):
+                for factorName in reversed(settings.getFactorNames()):
+                    row.insert(0, setting.__getattribute__(factorName))
+                table.append(row)
+        return table
 
-    def reduce(self, settings, data, aggregationStyle = 'capitalize'):
-        # check consistency between settings and data
-        if (len(settings) != data.shape[0]):
-            raise ValueError('the first dimensions of data must be equal to the length of settings')
+    def reduceFromH5(self, settings, data, naming = 'long'):
+        return table
+
+    def reduce(self, settings, data, aggregationStyle = 'capitalize', naming = 'long'):
+        columns = self.getHeader(settings, aggregationStyle)
+        if isinstance(data, str):
+            if data.endswith('.h5'):
+                table = self.reduceFromH5(settings, data)
+            else:
+                table = self.reduceFromNpy(settings, data, naming)
+        else:
+            # check consistency between settings and data
+            if (len(settings) != data.shape[0]):
+                raise ValueError('the first dimensions of data must be equal to the length of settings')
+
+            table = self.reduceFromVar(settings, data);
+        return (table, columns)
+
+    def getHeader(self, settings, aggregationStyle):
         columns = []
         for factorName in settings[0].getFactorNames():
             columns.append(factorName)
@@ -31,18 +74,7 @@ class Metrics():
                 else :
                     name = metric+'_'+aggregationType
                 columns.append(name)
-
-        table = []
-        for sIndex, setting in enumerate(settings):
-            row = []
-            for factorName in settings.getFactorNames():
-                row.append(setting.__getattribute__(factorName))
-            for mIndex, metric in enumerate(self.getMetricsNames()):
-                for aggregationType in self.__getattribute__(metric):
-                    value = getattr(np, aggregationType)(data[sIndex, mIndex, :])
-                    row.append(value)
-            table.append(row)
-        return (table, columns)
+        return columns
 
     def getMetricsNames(self):
       return [s for s in self.__dict__.keys() if s[0] is not '_']
@@ -128,10 +160,12 @@ class Factors():
       for mfi, mf in enumerate(m):
         if isinstance(mf, int) and mf == -1:
           attr = self.__getattribute__(list(self.__dict__.keys())[mfi])
-          if isinstance(attr, int):
-            m[mfi] = 0
-          else:
+          # print(type(attr))
+          # print(isinstance(attr, int))
+          if isinstance(attr, list) or isinstance(attr, np.ndarray):
             m[mfi] = list(range(len(attr)))
+          else:
+            m[mfi] = 0
 
       # print('submask')
       s = self.getSettingsMask(m, 0)
