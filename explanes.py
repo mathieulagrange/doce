@@ -6,10 +6,16 @@ import hashlib
 import numpy as np
 
 class Metrics():
+    units = types.SimpleNamespace()
     pass
 
-    def gather(self, settings, dataPath, naming='long'):
-        print('')
+    # def gather(self, settings, dataPath, naming='long'):
+    #     results = np.zeros(len(settings))
+    #     if dataPath.endswith('.h5'):
+    #         print('')
+    #     else:
+    #         for s in settings:
+
 
     def reduce(self, settings, data, aggregationStyle = 'capitalize'):
         # check consistency between settings and data
@@ -105,8 +111,8 @@ class Factors():
       for il, l in enumerate(m):
           if not isinstance(l, list) and l > -1:
               mask[im][il] = [l]
-    print('mask')
-    print(mask)
+    # print('mask')
+    # print(mask)
     self._mask = mask
     # print(nbFactors)
     return self
