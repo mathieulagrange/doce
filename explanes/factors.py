@@ -4,17 +4,21 @@ import types
 import re
 import hashlib
 import numpy as np
+import copy
 
 class Factors():
-  pass
+  _setting = None
 
-  # def __setattr__(self, name, value):
-  #   return object.__setattr__(self, name, value)
+  def __setattr__(self, name, value):
+      if name is '_mask':
+        print('mod mask')
+        print(value)
+      return object.__setattr__(self, name, value)
   def __getattribute__(self, name):
     value = object.__getattribute__(self, name)
     # print(name)
-    # print(type(inspect.getattr_static(self, name)))
-    if name[0] != '_' and hasattr(self, '_setting') and type(inspect.getattr_static(self, name)) != types.FunctionType:
+    # print(type(inspect.getattr_static(self, name))) hasattr(self, '_setting')
+    if name[0] != '_' and self._setting and type(inspect.getattr_static(self, name)) != types.FunctionType:
       idx = list(self.__dict__.keys()).index(name)
       # print(idx)
       # print(self._setting)
@@ -31,10 +35,12 @@ class Factors():
   def __iter__(self):
     # expand the mask to an iterable format aka -1 to full list
     #build a list of settings
+    print('iter mask: ')
+    print(self._mask)
+    self._setting = None
     self._settings = self.getSettings(self._mask)
-    # print('all settings')
-    # print(self._settings)
-   # self._settings = self._mask]
+    print('all settings: ')
+    print(self._settings)
     self._currentSetting = 0
     return self
 
@@ -48,8 +54,10 @@ class Factors():
       return self
 
   def __getitem__(self, index):
+      print('get item')
       self._settings = self.getSettings(self._mask)
       self._setting = self._settings[index]
+      print(self._mask)
       return  self
 
   def __call__(self, mask=None):
@@ -78,12 +86,15 @@ class Factors():
 
   def getSettings(self, mask=None):
     settings = []
+    mask = copy.deepcopy(mask)
+    print('start get settings')
+    print(self._mask)
     for m in mask:
       # handle -1 in mask
       for mfi, mf in enumerate(m):
         if isinstance(mf, int) and mf == -1:
           attr = self.__getattribute__(list(self.__dict__.keys())[mfi])
-          # print(type(attr))
+          # print(attr)
           # print(isinstance(attr, int))
           if isinstance(attr, list) or isinstance(attr, np.ndarray):
             m[mfi] = list(range(len(attr)))
@@ -97,7 +108,7 @@ class Factors():
           settings.append(ss)
       else:
         settings.append(s)
-    # print(settings)
+
     return settings
 
   def getSettingsMask(self, mask, done):

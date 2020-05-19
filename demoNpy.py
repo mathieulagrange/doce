@@ -29,7 +29,11 @@ metrics.mse = ['mean', 'std']
 metrics.duration = ['']
 #metrics.units.duration = 'seconds'
 
-settings = factors([1, 0])
+settings = factors()
+# for _ in settings: pass
+# settings = factors([0, 1])
+# for _ in settings: pass
+# tre
 
 compute = True
 if compute:
@@ -67,7 +71,7 @@ if compute:
     print('done')
 # reduce from in memory data
 print('Results:')
-(table, columns) = metrics.reduce(settings(), resultPath, naming='hash')
+(table, columns) = metrics.reduce(factors(), resultPath, naming='hash')
 # print(columns)
 # print(table)
 df = DataFrame(table, columns=columns)

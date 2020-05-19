@@ -65,7 +65,7 @@ class Metrics():
 
     def getHeader(self, settings, aggregationStyle):
         columns = []
-        for factorName in settings[0].getFactorNames():
+        for factorName in settings.getFactorNames():
             columns.append(factorName)
         for metric in self.getMetricsNames():
             for aggregationType in self.__getattribute__(metric):
