@@ -29,9 +29,9 @@ metrics.mse = ['mean', 'std']
 metrics.duration = ['']
 #metrics.units.duration = 'seconds'
 
-settings = factors([-1, 0, 0])
+settings = factors([1, 0])
 
-compute = False
+compute = True
 if compute:
     print('computing...')
     with trange(len(settings)) as t:
