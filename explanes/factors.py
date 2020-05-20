@@ -37,7 +37,6 @@ class Factors():
     #build a list of settings
     print('iter mask: ')
     print(self._mask)
-    self._setting = None
     self._settings = self.getSettings(self._mask)
     print('all settings: ')
     print(self._settings)
@@ -87,6 +86,8 @@ class Factors():
   def getSettings(self, mask=None):
     settings = []
     mask = copy.deepcopy(mask)
+    self._setting = None
+    
     print('start get settings')
     print(self._mask)
     for m in mask:

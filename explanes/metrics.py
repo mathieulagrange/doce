@@ -4,9 +4,11 @@ import types
 import re
 import hashlib
 import numpy as np
+import tables as tb
 
 class Metrics():
-    units = types.SimpleNamespace()
+    _unit = types.SimpleNamespace()
+    _description = types.SimpleNamespace()
     pass
 
     def reduceFromVar(self, settings, data):
@@ -45,7 +47,27 @@ class Metrics():
                 table.append(row)
         return table
 
-    def reduceFromH5(self, settings, data, naming = 'long'):
+    def reduceFromH5(self, settings, dataPath):
+        table = []
+        h5 = tb.open_file(dataPath, mode='r')
+        for sIndex, setting in enumerate(settings):
+            row = []
+            sg = h5.root._f_get_child(setting.getId(type='shortCapital'))
+            if sg:
+                for mIndex, metric in enumerate(self.getMetricsNames()):
+                    sgm = sg._f_get_child(metric)
+                    if sgm:
+                        for aggregationType in self.__getattribute__(metric):
+                            if aggregationType:
+                                value = getattr(np, aggregationType)(sgm)
+                            else:
+                                value = sgm[0]
+                            row.append(value)
+                if len(row):
+                    for factorName in reversed(settings.getFactorNames()):
+                        row.insert(0, setting.__getattribute__(factorName))
+                table.append(row)
+        h5.close()
         return table
 
     def reduce(self, settings, data, aggregationStyle = 'capitalize', naming = 'long'):
@@ -58,10 +80,15 @@ class Metrics():
         else:
             # check consistency between settings and data
             if (len(settings) != data.shape[0]):
-                raise ValueError('the first dimensions of data must be equal to the length of settings')
+                raise ValueError('The first dimensions of data must be equal to the length of settings. got %i and %i respectively' % (data.shape[0], len(settings)))
 
             table = self.reduceFromVar(settings, data);
         return (table, columns)
+
+    def h5addSetting(self, h5, setting):
+        sg = h5.create_group('/', setting.getId(type='shortCapital'), setting.getId(type='long', sep=' '))
+        for metric in self.getMetricsNames():
+            h5.create_earray(sg, metric, tb.Float64Atom(), (0,), metrics._description.getattr(metric))
 
     def getHeader(self, settings, aggregationStyle):
         columns = []

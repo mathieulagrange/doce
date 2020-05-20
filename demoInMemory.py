@@ -46,7 +46,7 @@ with trange(len(settings)) as t:
                 estimate =  np.var(data, dtype=np.float64)
             settingResults[0, r] = abs(reference - estimate)
             settingResults[1, r] = np.square(reference - estimate)
-        sleep(0.1)
+        # sleep(0.1)
         t.update()
         experimentResults[s, :, :] = settingResults
 

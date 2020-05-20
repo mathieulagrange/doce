@@ -69,7 +69,7 @@ if compute:
             t.update()
 
     print('done')
-# reduce from in memory data
+# reduce from npy data
 print('Results:')
 (table, columns) = metrics.reduce(factors(), resultPath, naming='hash')
 # print(columns)
