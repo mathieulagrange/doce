@@ -31,9 +31,9 @@ metrics.duration = ['']
 metrics._unit.duration = 'seconds'
 metrics._description.duration = 'time used to compute'
 
-settings = factors()
+settings = factors([1, 0])
 
-compute = False
+compute = True
 if compute:
     print('computing...')
     h5 = tb.open_file(resultPath, mode='w')
@@ -58,7 +58,8 @@ if compute:
                 sg.mae.append([abs(reference - estimate)])
                 sg.mse.append([np.square(reference - estimate)])
 
-            sg.duration.append([time.time()-tic])
+            duration = time.time()-tic
+            sg.duration.append([duration])
             # sleep(0.1-duration)
             t.update()
     h5.close()

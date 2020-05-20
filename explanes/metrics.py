@@ -52,17 +52,19 @@ class Metrics():
         h5 = tb.open_file(dataPath, mode='r')
         for sIndex, setting in enumerate(settings):
             row = []
-            sg = h5.root._f_get_child(setting.getId(type='shortCapital'))
-            if sg:
+            if h5.root.__contains__(setting.getId(type='shortCapital')):
+                sg = h5.root._f_get_child(setting.getId(type='shortCapital'))
+
                 for mIndex, metric in enumerate(self.getMetricsNames()):
-                    sgm = sg._f_get_child(metric)
-                    if sgm:
-                        for aggregationType in self.__getattribute__(metric):
+                    for aggregationType in self.__getattribute__(metric):
+                        value = np.nan
+                        if sg.__contains__(metric):
+                            sgm = sg._f_get_child(metric)
                             if aggregationType:
                                 value = getattr(np, aggregationType)(sgm)
                             else:
                                 value = sgm[0]
-                            row.append(value)
+                        row.append(value)
                 if len(row):
                     for factorName in reversed(settings.getFactorNames()):
                         row.insert(0, setting.__getattribute__(factorName))
@@ -88,7 +90,8 @@ class Metrics():
     def h5addSetting(self, h5, setting):
         sg = h5.create_group('/', setting.getId(type='shortCapital'), setting.getId(type='long', sep=' '))
         for metric in self.getMetricsNames():
-            h5.create_earray(sg, metric, tb.Float64Atom(), (0,), metrics._description.getattr(metric))
+            h5.create_earray(sg, metric, tb.Float64Atom(), (0,), getattr(self._description, metric))
+        return sg
 
     def getHeader(self, settings, aggregationStyle):
         columns = []
