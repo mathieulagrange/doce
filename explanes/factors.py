@@ -8,19 +8,20 @@ import copy
 
 class Factors():
   _setting = None
+  _changed = False
 
   def __setattr__(self, name, value):
-      print('setattr')
-      if name is '_mask':
-        print('mod mask')
-        print(value)
+      if name is '_mask' or name[0] is not '_':
+          self._changed = True
       return object.__setattr__(self, name, value)
+
   def __getattribute__(self, name):
     value = object.__getattribute__(self, name)
     # print(name)
     # print(type(inspect.getattr_static(self, name))) hasattr(self, '_setting')
     if name[0] != '_' and self._setting and type(inspect.getattr_static(self, name)) != types.FunctionType:
-      idx = list(self.__dict__.keys()).index(name)
+      idx = self.getFactorNames().index(name)
+      # print(self.getFactorNames())
       # print(idx)
       # print(self._setting)
       if self._setting[idx] == -2:
@@ -36,11 +37,11 @@ class Factors():
   def __iter__(self):
     # expand the mask to an iterable format aka -1 to full list
     #build a list of settings
-    print('iter mask: ')
-    print(self._mask)
-    self._settings = self.getSettings(self._mask)
-    print('all settings: ')
-    print(self._settings)
+    # print('iter mask: ')
+    # print(self._mask)
+    self.getSettings()
+    # print('all settings: ')
+    # print(self._settings)
     self._currentSetting = 0
     return self
 
@@ -54,19 +55,18 @@ class Factors():
       return self
 
   def __getitem__(self, index):
-      print('get item')
-      self._settings = self.getSettings(self._mask)
+      # print('get item')
+      self.getSettings()
       self._setting = self._settings[index]
-      print(self._mask)
+      # print(self._mask)
       return  self
 
   def __call__(self, mask=None):
-    nbFactors = len([s for s in self.__dict__.keys() if s[0] is not '_'])
+    nbFactors = len(self.getFactorNames())
     if mask is None or len(mask)==0 or (len(mask)==1 and len(mask)==0) :
        mask = [[-1]*nbFactors]
     if isinstance(mask, list) and not isinstance(mask[0], list):
         mask = [mask]
-
 
     for im, m in enumerate(mask):
       if len(m) < nbFactors:
@@ -74,44 +74,46 @@ class Factors():
       for il, l in enumerate(m):
           if not isinstance(l, list) and l > -1:
               mask[im][il] = [l]
-    print('mask')
-    print(mask)
+    # print('mask')
+    # print(mask)
     self._mask = mask
     # print(nbFactors)
     return self
 
   def __len__(self):
-      self._settings = self.getSettings(self._mask)
+      self.getSettings()
       return len(self._settings)
 
-  def getSettings(self, mask=None):
-    settings = []
-    mask = copy.deepcopy(mask)
-    self._setting = None
+  def getSettings(self):
+      if self._changed:
+        settings = []
+        mask = copy.deepcopy(self._mask)
+        self._setting = None
 
-    print('start get settings')
-    print(self._mask)
-    for m in mask:
-      # handle -1 in mask
-      for mfi, mf in enumerate(m):
-        if isinstance(mf, int) and mf == -1:
-          attr = self.__getattribute__(list(self.__dict__.keys())[mfi])
-          # print(attr)
-          # print(isinstance(attr, int))
-          if isinstance(attr, list) or isinstance(attr, np.ndarray):
-            m[mfi] = list(range(len(attr)))
+        # print('start get settings')
+        # print(self._mask)
+        for m in mask:
+          # handle -1 in mask
+          for mfi, mf in enumerate(m):
+            if isinstance(mf, int) and mf == -1:
+              attr = self.__getattribute__(self.getFactorNames()
+              [mfi])
+              # print(attr)
+              # print(isinstance(attr, int))
+              if isinstance(attr, list) or isinstance(attr, np.ndarray):
+                m[mfi] = list(range(len(attr)))
+              else:
+                m[mfi] = 0
+
+          # print('submask')
+          s = self.getSettingsMask(m, 0)
+          if all(isinstance(ss, list) for ss in s):
+            for ss in s:
+              settings.append(ss)
           else:
-            m[mfi] = 0
-
-      # print('submask')
-      s = self.getSettingsMask(m, 0)
-      if all(isinstance(ss, list) for ss in s):
-        for ss in s:
-          settings.append(ss)
-      else:
-        settings.append(s)
-
-    return settings
+            settings.append(s)
+        self._changed = False
+        self._settings = settings
 
   def getSettingsMask(self, mask, done):
     # print(mask)
@@ -158,7 +160,7 @@ class Factors():
 
   def getId(self, type='long', sep='_'):
     id = []
-    for f in sorted(self.__dict__.keys()):
+    for f in sorted(self.getFactorNames()):
       # print(getattr(self, f))
       if f[0] != '_' and getattr(self, f) is not None:
         if type is 'long' or type is 'hash':
