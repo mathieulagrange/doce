@@ -10,6 +10,7 @@ class Factors():
   _setting = None
 
   def __setattr__(self, name, value):
+      print('setattr')
       if name is '_mask':
         print('mod mask')
         print(value)
@@ -87,7 +88,7 @@ class Factors():
     settings = []
     mask = copy.deepcopy(mask)
     self._setting = None
-    
+
     print('start get settings')
     print(self._mask)
     for m in mask:
