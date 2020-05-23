@@ -87,10 +87,19 @@ class Metrics():
             table = self.reduceFromVar(settings, data);
         return (table, columns)
 
-    def h5addSetting(self, h5, setting):
-        sg = h5.create_group('/', setting.getId(type='shortCapital'), setting.getId(type='long', sep=' '))
-        for metric in self.getMetricsNames():
-            h5.create_earray(sg, metric, tb.Float64Atom(), (0,), getattr(self._description, metric))
+    def h5addSetting(self, h5, setting, metricDimensions=[]):
+        if not h5.__contains__('/'+setting.getId(type='shortCapital')):
+            sg = h5.create_group('/', setting.getId(type='shortCapital'), setting.getId(type='long', sep=' '))
+        else:
+            sg = h5.root._f_get_child(setting.getId(type='shortCapital'))
+        for mIndex, metric in enumerate(self.getMetricsNames()):
+            if not metricDimensions:
+                if sg.__contains__(metric):
+                    sg._f_get_child(metric)._f_remove()
+                h5.create_earray(sg, metric, tb.Float64Atom(), (0,), getattr(self._description, metric))
+            else:
+                if not sg.__contains__(metric):
+                    h5.create_array(sg, metric, np.zeros(( metricDimensions[mIndex])), getattr(self._description, metric))
         return sg
 
     def getHeader(self, settings, aggregationStyle):

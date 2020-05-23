@@ -6,41 +6,69 @@ import time
 import numpy as np
 import tables as tb
 
+# TODO partial write
+# check rewrite unlink metrics
 
 # more complex case where:
 #   - the results are stored on disk in a h5 sink
 #   - one factor affects the size of the results vectors
 #   - the metrics does not operate on the same data, resulting on result vectors with different sizes per metric
 #   - thank to the description capabilities of the h5 file format, some information about the metrics can be stored
+def main():
 
-resultPath = '/tmp/results.h5'
+    resultPath = '/tmp/results.h5'
 
-factors = Factors()
+    factors = Factors()
 
-factors.dataType = ['float', 'double']
-factors.datasetSize = 1000*np.array([1, 2, 4, 8])
-factors.meanOffset = 10**np.array([0, 1, 2, 3, 4])
-factors.nbRuns = [20, 40]
+    factors.dataType = ['float', 'double']
+    factors.datasetSize = 1000*np.array([1, 2, 4, 8])
+    factors.meanOffset = 10**np.array([0, 1, 2, 3, 4])
+    factors.nbRuns = [20, 40]
 
-metrics = Metrics()
-metrics.mae = ['mean', 'std']
-metrics._description.mae = 'Mean absolute error'
-metrics.mse = ['mean', 'std']
-metrics._description.mse = 'Mean square error'
-metrics.duration = ['']
-metrics._unit.duration = 'seconds'
-metrics._description.duration = 'time used to compute'
+    metrics = Metrics()
+    metrics.mae = ['mean', 'std']
+    metrics._description.mae = 'Mean absolute error'
+    metrics.mse = ['mean', 'std']
+    metrics._description.mse = 'Mean square error'
+    metrics.duration = ['']
+    metrics._unit.duration = 'seconds'
+    metrics._description.duration = 'time used to compute'
 
-settings = factors([1, 0])
 
-compute = True
-if compute:
+    reDo = True
+    compute = True
+
+    if compute:
+        if reDo:
+            writeMode = 'w'
+        else:
+            writeMode = 'a'
+        settings = factors([1, 0])
+        doComputing(settings, metrics, resultPath, writeMode)
+        settings = factors([-1, 0])
+        doComputing(settings, metrics, resultPath)
+
+    print('Stored results:')
+    h5 = tb.open_file(resultPath, mode='r')
+    print(h5)
+    h5.close()
+    # reduce from h5 file
+    print('Results:')
+    (table, columns) = metrics.reduce(factors(), resultPath)
+    # print(columns)
+    # print(table)
+    df = DataFrame(table, columns=columns)
+    print(df)
+
+def doComputing(settings, metrics, resultPath, writeMode='a'):
     print('computing...')
-    h5 = tb.open_file(resultPath, mode='w')
+    h5 = tb.open_file(resultPath, mode=writeMode)
     with trange(len(settings)) as t:
-        for s, setting in enumerate(settings):
+        for sIndex, setting in enumerate(settings):
             t.set_description(setting.getId())
-            sg = metrics.h5addSetting(h5, setting)
+            # set metricDimensions = [] to get dynamic allocation (will lead to file size expansion in case of repeated recomputation, use h5repack periodically in that case)
+            sg = metrics.h5addSetting(h5, setting,
+                metricDimensions = [settings.nbRuns, settings.nbRuns, 1])
 
             tic = time.time()
             for r in range(settings.nbRuns):
@@ -55,24 +83,20 @@ if compute:
                     estimate = np.var(data)
                 elif setting.dataType is 'double':
                     estimate =  np.var(data, dtype=np.float64)
-                sg.mae.append([abs(reference - estimate)])
-                sg.mse.append([np.square(reference - estimate)])
+                # in case of dynamic allocation
+                # sg.mae.append([abs(reference - estimate)])
+                # sg.mse.append([np.square(reference - estimate)])
+                sg.mae[r] = abs(reference - estimate)
+                sg.mse[t] = np.square(reference - estimate)
 
             duration = time.time()-tic
-            sg.duration.append([duration])
+            # in case of dynamic allocation
+            # sg.duration.append([duration])
+            sg.duration[0] = duration
             # sleep(0.1-duration)
             t.update()
     h5.close()
     print('done')
 
-print('Stored results:')
-h5 = tb.open_file(resultPath, mode='r')
-print(h5)
-h5.close()
-# reduce from h5 file
-print('Results:')
-(table, columns) = metrics.reduce(factors(), resultPath)
-# print(columns)
-# print(table)
-df = DataFrame(table, columns=columns)
-print(df)
+if __name__ == '__main__':
+    main()
