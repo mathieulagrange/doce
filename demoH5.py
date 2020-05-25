@@ -1,4 +1,4 @@
-from explanes import Factors, Metrics
+import explanes as exp
 from tqdm import trange
 from time import sleep
 from pandas import DataFrame
@@ -16,16 +16,21 @@ import tables as tb
 #   - thank to the description capabilities of the h5 file format, some information about the metrics can be stored
 def main():
 
-    resultPath = '/tmp/results.h5'
-
-    factors = Factors()
+    config = exp.Config()
+    config.project.name = 'demoH5'
+    config.project.description = 'demonstration of explanes using H5'
+    config.project.author = 'mathieu Lagrange'
+    config.project.address = 'mathieu.lagrange@ls2n.fr'
+    config.path.processing = '/tmp/results.h5'
+    
+    factors = exp.Factors()
 
     factors.dataType = ['float', 'double']
     factors.datasetSize = 1000*np.array([1, 2, 4, 8])
     factors.meanOffset = 10**np.array([0, 1, 2, 3, 4])
     factors.nbRuns = [20, 40]
 
-    metrics = Metrics()
+    metrics = exp.Metrics()
     metrics.mae = ['mean', 'std']
     metrics._description.mae = 'Mean absolute error'
     metrics.mse = ['mean', 'std']
@@ -44,21 +49,23 @@ def main():
         else:
             writeMode = 'a'
         settings = factors([1, 0])
-        doComputing(settings, metrics, resultPath, writeMode)
+        doComputing(settings, metrics, config.path.processing, writeMode)
         settings = factors([-1, 0])
-        doComputing(settings, metrics, resultPath)
+        doComputing(settings, metrics, config.path.processing)
 
     print('Stored results:')
-    h5 = tb.open_file(resultPath, mode='r')
+    h5 = tb.open_file(config.path.processing, mode='r')
     print(h5)
     h5.close()
     # reduce from h5 file
     print('Results:')
-    (table, columns) = metrics.reduce(factors(), resultPath)
+    (table, columns) = metrics.reduce(factors(), config.path.processing)
     # print(columns)
     # print(table)
     df = DataFrame(table, columns=columns)
     print(df)
+    d = df.to_html()
+    config.sendMail(d)
 
 def doComputing(settings, metrics, resultPath, writeMode='a'):
     print('computing...')

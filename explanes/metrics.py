@@ -9,7 +9,6 @@ import tables as tb
 class Metrics():
     _unit = types.SimpleNamespace()
     _description = types.SimpleNamespace()
-    pass
 
     def reduceFromVar(self, settings, data):
         table = []
@@ -119,4 +118,4 @@ class Metrics():
       return [s for s in self.__dict__.keys() if s[0] is not '_']
 
     def __len__(self):
-        return len([s for s in self.__dict__.keys() if s[0] is not '_'])
+        return len(self.getMetricsNames())

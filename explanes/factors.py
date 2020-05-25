@@ -1,5 +1,5 @@
 import os
-import inspect
+import inspect # remove ??
 import types
 import re
 import hashlib
@@ -9,6 +9,9 @@ import copy
 class Factors():
   _setting = None
   _changed = False
+  _currentSetting = 0
+  _settings = []
+  _mask = []
 
   def __setattr__(self, name, value):
       if name is '_mask' or name[0] is not '_':
