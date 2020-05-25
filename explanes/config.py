@@ -22,7 +22,7 @@ class Config():
         for atr in atrs:
             if type(inspect.getattr_static(self, atr)) != types.FunctionType:
                 if type(self.__getattribute__(atr)) == types.SimpleNamespace:
-                    cString += atr+':\r\n'
+                    cString += atr+'\r\n'
                     for sns in self.__getattribute__(atr).__dict__.keys():
                         cString+='\t '+sns+': '+self.__getattribute__(atr).__getattribute__(sns)+'\r\n'
                 else:
@@ -30,7 +30,7 @@ class Config():
         return cString
 
     def toHtml(self):
-        return self.__str__().replace('\r\n', '<br>').replace('\t', '&emsp; &emsp;')+'</h3>'
+        return '<h3> '+self.__str__().replace('\r\n', '<br>').replace('\t', '&emsp;')+'</h3>'
 
     def sendMail(self, msg):
 
@@ -39,5 +39,5 @@ class Config():
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
         server.login('expcode.mailer@gmail.com', 'tagsqtlirkznoxro')
-        server.sendmail("expcode.mailer@gmail.com", self.project.address, header+'<h3> '+self.toHtml()+msg)
+        server.sendmail("expcode.mailer@gmail.com", self.project.address, header+msg+self.toHtml())
         server.quit()
