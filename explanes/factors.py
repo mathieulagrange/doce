@@ -106,7 +106,7 @@ class Factors():
               if isinstance(attr, list) or isinstance(attr, np.ndarray):
                 m[mfi] = list(range(len(attr)))
               else:
-                m[mfi] = 0
+                m[mfi] = [0]
 
           # print('submask')
           s = self.getSettingsMask(m, 0)
@@ -178,3 +178,20 @@ class Factors():
     if type is 'hash':
       id  = hashlib.md5(id.encode("utf-8")).hexdigest()
     return id
+
+    def __str__(self):
+        print('toto')
+        cString = ''
+        atrs = dict(vars(type(self)))
+        atrs.update(vars(self))
+        atrs = [a for a in atrs if a[0] is not '_']
+
+        for atr in atrs:
+            if type(inspect.getattr_static(self, atr)) != types.FunctionType:
+                if type(self.__getattribute__(atr)) == types.SimpleNamespace:
+                    cString += atr+'\r\n'
+                    for sns in self.__getattribute__(atr).__dict__.keys():
+                        cString+='\t '+sns+': '+self.__getattribute__(atr).__getattribute__(sns)+'\r\n'
+                else:
+                    cString+='  '+atr+': '+self.__getattribute__(atr)+'\r\n'
+        return cString
