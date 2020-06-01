@@ -16,12 +16,12 @@ class Config():
     path.storage = ''
     path.output = ''
 
-    def makePaths(self):
+    def makePaths(self, force=False):
         for sns in self.__getattribute__('path').__dict__.keys():
             path = self.__getattribute__('path').__getattribute__(sns)
-            if not os.path.exists(path):
-                print(path)
-                # os.makedirs(path)
+            if path and not os.path.exists(path):
+                if force or query_yes_no(path+' does not exist. Do you want to create it ?'):
+                    os.makedirs(path)
 
     def __str__(self):
         cString = ''
@@ -55,7 +55,7 @@ class Config():
 
 
 def query_yes_no(question, default="yes"):
-    """Ask a yes/no question via raw_input() and return their answer.
+    """Ask a yes/no question via input() and return their answer.
 
     "question" is a string that is presented to the user.
     "default" is the presumed answer if the user just hits <Enter>.
@@ -77,7 +77,7 @@ def query_yes_no(question, default="yes"):
 
     while True:
         sys.stdout.write(question + prompt)
-        choice = raw_input().lower()
+        choice = input().lower()
         if default is not None and choice == '':
             return valid[default]
         elif choice in valid:
