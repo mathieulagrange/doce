@@ -164,9 +164,33 @@ class Factors():
   def getFactorNames(self):
     return [s for s in self.__dict__.keys() if s[0] is not '_']
 
+  def clone(self):
+    return copy.deepcopy(self)
+
+  def nbModalities(self, factor):
+      if isinstance(factor, int):
+          name = self.getFactorNames()[factor]
+      return len(object.__getattribute__(self, name))
+
+  def alternative(self, factor, modalityRank, relative=False):
+      if isinstance(factor, str):
+          factor = self.getFactorNames().index(factor)
+      if modalityRank<0:
+          relative = True
+      f = self.clone()
+      if relative:
+          f._setting[factor] += modalityRank
+      else:
+          f._setting[factor] = modalityRank
+      if f._setting[factor]< 0 or f._setting[factor] >= self.nbModalities(factor):
+          return None
+      else:
+          return f
+
+
   def getId(self, type='long', singleton=True, sep='_'):
     id = []
-    for f in sorted(self.getFactorNames()):
+    for f in self.getFactorNames(): # sorted
       # print(getattr(self, f))
       if singleton or f in self._nonSingleton:
           if f[0] != '_' and getattr(self, f) is not None:
