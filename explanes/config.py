@@ -11,6 +11,7 @@ class Config():
     path = types.SimpleNamespace()
     path.input = ''
     path.processing = ''
+    path.storage = ''
     path.output = ''
 
     def __str__(self):

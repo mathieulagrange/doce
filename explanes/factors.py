@@ -12,10 +12,13 @@ class Factors():
   _currentSetting = 0
   _settings = []
   _mask = []
+  _nonSingleton = []
 
   def __setattr__(self, name, value):
       if name is '_mask' or name[0] is not '_':
           self._changed = True
+      if name[0] is not '_' and type(value) in {list, np.ndarray} and name not in self._nonSingleton:
+          self._nonSingleton.append(name)
       return object.__setattr__(self, name, value)
 
   def __getattribute__(self, name):
@@ -161,19 +164,20 @@ class Factors():
   def getFactorNames(self):
     return [s for s in self.__dict__.keys() if s[0] is not '_']
 
-  def getId(self, type='long', sep='_'):
+  def getId(self, type='long', singleton=True, sep='_'):
     id = []
     for f in sorted(self.getFactorNames()):
       # print(getattr(self, f))
-      if f[0] != '_' and getattr(self, f) is not None:
-        if type is 'long' or type is 'hash':
-          sf = f
-        if type is 'shortUnderscore':
-          sf = ''.join([itf[0] for itf in f.split('_')])
-        if type is 'shortCapital':
-          sf = f[0]+''.join([itf[0] for itf in re.findall('[A-Z][^A-Z]*', f)]).lower()
-        id.append(sf)
-        id.append(str(getattr(self, f)))
+      if singleton or f in self._nonSingleton:
+          if f[0] != '_' and getattr(self, f) is not None:
+            if type is 'long' or type is 'hash':
+              sf = f
+            if type is 'shortUnderscore':
+              sf = ''.join([itf[0] for itf in f.split('_')])
+            if type is 'shortCapital':
+              sf = f[0]+''.join([itf[0] for itf in re.findall('[A-Z][^A-Z]*', f)]).lower()
+            id.append(sf)
+            id.append(str(getattr(self, f)))
     id = sep.join(id)
     if type is 'hash':
       id  = hashlib.md5(id.encode("utf-8")).hexdigest()
