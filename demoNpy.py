@@ -20,9 +20,7 @@ factors = Factors()
 
 factors.dataType = ['float', 'double']
 factors.datasetSize = 1000*np.array([1, 2, 4, 8])
-factors.toto = 'try'
 factors.meanOffset = 10**np.array([0, 1, 2, 3, 4])
-factors.tota = 'try'
 factors.nbRuns = [20, 40]
 
 metrics = Metrics()

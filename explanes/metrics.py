@@ -99,8 +99,8 @@ class Metrics():
         sameIndex = [i for i, x in enumerate(same) if x]
         for s in sameIndex:
             header += columns[s]+': '+str(sameValue[s])+' '
-        print(sameIndex)
-        print(columns)
+        # print(sameIndex)
+        # print(columns)
         for s in sorted(sameIndex, reverse=True):
                 columns.pop(s)
                 # same.pop(sIndex)
