@@ -22,6 +22,7 @@ factors.dataType = ['float', 'double']
 factors.datasetSize = 1000*np.array([1, 2, 4, 8])
 factors.meanOffset = 10**np.array([0, 1, 2, 3, 4])
 factors.nbRuns = [20, 40]
+
 metrics = Metrics()
 
 metrics.mae = ['mean', 'std']
@@ -35,7 +36,7 @@ settings = factors()
 # for _ in settings: pass
 # tre
 
-compute = True
+compute = False
 if compute:
     print('computing...')
     with trange(len(settings)) as t:
@@ -71,10 +72,8 @@ if compute:
     print('done')
 # reduce from npy data
 print('Results:')
-(table, columns) = metrics.reduce(factors(), resultPath, naming='hash')
+(table, columns, header) = metrics.reduce(factors([-1, -1, -1, 0]), resultPath, naming='hash')
 # print(columns)
-# print(table)
+print(header)
 df = DataFrame(table, columns=columns)
 print(df)
-
-factors([1]).clearDirectory(resultPath)

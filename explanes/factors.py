@@ -179,7 +179,9 @@ class Factors():
       for s in self:
           for f in glob.glob(path+s.fileName()+selector):
               fileNames.append(f)
-      if force or expUtils.query_yes_no('About to remove '+str(len(fileNames))+' files. Proceed ?'):
+          for f in glob.glob(path+s.getId()+selector):
+              fileNames.append(f)
+      if len(fileNames) and (force or expUtils.query_yes_no('About to remove '+str(len(fileNames))+' files. Proceed ?')):
           for f in fileNames:
               os.remove(f)
 

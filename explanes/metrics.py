@@ -84,7 +84,24 @@ class Metrics():
                 raise ValueError('The first dimensions of data must be equal to the length of settings. got %i and %i respectively' % (data.shape[0], len(settings)))
 
             table = self.reduceFromVar(settings, data);
-        return (table, columns)
+
+        header = ''
+        same = [True] * len(table[0])
+        sameValue = [None] * len(table[0])
+        for r in table:
+            for cIndex, c in enumerate(r):
+                if sameValue[cIndex] is None:
+                    sameValue[cIndex] = c
+                elif sameValue[cIndex] != c:
+                    same[cIndex] = False
+
+        for sIndex, s in enumerate(same):
+            if s:
+                header += columns[sIndex]+': '+str(sameValue[sIndex])
+                columns.pop(sIndex)
+                for r in table:
+                    r.pop(sIndex)
+        return (table, columns, header)
 
     def h5addSetting(self, h5, setting, metricDimensions=[]):
         if not h5.__contains__('/'+setting.getId(type='shortCapital')):
