@@ -88,6 +88,7 @@ class Metrics():
         header = ''
         same = [True] * len(table[0])
         sameValue = [None] * len(table[0])
+
         for r in table:
             for cIndex, c in enumerate(r):
                 if sameValue[cIndex] is None:
@@ -95,12 +96,16 @@ class Metrics():
                 elif sameValue[cIndex] != c:
                     same[cIndex] = False
 
-        for sIndex, s in enumerate(same):
-            if s:
-                header += columns[sIndex]+': '+str(sameValue[sIndex])
-                columns.pop(sIndex)
+        sameIndex = [i for i, x in enumerate(same) if x]
+        for s in sameIndex:
+            header += columns[s]+': '+str(sameValue[s])+' '
+        print(sameIndex)
+        print(columns)
+        for s in sorted(sameIndex, reverse=True):
+                columns.pop(s)
+                # same.pop(sIndex)
                 for r in table:
-                    r.pop(sIndex)
+                    r.pop(s)
         return (table, columns, header)
 
     def h5addSetting(self, h5, setting, metricDimensions=[]):
