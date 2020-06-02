@@ -96,7 +96,7 @@ class Metrics():
                 elif sameValue[cIndex] != c:
                     same[cIndex] = False
 
-        sameIndex = [i for i, x in enumerate(same) if x]
+        sameIndex = [i for i, x in enumerate(same) if x and i<len(settings.getFactorNames())]
         for s in sameIndex:
             header += columns[s]+': '+str(sameValue[s])+' '
         # print(sameIndex)
