@@ -5,6 +5,7 @@ import re
 import hashlib
 import numpy as np
 import copy
+import glob
 import explanes.utils as expUtils
 
 class Factors():
@@ -173,6 +174,15 @@ class Factors():
           name = self.getFactorNames()[factor]
       return len(object.__getattribute__(self, name))
 
+  def clearDirectory(self, path, force=False, selector='*'):
+      fileNames = []
+      for s in self:
+          for f in glob.glob(path+s.fileName()+selector):
+              fileNames.append(f)
+      if force or expUtils.query_yes_no('About to remove '+str(len(fileNames))+' files. Proceed ?'):
+          for f in fileNames:
+              os.remove(f)
+
   def alternative(self, factor, modalityRank, relative=False):
       if isinstance(factor, str):
           factor = self.getFactorNames().index(factor)
@@ -231,8 +241,3 @@ class Factors():
                 else:
                     cString+='  '+atr+': '+self.__getattribute__(atr)+'\r\n'
         return cString
-
-    def clearDirectory(self, path, selector=''):
-        for s in self:
-            fileName = path+s.fileName()
-            print(fileName)

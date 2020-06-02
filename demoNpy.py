@@ -76,3 +76,5 @@ print('Results:')
 # print(table)
 df = DataFrame(table, columns=columns)
 print(df)
+
+factors([1]).clearDirectory(resultPath)
