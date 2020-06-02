@@ -5,6 +5,7 @@ import re
 import hashlib
 import numpy as np
 import copy
+import explanes.utils as expUtils
 
 class Factors():
   _setting = None
@@ -230,3 +231,8 @@ class Factors():
                 else:
                     cString+='  '+atr+': '+self.__getattribute__(atr)+'\r\n'
         return cString
+
+    def clearDirectory(self, path, selector=''):
+        for s in self:
+            fileName = path+s.fileName()
+            print(fileName)
