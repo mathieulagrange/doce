@@ -187,13 +187,21 @@ class Factors():
       else:
           return f
 
+  def fileName(self):
+      return self.getId('hash')
 
-  def getId(self, type='long', singleton=True, sep='_'):
+  def describe(self):
+    return self.getId(singleton=False, sort=False, sep=' ')
+
+  def getId(self, type='long', sort=True, singleton=True, omitVoid=True, sep='_'):
     id = []
-    for f in self.getFactorNames(): # sorted
+    fNames = self.getFactorNames()
+    if sort:
+        fNames = sorted(fNames)
+    for f in fNames:
       # print(getattr(self, f))
-      if singleton or f in self._nonSingleton:
-          if f[0] != '_' and getattr(self, f) is not None:
+      if f[0] != '_' and getattr(self, f) is not None:
+          if (singleton or f in self._nonSingleton) and (omitVoid and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or (not isinstance(getattr(self, f), str) and getattr(self, f) != 0)):
             if type is 'long' or type is 'hash':
               sf = f
             if type is 'shortUnderscore':
@@ -208,7 +216,6 @@ class Factors():
     return id
 
     def __str__(self):
-        print('toto')
         cString = ''
         atrs = dict(vars(type(self)))
         atrs.update(vars(self))
