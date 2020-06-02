@@ -183,16 +183,22 @@ class Factors():
           for f in fileNames:
               os.remove(f)
 
-  def alternative(self, factor, modalityRank, relative=False):
+  def alternative(self, factor, modality, relative=False):
       if isinstance(factor, str):
           factor = self.getFactorNames().index(factor)
-      if modalityRank<0:
+      if isinstance(modality, str):
+          factorName = self.getFactorNames()[factor]
+          set = self._setting
+          self._setting = None
+          modality = self.__getattribute__(factorName).index(modality)
+          self._setting = set
+      if modality<0:
           relative = True
       f = self.clone()
       if relative:
-          f._setting[factor] += modalityRank
+          f._setting[factor] += modality
       else:
-          f._setting[factor] = modalityRank
+          f._setting[factor] = modality
       if f._setting[factor]< 0 or f._setting[factor] >= self.nbModalities(factor):
           return None
       else:
