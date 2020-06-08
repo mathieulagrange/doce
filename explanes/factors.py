@@ -7,6 +7,13 @@ import numpy as np
 import copy
 import glob
 import explanes.utils as expUtils
+import utils
+
+if utils.runFromNoteBook():
+    from tqdm.notebook import tqdm as tqdm
+else:
+    from tqdm import tqdm as tqdm
+
 
 class Factors():
   _setting = None
@@ -69,7 +76,16 @@ class Factors():
       # print(self._mask)
       return  self
 
-  def __call__(self, mask=None):
+  #def __call__(self, mask=None):
+
+  def loop(self, function, *parameters):
+      with tqdm(total=len(self)) as t:
+        for setting in self:
+          t.set_description(setting.describe())
+          function(setting, *parameters)
+          t.update()
+
+  def settings(self, mask=None):
     nbFactors = len(self.getFactorNames())
     if mask is None or len(mask)==0 or (len(mask)==1 and len(mask)==0) :
        mask = [[-1]*nbFactors]
@@ -174,7 +190,7 @@ class Factors():
           name = self.getFactorNames()[factor]
       return len(object.__getattribute__(self, name))
 
-  def clearDirectory(self, path, force=False, selector='*'):
+  def clear(self, path, force=False, selector='*'):
       fileNames = []
       for s in self:
           for f in glob.glob(path+s.fileName()+selector):

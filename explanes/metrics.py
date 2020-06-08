@@ -86,26 +86,27 @@ class Metrics():
             table = self.reduceFromVar(settings, data);
 
         header = ''
-        same = [True] * len(table[0])
-        sameValue = [None] * len(table[0])
+        if len(table)>1:
+            same = [True] * len(table[0])
+            sameValue = [None] * len(table[0])
 
-        for r in table:
-            for cIndex, c in enumerate(r):
-                if sameValue[cIndex] is None:
-                    sameValue[cIndex] = c
-                elif sameValue[cIndex] != c:
-                    same[cIndex] = False
+            for r in table:
+                for cIndex, c in enumerate(r):
+                    if sameValue[cIndex] is None:
+                        sameValue[cIndex] = c
+                    elif sameValue[cIndex] != c:
+                        same[cIndex] = False
 
-        sameIndex = [i for i, x in enumerate(same) if x and i<len(settings.getFactorNames())]
-        for s in sameIndex:
-            header += columns[s]+': '+str(sameValue[s])+' '
-        # print(sameIndex)
-        # print(columns)
-        for s in sorted(sameIndex, reverse=True):
-                columns.pop(s)
-                # same.pop(sIndex)
-                for r in table:
-                    r.pop(s)
+            sameIndex = [i for i, x in enumerate(same) if x] #  and i<len(settings.getFactorNames())
+            for s in sameIndex:
+                header += columns[s]+': '+str(sameValue[s])+' '
+            # print(sameIndex)
+            # print(columns)
+            for s in sorted(sameIndex, reverse=True):
+                    columns.pop(s)
+                    # same.pop(sIndex)
+                    for r in table:
+                        r.pop(s)
         return (table, columns, header)
 
     def h5addSetting(self, h5, setting, metricDimensions=[]):
