@@ -3,6 +3,8 @@ import types
 import inspect
 import os
 import explanes.utils as expUtils
+import explanes.factors as expFactors
+import explanes.metrics as expMetrics
 
 class Config():
     project = types.SimpleNamespace()
@@ -15,6 +17,8 @@ class Config():
     path.processing = ''
     path.storage = ''
     path.output = ''
+    factors = expFactors.Factors()
+    metrics = expMetrics.Metrics()
 
     def makePaths(self, force=False):
         for sns in self.__getattribute__('path').__dict__.keys():
