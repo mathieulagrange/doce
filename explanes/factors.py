@@ -203,7 +203,7 @@ class Factors():
           name = self.getFactorNames()[factor]
       return len(object.__getattribute__(self, name))
 
-  def clear(self, path, force=False, selector='*'):
+  def clearPath(self, path, force=False, selector='*'):
       fileNames = []
       for s in self:
           for f in glob.glob(path+s.fileName()+selector):

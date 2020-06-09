@@ -58,3 +58,11 @@ class Config():
 
   def do(self, mask, function, *parameters, logFileName=''):
     return self.factor.settings(mask).do(function, self, *parameters, logFileName='')
+
+  def clearPath(self, mask, path, force=False, selector='*'):
+    return self.factor.settings(mask).clearPath(path, force, selector)
+
+  def clearPaths(self, mask, force=False, selector='*'):
+    for sns in self.__getattribute__('path').__dict__.keys():
+      path = self.__getattribute__('path').__getattribute__(sns)
+      self.clearPath(mask, path, force, selector)
