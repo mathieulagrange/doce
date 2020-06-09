@@ -18,11 +18,11 @@ class Metrics():
                 row.append(setting.__getattribute__(factorName))
             for mIndex, metric in enumerate(self.getMetricsNames()):
                 for aggregationType in self.__getattribute__(metric):
-                    if aggregationType:
-                        value = getattr(np, aggregationType)(data[sIndex, mIndex, :])
-                    else:
-                        value = data[sIndex, mIndex]
-                    row.append(value)
+                    # if aggregationType:
+                    #     value = getattr(np, aggregationType)()
+                    # else:
+                    #     value = data[sIndex, mIndex]
+                    row.append(self.getValue(aggregationType, data[sIndex, mIndex, :]))
             table.append(row)
         return table
 
@@ -34,12 +34,7 @@ class Metrics():
                 fileName = dataPath+setting.getId(naming)+'_'+metric+'.npy'
                 if os.path.exists(fileName):
                     for aggregationType in self.__getattribute__(metric):
-                        data = np.load(fileName)
-                        if aggregationType:
-                            value = getattr(np, aggregationType)(data)
-                        else:
-                            value = float(data)
-                        row.append(value)
+                        row.append(self.getValue(aggregationType, np.load(fileName)))
             if len(row):
                 for factorName in reversed(settings.getFactorNames()):
                     row.insert(0, setting.__getattribute__(factorName))
@@ -58,18 +53,35 @@ class Metrics():
                     for aggregationType in self.__getattribute__(metric):
                         value = np.nan
                         if sg.__contains__(metric):
-                            sgm = sg._f_get_child(metric)
-                            if aggregationType:
-                                value = getattr(np, aggregationType)(sgm)
-                            else:
-                                value = sgm[0]
-                        row.append(value)
+                            data = sg._f_get_child(metric)
+                            # if aggregationType:
+                            #     value = getattr(np, aggregationType)(sgm)
+                            # else:
+                            #     value = sgm[0]
+                        row.append(self.getValue(aggregationType, data))
                 if len(row):
                     for factorName in reversed(settings.getFactorNames()):
                         row.insert(0, setting.__getattribute__(factorName))
                 table.append(row)
         h5.close()
         return table
+
+    def getValue(self, aggregationType, data):
+      print(aggregationType)
+      if aggregationType:
+        if isinstance(aggregationType, int):
+          value = data[aggregationType]
+        elif isinstance(aggregationType, str):
+          value = getattr(np, aggregationType)(data)
+      else:
+          print(data)
+          print(data.size)
+          print(type(data))
+          if data.size>1:
+            value = float(data[0])
+          else:
+            value = float(data)
+      return value
 
     def reduce(self, settings, data, aggregationStyle = 'capitalize', naming = 'long'):
         columns = self.getHeader(settings, aggregationStyle)
@@ -131,7 +143,7 @@ class Metrics():
         for metric in self.getMetricsNames():
             for aggregationType in self.__getattribute__(metric):
                 if aggregationStyle is 'capitalize':
-                    name = metric+aggregationType.capitalize()
+                    name = metric+str(aggregationType).capitalize()
                 else :
                     name = metric+'_'+aggregationType
                 columns.append(name)
