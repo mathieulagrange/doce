@@ -24,6 +24,8 @@ class Factors():
   _nonSingleton = []
 
   def __setattr__(self, name, value):
+    if hasattr(self, name) and type(inspect.getattr_static(self, name)) == types.FunctionType:
+      raise Exception('the attribute '+name+' is shadowing a builtin function')
     if name is '_mask' or name[0] is not '_':
       self._changed = True
     if name[0] is not '_' and type(value) in {list, np.ndarray} and name not in self._nonSingleton:
@@ -54,7 +56,7 @@ class Factors():
     #build a list of settings
     # print('iter mask: ')
     # print(self._mask)
-    self.getSettings()
+    self.__setSettings__()
     # print('all settings: ')
     # print(self._settings)
     self._currentSetting = 0
@@ -71,7 +73,7 @@ class Factors():
 
   def __getitem__(self, index):
     # print('get item')
-    self.getSettings()
+    self.__setSettings__()
     self._setting = self._settings[index]
       # print(self._mask)
     return  self
@@ -118,10 +120,10 @@ class Factors():
     return self
 
   def __len__(self):
-      self.getSettings()
+      self.__setSettings__()
       return len(self._settings)
 
-  def getSettings(self):
+  def __setSettings__(self):
       if self._changed:
         settings = []
         mask = copy.deepcopy(self._mask)
@@ -143,7 +145,7 @@ class Factors():
                 m[mfi] = [0]
 
           # print('submask')
-          s = self.getSettingsMask(m, 0)
+          s = self.__setSettingsMask__(m, 0)
           if all(isinstance(ss, list) for ss in s):
             for ss in s:
               settings.append(ss)
@@ -152,12 +154,12 @@ class Factors():
         self._changed = False
         self._settings = settings
 
-  def getSettingsMask(self, mask, done):
+  def __setSettingsMask__(self, mask, done):
     # print(mask)
     if done == len(mask):
       return []
 
-    s = self.getSettingsMask(mask, done+1)
+    s = self.__setSettingsMask__(mask, done+1)
     # print('mask[done]')
     # print(mask[done])
     # print('s')
