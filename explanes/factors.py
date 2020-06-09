@@ -7,13 +7,13 @@ import numpy as np
 import copy
 import glob
 import explanes.utils as expUtils
-import utils
+import traceback
+import logging
 
-if utils.runFromNoteBook():
+if expUtils.runFromNoteBook():
     from tqdm.notebook import tqdm as tqdm
 else:
     from tqdm import tqdm as tqdm
-
 
 class Factors():
   _setting = None
@@ -24,11 +24,11 @@ class Factors():
   _nonSingleton = []
 
   def __setattr__(self, name, value):
-      if name is '_mask' or name[0] is not '_':
-          self._changed = True
-      if name[0] is not '_' and type(value) in {list, np.ndarray} and name not in self._nonSingleton:
-          self._nonSingleton.append(name)
-      return object.__setattr__(self, name, value)
+    if name is '_mask' or name[0] is not '_':
+      self._changed = True
+    if name[0] is not '_' and type(value) in {list, np.ndarray} and name not in self._nonSingleton:
+      self._nonSingleton.append(name)
+    return object.__setattr__(self, name, value)
 
   def __getattribute__(self, name):
     value = object.__getattribute__(self, name)
@@ -70,20 +70,33 @@ class Factors():
       return self
 
   def __getitem__(self, index):
-      # print('get item')
-      self.getSettings()
-      self._setting = self._settings[index]
+    # print('get item')
+    self.getSettings()
+    self._setting = self._settings[index]
       # print(self._mask)
-      return  self
+    return  self
 
   #def __call__(self, mask=None):
 
-  def loop(self, function, *parameters):
-      with tqdm(total=len(self)) as t:
-        for setting in self:
-          t.set_description(setting.describe())
+  def do(self, function, *parameters, logFileName=''):
+    if logFileName:
+      logging.basicConfig(filename=logFileName,
+                level=logging.DEBUG,
+                format='%(levelname)s: %(asctime)s %(message)s',
+                datefmt='%m/%d/%Y %I:%M:%S')
+
+    with tqdm(total=len(self)) as t:
+      for setting in self:
+        t.set_description(setting.describe())
+        try:
           function(setting, *parameters)
-          t.update()
+        except Exception as e:
+          if logFileName:
+            print('setting '+setting.getId()+' failed')
+            logging.info(traceback.format_exc())
+          else:
+            raise e
+        t.update()
 
   def settings(self, mask=None):
     nbFactors = len(self.getFactorNames())
