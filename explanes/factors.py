@@ -78,8 +78,6 @@ class Factors():
       # print(self._mask)
     return  self
 
-  #def __call__(self, mask=None):
-
   def do(self, function, *parameters, logFileName=''):
     if logFileName:
       logging.basicConfig(filename=logFileName,
@@ -104,8 +102,9 @@ class Factors():
     nbFactors = len(self.getFactorNames())
     if mask is None or len(mask)==0 or (len(mask)==1 and len(mask)==0) :
        mask = [[-1]*nbFactors]
-    if isinstance(mask, list) and not isinstance(mask[0], list):
+    if isinstance(mask, list) and not all(isinstance(x, list) for x in mask):
         mask = [mask]
+
 
     for im, m in enumerate(mask):
       if len(m) < nbFactors:
@@ -243,14 +242,16 @@ class Factors():
   def describe(self):
     return self.getId(singleton=False, sort=False, sep=' ')
 
-  def getId(self, type='long', sort=True, singleton=True, omitVoid=True, sep='_'):
+  def getId(self, type='long', sort=True, singleton=True, omitVoid=True, sep='_', omit=[]):
     id = []
     fNames = self.getFactorNames()
     if sort:
         fNames = sorted(fNames)
-    for f in fNames:
+    if isinstance(omit, str):
+      omit=[omit]
+    for fIndex, f in enumerate(fNames):
       # print(getattr(self, f))
-      if f[0] != '_' and getattr(self, f) is not None:
+      if f[0] != '_' and getattr(self, f) is not None and f not in omit:
           if (singleton or f in self._nonSingleton) and (omitVoid and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or (not isinstance(getattr(self, f), str) and getattr(self, f) != 0)):
             if type is 'long' or type is 'hash':
               sf = f
@@ -265,18 +266,13 @@ class Factors():
       id  = hashlib.md5(id.encode("utf-8")).hexdigest()
     return id
 
-    def __str__(self):
-        cString = ''
-        atrs = dict(vars(type(self)))
-        atrs.update(vars(self))
-        atrs = [a for a in atrs if a[0] is not '_']
+  def __str__(self):
+    cString = ''
+    atrs = dict(vars(type(self)))
+    atrs.update(vars(self))
+    atrs = [a for a in atrs if a[0] is not '_']
 
-        for atr in atrs:
-            if type(inspect.getattr_static(self, atr)) != types.FunctionType:
-                if type(self.__getattribute__(atr)) == types.SimpleNamespace:
-                    cString += atr+'\r\n'
-                    for sns in self.__getattribute__(atr).__dict__.keys():
-                        cString+='\t '+sns+': '+self.__getattribute__(atr).__getattribute__(sns)+'\r\n'
-                else:
-                    cString+='  '+atr+': '+self.__getattribute__(atr)+'\r\n'
-        return cString
+    for atr in atrs:
+      if type(inspect.getattr_static(self, atr)) != types.FunctionType:
+        cString+=atr+': '+str(self.__getattribute__(atr))+'\r\n'
+    return cString

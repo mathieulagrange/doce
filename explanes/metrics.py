@@ -33,8 +33,9 @@ class Metrics():
             for mIndex, metric in enumerate(self.getMetricsNames()):
                 fileName = dataPath+setting.getId(naming)+'_'+metric+'.npy'
                 if os.path.exists(fileName):
+                    data = np.load(fileName)      
                     for aggregationType in self.__getattribute__(metric):
-                        row.append(self.getValue(aggregationType, np.load(fileName)))
+                        row.append(self.getValue(aggregationType, data))
             if len(row):
                 for factorName in reversed(settings.getFactorNames()):
                     row.insert(0, setting.__getattribute__(factorName))
@@ -67,16 +68,20 @@ class Metrics():
         return table
 
     def getValue(self, aggregationType, data):
-      print(aggregationType)
+      # print(aggregationType)
+      # print(data)
       if aggregationType:
         if isinstance(aggregationType, int):
-          value = data[aggregationType]
+          if data.size>1:
+            value = float(data[aggregationType])
+          else:
+            value = float(data)
         elif isinstance(aggregationType, str):
           value = getattr(np, aggregationType)(data)
       else:
-          print(data)
-          print(data.size)
-          print(type(data))
+          # print(data)
+          # print(data.size)
+          # print(type(data))
           if data.size>1:
             value = float(data[0])
           else:
@@ -120,6 +125,42 @@ class Metrics():
                     for r in table:
                         r.pop(s)
         return (table, columns, header)
+
+    def get(self, metric, settings, data, aggregationStyle = 'capitalize', naming = 'long'):
+      if isinstance(data, str):
+        if data.endswith('.h5'):
+          (array, description) = self.getFromH5(metric, settings, data) # todo
+        else:
+          (array, description) = self.getFromNpy(metric, settings, data, naming)
+      else:
+        # check consistency between settings and data
+        if (len(settings) != data.shape[0]):
+          raise ValueError('The first dimensions of data must be equal to the length of settings. got %i and %i respectively' % (data.shape[0], len(settings)))
+
+        (array, description) = self.getFromVar(metric, settings, data); # todo
+      return (array, description)
+
+    def getFromNpy(self, metric, settings, dataPath, naming = 'long'):
+      table = []
+      nbSettings = 0
+      firstTry = True
+      for sIndex, setting in enumerate(settings):
+        fileName = dataPath+setting.getId(naming)+'_'+metric+'.npy'
+        if os.path.exists(fileName):
+          nbSettings+=1
+          if firstTry:
+            firstTry = False
+            data = np.load(fileName)
+            nbValues = data.shape[0]
+      data = np.zeros((nbSettings, nbValues))
+      description = []
+      for sIndex, setting in enumerate(settings):
+        fileName = dataPath+setting.getId(naming)+'_'+metric+'.npy'
+        if os.path.exists(fileName):
+          data[sIndex, :] = np.load(fileName)
+          description.append(setting.getId())
+
+      return (data, description)
 
     def h5addSetting(self, h5, setting, metricDimensions=[]):
         if not h5.__contains__('/'+setting.getId(type='shortCapital')):
