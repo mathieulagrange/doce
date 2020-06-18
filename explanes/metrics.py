@@ -9,6 +9,12 @@ import tables as tb
 class Metrics():
     _unit = types.SimpleNamespace()
     _description = types.SimpleNamespace()
+    _metrics = []
+
+    def __setattr__(self, name, value):
+      if not hasattr(self, name) and name[0] is not '_':
+        self._metrics.append(name)
+      return object.__setattr__(self, name, value)
 
     def reduceFromVar(self, settings, data):
         table = []
@@ -33,7 +39,7 @@ class Metrics():
             for mIndex, metric in enumerate(self.getMetricsNames()):
                 fileName = dataPath+setting.getId(naming)+'_'+metric+'.npy'
                 if os.path.exists(fileName):
-                    data = np.load(fileName)      
+                    data = np.load(fileName)
                     for aggregationType in self.__getattribute__(metric):
                         row.append(self.getValue(aggregationType, data))
             if len(row):
@@ -191,7 +197,8 @@ class Metrics():
         return columns
 
     def getMetricsNames(self):
-      return [s for s in self.__dict__.keys() if s[0] is not '_']
+      return self._metrics
+      # return [s for s in self.__dict__.keys() if s[0] is not '_']
 
     def __len__(self):
         return len(self.getMetricsNames())
