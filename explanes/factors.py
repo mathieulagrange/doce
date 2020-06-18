@@ -17,17 +17,19 @@ else:
 
 import collections
 
-class OrderedClassMembers(type):
+from collections import OrderedDict
+
+class OrderedClass(type):
     @classmethod
-    def __prepare__(self, name, bases):
-        return collections.OrderedDict()
+    def __prepare__(mcs, name, bases):
+         return OrderedDict()
 
-    def __new__(self, name, bases, classdict):
-        classdict['__ordered__'] = [key for key in classdict.keys()
-                if key not in ('__module__', '__qualname__')]
-        return type.__new__(self, name, bases, classdict)
+    def __new__(cls, name, bases, classdict):
+        result = type.__new__(cls, name, bases, dict(classdict))
+        result.__fields__ = list(classdict.keys())
+        return result
 
-class Factors(metaclass=OrderedClassMembers):
+class Factors(metaclass=OrderedClass):
   _setting = None
   _changed = False
   _currentSetting = 0
