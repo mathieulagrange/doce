@@ -209,7 +209,8 @@ class Factors(metaclass=OrderedClass):
       return s
 
   def getFactorNames(self):
-    return [s for s in self.__dict__.keys() if s[0] is not '_']
+  #  return [s for s in self.__dict__.keys() if s[0] is not '_']
+    return [s for s in self.__fields__ if s[0] is not '_']
 
   def clone(self):
     return copy.deepcopy(self)
