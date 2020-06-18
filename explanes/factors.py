@@ -18,21 +18,32 @@ else:
 
 from collections import OrderedDict
 
-class StaticOrderHelper(type):
-    # Requires python3.
-    def __prepare__(name, bases, **kwargs):
+# class StaticOrderHelper(type):
+#     # Requires python3.
+#     def __prepare__(name, bases, **kwargs):
+#         return OrderedDict()
+#
+#     def __new__(mcls, name, bases, namespace, **kwargs):
+#         namespace['__fields__'] = [
+#                 k
+#                 for k, v in namespace.items()
+#                 if not k.startswith('__') and not k.endswith('__')
+#                     and not isinstance(v, (classmethod, staticmethod))
+#         ]
+#         return type.__new__(mcls, name, bases, namespace, **kwargs)
+
+# metaclass=StaticOrderHelper
+
+class EnumMeta(type):
+
+    def __new__(mcls, cls, bases, d):
+        return type.__new__(mcls, cls, bases, d)
+
+    @classmethod
+    def __prepare__(mcls, cls, bases):
         return OrderedDict()
 
-    def __new__(mcls, name, bases, namespace, **kwargs):
-        namespace['__fields__'] = [
-                k
-                for k, v in namespace.items()
-                if not k.startswith('__') and not k.endswith('__')
-                    and not isinstance(v, (FunctionType, classmethod, staticmethod))
-        ]
-        return type.__new__(mcls, name, bases, namespace, **kwargs)
-
-class Factors(metaclass=StaticOrderHelper):
+class Factors(metaclass=EnumMeta):
   _setting = None
   _changed = False
   _currentSetting = 0
@@ -213,12 +224,12 @@ class Factors(metaclass=StaticOrderHelper):
 
   def getFactorNames(self):
   #  return [s for s in self.__dict__.keys() if s[0] is not '_']
-    for s in self.__fields__:
-      if  s[0] is not '_':
-        print(s)
-        print(type(inspect.getattr_static(self, s)))
-
-    return [s for s in self.__fields__ if not callable(s) and s[0] is not '_']
+    # for s in self.__fields__:
+    #   if  s[0] is not '_':
+    #     print(s)
+    #     print(type(inspect.getattr_static(self, s)))
+    # print(self.__fields__)
+    return [s for s in self.__dict__.keys()if not callable(s) and s[0] is not '_']
 
   def clone(self):
     return copy.deepcopy(self)
