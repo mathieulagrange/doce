@@ -85,6 +85,7 @@ class Factors():
                 format='%(levelname)s: %(asctime)s %(message)s',
                 datefmt='%m/%d/%Y %I:%M:%S')
 
+    print('Number of settings: '+str(len(self)))
     with tqdm(total=len(self)) as t:
       for setting in self:
         t.set_description(setting.describe())
@@ -99,6 +100,7 @@ class Factors():
         t.update()
 
   def settings(self, mask=None):
+    mask = copy.deepcopy(mask)
     nbFactors = len(self.getFactorNames())
     if mask is None or len(mask)==0 or (len(mask)==1 and len(mask)==0) :
        mask = [[-1]*nbFactors]
@@ -113,7 +115,6 @@ class Factors():
           if not isinstance(l, list) and l > -1:
               mask[im][il] = [l]
     # print('mask')
-    # print(mask)
     self._mask = mask
     # print(nbFactors)
     return self
