@@ -9,49 +9,24 @@ import glob
 import explanes.utils as expUtils
 import traceback
 import logging
-from types import FunctionType
 
 if expUtils.runFromNoteBook():
     from tqdm.notebook import tqdm as tqdm
 else:
     from tqdm import tqdm as tqdm
 
-from collections import OrderedDict
-
-# class StaticOrderHelper(type):
-#     # Requires python3.
-#     def __prepare__(name, bases, **kwargs):
-#         return OrderedDict()
-#
-#     def __new__(mcls, name, bases, namespace, **kwargs):
-#         namespace['__fields__'] = [
-#                 k
-#                 for k, v in namespace.items()
-#                 if not k.startswith('__') and not k.endswith('__')
-#                     and not isinstance(v, (classmethod, staticmethod))
-#         ]
-#         return type.__new__(mcls, name, bases, namespace, **kwargs)
-
-# metaclass=StaticOrderHelper
-
-class EnumMeta(type):
-
-    def __new__(mcls, cls, bases, d):
-        return type.__new__(mcls, cls, bases, d)
-
-    @classmethod
-    def __prepare__(mcls, cls, bases):
-        return OrderedDict()
-
-class Factors(metaclass=EnumMeta):
+class Factors():
   _setting = None
   _changed = False
   _currentSetting = 0
   _settings = []
   _mask = []
   _nonSingleton = []
+  _factors = []
 
   def __setattr__(self, name, value):
+    if not hasattr(self, name) and type(inspect.getattr_static(self, name)) != types.FunctionType:
+      _factors.append(name)
     if hasattr(self, name) and type(inspect.getattr_static(self, name)) == types.FunctionType:
       raise Exception('the attribute '+name+' is shadowing a builtin function')
     if name is '_mask' or name[0] is not '_':
