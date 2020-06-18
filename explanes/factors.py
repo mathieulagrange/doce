@@ -25,8 +25,8 @@ class Factors():
   _factors = []
 
   def __setattr__(self, name, value):
-    if not hasattr(self, name) and type(inspect.getattr_static(self, name)) != types.FunctionType:
-      _factors.append(name)
+    if not hasattr(self, name) and name[0] is not '_':
+      self._factors.append(name)
     if hasattr(self, name) and type(inspect.getattr_static(self, name)) == types.FunctionType:
       raise Exception('the attribute '+name+' is shadowing a builtin function')
     if name is '_mask' or name[0] is not '_':
@@ -204,7 +204,8 @@ class Factors():
     #     print(s)
     #     print(type(inspect.getattr_static(self, s)))
     # print(self.__fields__)
-    return [s for s in self.__dict__.keys()if not callable(s) and s[0] is not '_']
+    return self._factors
+    # return [s for s in self.__dict__.keys()if not callable(s) and s[0] is not '_']
 
   def clone(self):
     return copy.deepcopy(self)
