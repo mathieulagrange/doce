@@ -9,27 +9,30 @@ import glob
 import explanes.utils as expUtils
 import traceback
 import logging
+from types import FunctionType
 
 if expUtils.runFromNoteBook():
     from tqdm.notebook import tqdm as tqdm
 else:
     from tqdm import tqdm as tqdm
 
-import collections
-
 from collections import OrderedDict
 
-class OrderedClass(type):
-    @classmethod
-    def __prepare__(mcs, name, bases):
-         return OrderedDict()
+class StaticOrderHelper(type):
+    # Requires python3.
+    def __prepare__(name, bases, **kwargs):
+        return OrderedDict()
 
-    def __new__(cls, name, bases, classdict):
-        result = type.__new__(cls, name, bases, dict(classdict))
-        result.__fields__ = list(classdict.keys())
-        return result
+    def __new__(mcls, name, bases, namespace, **kwargs):
+        namespace['__fields__'] = [
+                k
+                for k, v in namespace.items()
+                if not k.startswith('__') and not k.endswith('__')
+                    and not isinstance(v, (FunctionType, classmethod, staticmethod))
+        ]
+        return type.__new__(mcls, name, bases, namespace, **kwargs)
 
-class Factors(metaclass=OrderedClass):
+class Factors(metaclass=StaticOrderHelper):
   _setting = None
   _changed = False
   _currentSetting = 0
@@ -210,7 +213,12 @@ class Factors(metaclass=OrderedClass):
 
   def getFactorNames(self):
   #  return [s for s in self.__dict__.keys() if s[0] is not '_']
-    return [s for s in self.__fields__ if s[0] is not '_']
+    for s in self.__fields__:
+      if  s[0] is not '_':
+        print(s)
+        print(type(inspect.getattr_static(self, s)))
+
+    return [s for s in self.__fields__ if not callable(s) and s[0] is not '_']
 
   def clone(self):
     return copy.deepcopy(self)
