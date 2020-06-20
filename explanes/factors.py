@@ -81,7 +81,7 @@ class Factors():
       # print(self._mask)
     return  self
 
-  def do(self, function, *parameters, logFileName=''):
+  def do(self, function, *parameters, tqdmDisplay=True, logFileName=''):
     if logFileName:
       logging.basicConfig(filename=logFileName,
                 level=logging.DEBUG,
@@ -89,7 +89,7 @@ class Factors():
                 datefmt='%m/%d/%Y %I:%M:%S')
 
     print('Number of settings: '+str(len(self)))
-    with tqdm(total=len(self)) as t:
+    with tqdm(total=len(self), disable=tqdmDisplay) as t:
       for setting in self:
         t.set_description(setting.describe())
         try:
