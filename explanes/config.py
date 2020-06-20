@@ -56,8 +56,8 @@ class Config():
     server.sendmail("expcode.mailer@gmail.com", self.project.address, header+msg+self.toHtml())
     server.quit
 
-  def do(self, mask, function, *parameters, tqdmDisplay=True, logFileName=''):
-    return self.factor.settings(mask).do(function, self, *parameters, tqdmDisplay=True, logFileName='')
+  def do(self, mask, function, tqdmDisplay=True, logFileName='', *parameters):
+    return self.factor.settings(mask).do(function, tqdmDisplay, logFileName, self, *parameters)
 
   def clearPath(self, mask, path, force=False, selector='*'):
     return self.factor.settings(mask).clearPath(path, force, selector)
