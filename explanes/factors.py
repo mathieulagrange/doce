@@ -25,6 +25,8 @@ class Factors():
   _factors = []
 
   def __setattr__(self, name, value):
+    if not name == '_settings':
+      _settings = []
     if not hasattr(self, name) and name[0] is not '_':
       self._factors.append(name)
     if hasattr(self, name) and type(inspect.getattr_static(self, name)) == types.FunctionType:
@@ -77,8 +79,8 @@ class Factors():
   def __getitem__(self, index):
     # print('get item')
     self.__setSettings__()
-    self._setting = self._settings[index]
-      # print(self._mask)
+    z
+    # print(self._mask)
     return  self
 
   def do(self, function, tqdmDisplay=True, logFileName='', *parameters):

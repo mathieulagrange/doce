@@ -158,13 +158,16 @@ class Metrics():
             firstTry = False
             data = np.load(fileName)
             nbValues = data.shape[0]
-      data = np.zeros((nbSettings, nbValues))
+      data = [] #np.zeros((nbSettings, nbValues))
       description = []
-      for sIndex, setting in enumerate(settings):
+      sIndex = 0
+      for setting in settings:
         fileName = dataPath+setting.getId(naming)+'_'+metric+'.npy'
         if os.path.exists(fileName):
-          data[sIndex, :] = np.load(fileName)
+          #data[sIndex, :] = np.load(fileName)
+          data.append(np.load(fileName))
           description.append(setting.getId())
+          sIndex += 1
 
       return (data, description)
 
