@@ -235,7 +235,13 @@ class Factors():
           factorName = self.getFactorNames()[factor]
           set = self._setting
           self._setting = None
-          modality = self.__getattribute__(factorName).index(modality)
+          modalities = self.__getattribute__(factorName)
+          if all(isinstance(m, int) for m in modalities):
+            modality = modalities.index(int(modality))
+          elif all(isinstance(m, float) for m in modalities):
+            modality = modalities.index(float(modality))
+          else:
+            modality = modalities.index(modality)
           self._setting = set
       if modality<0:
           relative = True
