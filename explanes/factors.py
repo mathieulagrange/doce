@@ -237,7 +237,6 @@ class Factors():
           set = self._setting
           self._setting = None
           modalities = self.__getattribute__(factorName)
-          print(modalities)
           # if all(isinstance(m, int) for m in modalities):
           #   modality = modalities.index(int(modality))
           # elif all(isinstance(m, float) for m in modalities):
