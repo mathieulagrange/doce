@@ -35,11 +35,13 @@ class Metrics():
 
     def reduceFromNpy(self, settings, dataPath, naming = 'long'):
         table = []
+        metricHasData = np.zeros((len(self.getMetricsNames())))
         for sIndex, setting in enumerate(settings):
             row = []
             for mIndex, metric in enumerate(self.getMetricsNames()):
                 fileName = dataPath+setting.getId(naming)+'_'+metric+'.npy'
                 if os.path.exists(fileName):
+                    metricHasData[mIndex] = 1
                     data = np.load(fileName)
                     for aggregationType in self.__getattribute__(metric):
                         row.append(self.getValue(aggregationType, data))
@@ -47,7 +49,7 @@ class Metrics():
                 for factorName in reversed(settings.getFactorNames()):
                     row.insert(0, setting.__getattribute__(factorName))
                 table.append(row)
-        return table
+        return (table, metricHasData)
 
     def reduceFromH5(self, settings, dataPath):
         table = []
@@ -96,19 +98,19 @@ class Metrics():
       return value
 
     def reduce(self, settings, data, aggregationStyle = 'capitalize', naming = 'long', factorDisplayStyle='long'):
-        columns = self.getHeader(settings, aggregationStyle, factorDisplayStyle)
+
         if isinstance(data, str):
             if data.endswith('.h5'):
                 table = self.reduceFromH5(settings, data)
             else:
-                table = self.reduceFromNpy(settings, data, naming)
+                (table, metricHasData) = self.reduceFromNpy(settings, data, naming)
         else:
             # check consistency between settings and data
             if (len(settings) != data.shape[0]):
                 raise ValueError('The first dimensions of data must be equal to the length of settings. got %i and %i respectively' % (data.shape[0], len(settings)))
 
             table = self.reduceFromVar(settings, data);
-
+        columns = self.getHeader(settings, metricHasData, aggregationStyle, factorDisplayStyle)
         header = ''
         if len(table)>1:
             same = [True] * len(table[0])
@@ -185,17 +187,18 @@ class Metrics():
                     h5.create_array(sg, metric, np.zeros(( metricDimensions[mIndex])), getattr(self._description, metric))
         return sg
 
-    def getHeader(self, settings, aggregationStyle, factorDisplayStyle):
+    def getHeader(self, settings, metricHasData, aggregationStyle, factorDisplayStyle):
         columns = []
         for factorName in settings.getFactorNames():
             columns.append(expUtils.compressName(factorName, factorDisplayStyle))
-        for metric in self.getMetricsNames():
-            for aggregationType in self.__getattribute__(metric):
-                if aggregationStyle is 'capitalize':
-                    name = metric+str(aggregationType).capitalize()
-                else :
-                    name = metric+'_'+aggregationType
-                columns.append(name)
+        for mIndex, metric in enumerate(self.getMetricsNames()):
+            if metricHasData[mIndex]:
+              for aggregationType in self.__getattribute__(metric):
+                  if aggregationStyle is 'capitalize':
+                      name = metric+str(aggregationType).capitalize()
+                  else :
+                      name = metric+'_'+aggregationType
+                  columns.append(name)
         return columns
 
     def getMetricsNames(self):

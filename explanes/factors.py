@@ -227,20 +227,21 @@ class Factors():
           for f in fileNames:
               os.remove(f)
 
-  def alternative(self, factor, modality, relative=False):
+  def alternative(self, factor, modality, positional=False, relative=False):
       if isinstance(factor, str):
           factor = self.getFactorNames().index(factor)
-      if isinstance(modality, str):
+      if not positional:
           factorName = self.getFactorNames()[factor]
           set = self._setting
           self._setting = None
           modalities = self.__getattribute__(factorName)
-          if all(isinstance(m, int) for m in modalities):
-            modality = modalities.index(int(modality))
-          elif all(isinstance(m, float) for m in modalities):
-            modality = modalities.index(float(modality))
-          else:
-            modality = modalities.index(modality)
+          print(modalities)
+          # if all(isinstance(m, int) for m in modalities):
+          #   modality = modalities.index(int(modality))
+          # elif all(isinstance(m, float) for m in modalities):
+          #   modality = modalities.index(float(modality))
+          # else:
+          modality = modalities.index(modality)
           self._setting = set
       if modality<0:
           relative = True
