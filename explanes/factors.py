@@ -228,7 +228,7 @@ class Factors():
               os.remove(f)
 
   def alternative(self, factor, modality, positional=False, relative=False):
-      if modality<0:
+      if isinstance(modality, int) and modality<0:
           relative = True
       if isinstance(factor, str):
           factor = self.getFactorNames().index(factor)
