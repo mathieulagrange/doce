@@ -1,4 +1,14 @@
 import sys
+import re
+
+def compressName(f, type):
+  if type is 'long' or type is 'hash':
+    sf = f
+  if type is 'shortUnderscore':
+    sf = ''.join([itf[0] for itf in f.split('_')])
+  if type is 'shortCapital':
+    sf = f[0]+''.join([itf[0] for itf in re.findall('[A-Z][^A-Z]*', f)]).lower()
+  return sf
 
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via input() and return their answer.

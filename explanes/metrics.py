@@ -5,6 +5,7 @@ import re
 import hashlib
 import numpy as np
 import tables as tb
+import explanes.utils as expUtils
 
 class Metrics():
     _unit = types.SimpleNamespace()
@@ -94,8 +95,8 @@ class Metrics():
             value = float(data)
       return value
 
-    def reduce(self, settings, data, aggregationStyle = 'capitalize', naming = 'long'):
-        columns = self.getHeader(settings, aggregationStyle)
+    def reduce(self, settings, data, aggregationStyle = 'capitalize', naming = 'long', factorDisplayStyle='long'):
+        columns = self.getHeader(settings, aggregationStyle, factorDisplayStyle)
         if isinstance(data, str):
             if data.endswith('.h5'):
                 table = self.reduceFromH5(settings, data)
@@ -120,7 +121,7 @@ class Metrics():
                     elif sameValue[cIndex] != c:
                         same[cIndex] = False
 
-            sameIndex = [i for i, x in enumerate(same) if x] #  and i<len(settings.getFactorNames())
+            sameIndex = [i for i, x in enumerate(same) if x and i<len(settings.getFactorNames())]
             for s in sameIndex:
                 header += columns[s]+': '+str(sameValue[s])+' '
             # print(sameIndex)
@@ -184,10 +185,10 @@ class Metrics():
                     h5.create_array(sg, metric, np.zeros(( metricDimensions[mIndex])), getattr(self._description, metric))
         return sg
 
-    def getHeader(self, settings, aggregationStyle):
+    def getHeader(self, settings, aggregationStyle, factorDisplayStyle):
         columns = []
         for factorName in settings.getFactorNames():
-            columns.append(factorName)
+            columns.append(expUtils.compressName(factorName, factorDisplayStyle))
         for metric in self.getMetricsNames():
             for aggregationType in self.__getattribute__(metric):
                 if aggregationStyle is 'capitalize':

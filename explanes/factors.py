@@ -1,7 +1,6 @@
 import os
 import inspect # remove ??
 import types
-import re
 import hashlib
 import numpy as np
 import copy
@@ -272,13 +271,7 @@ class Factors():
       # print(getattr(self, f))
       if f[0] != '_' and getattr(self, f) is not None and f not in omit:
           if (singleton or f in self._nonSingleton) and (omitVoid and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or (not isinstance(getattr(self, f), str) and getattr(self, f) != 0)):
-            if type is 'long' or type is 'hash':
-              sf = f
-            if type is 'shortUnderscore':
-              sf = ''.join([itf[0] for itf in f.split('_')])
-            if type is 'shortCapital':
-              sf = f[0]+''.join([itf[0] for itf in re.findall('[A-Z][^A-Z]*', f)]).lower()
-            id.append(sf)
+            id.append(expUtils.compressName(f, type))
             id.append(str(getattr(self, f)))
     id = sep.join(id)
     if type is 'hash':
