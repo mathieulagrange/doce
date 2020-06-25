@@ -228,9 +228,11 @@ class Factors():
               os.remove(f)
 
   def alternative(self, factor, modality, positional=False, relative=False):
+      if modality<0:
+          relative = True
       if isinstance(factor, str):
           factor = self.getFactorNames().index(factor)
-      if not positional:
+      if not positional and not relative:
           factorName = self.getFactorNames()[factor]
           set = self._setting
           self._setting = None
@@ -243,8 +245,7 @@ class Factors():
           # else:
           modality = modalities.index(modality)
           self._setting = set
-      if modality<0:
-          relative = True
+
       f = self.clone()
       if relative:
           f._setting[factor] += modality
