@@ -8,6 +8,7 @@ import glob
 import explanes.utils as expUtils
 import traceback
 import logging
+from joblib import Parallel, delayed
 
 if expUtils.runFromNoteBook():
     from tqdm.notebook import tqdm as tqdm
@@ -39,10 +40,12 @@ class Factors():
   def __getattribute__(self, name):
     value = object.__getattribute__(self, name)
     # print(name)
+
     # print(type(inspect.getattr_static(self, name))) hasattr(self, '_setting')
     if name[0] != '_' and self._setting and type(inspect.getattr_static(self, name)) != types.FunctionType:
-      idx = self.getFactorNames().index(name)
+      # print('getFactorNames')
       # print(self.getFactorNames())
+      idx = self.getFactorNames().index(name)
       # print(idx)
       # print(self._setting)
       if self._setting[idx] == -2:
@@ -78,11 +81,22 @@ class Factors():
   def __getitem__(self, index):
     # print('get item')
     self.__setSettings__()
-    z
     # print(self._mask)
     return  self
 
-  def do(self, function, tqdmDisplay=True, logFileName='', *parameters):
+  def doSetting(self, setting, function, logFileName, *parameters):
+    res = 0
+    try:
+      res = function(setting, *parameters)
+    except Exception as e:
+      if logFileName:
+        print('setting '+setting.getId()+' failed')
+        logging.info(traceback.format_exc())
+      else:
+        raise e
+    return res
+
+  def do(self, function, jobs=1, tqdmDisplay=True, logFileName='', *parameters):
     if logFileName:
       logging.basicConfig(filename=logFileName,
                 level=logging.DEBUG,
@@ -90,18 +104,14 @@ class Factors():
                 datefmt='%m/%d/%Y %I:%M:%S')
 
     print('Number of settings: '+str(len(self)))
-    with tqdm(total=len(self), disable= not tqdmDisplay) as t:
-      for setting in self:
-        t.set_description(setting.describe())
-        try:
-          function(setting, *parameters)
-        except Exception as e:
-          if logFileName:
-            print('setting '+setting.getId()+' failed')
-            logging.info(traceback.format_exc())
-          else:
-            raise e
-        t.update()
+    if jobs>1:
+      result = Parallel(n_jobs=jobs, require='sharedmem')(delayed(self.doSetting)(setting, function, logFileName, *parameters) for setting in tqdm(self))
+    else:
+      with tqdm(total=len(self), disable= not tqdmDisplay) as t:
+        for setting in self:
+          t.set_description(setting.describe())
+          self.doSetting(setting, function, logFileName, *parameters)
+          t.update(1)
 
   def settings(self, mask=None):
     mask = copy.deepcopy(mask)

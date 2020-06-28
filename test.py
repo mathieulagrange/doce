@@ -1,19 +1,33 @@
+# from tqdm import tqdm
+# from math import sqrt
+# from joblib import Parallel, delayed
+# Parallel(n_jobs=1)(delayed(sqrt)(i**2) for i in tqdm(range(10)))
 
 
 
 import explanes as exp
 import numpy as np
 
-factors = exp.Factors()
+config = exp.Config()
 
-factors.task = ['id', 'time', 'vec', 'idBaseline', 'timeBaseline', 'vecBaseline']
-factors.computeType = ['none', 'train', 'test']
-factors.doing = 10*np.arange(10)
+config.factor.task = ['id', 'time', 'vec', 'idBaseline', 'timeBaseline', 'vecBaseline']
+config.factor.computeType = ['none', 'train', 'test']
+config.factor.doing = [8]*3
 # factors.textureSize = 200
 # factors.embeddingSize = 128
 # factors.batchSize = 2
+print(config)
 
-print(factors.getFactorNames())
+def show(setting, config):
+  i=1
+  size = np.power(10, config.factor.doing)
+  print(size)
+  a = np.zeros(size)
+  a = a**a
+  print(setting.describe())
+  return 1
+
+config.do([], show, jobs=1)
 
 #
 # for f in factors.settings():
