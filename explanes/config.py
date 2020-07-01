@@ -7,20 +7,22 @@ import explanes.factors as expFactors
 import explanes.metrics as expMetrics
 
 class Config():
-  project = types.SimpleNamespace()
-  project.name = ''
-  project.description = ''
-  project.author = ''
-  project.address = ''
-  path = types.SimpleNamespace()
-  path.input = ''
-  path.processing = ''
-  path.storage = ''
-  path.output = ''
-  factor = expFactors.Factors()
-  metric = expMetrics.Metrics()
-  parameter = types.SimpleNamespace()
   _atrs = []
+
+  def __init__(self):
+    self.project = types.SimpleNamespace()
+    self.project.name = ''
+    self.project.description = ''
+    self.project.author = ''
+    self.project.address = ''
+    self.factor = expFactors.Factors()
+    self.parameter = types.SimpleNamespace()
+    self.metric = expMetrics.Metrics()
+    self.path = types.SimpleNamespace()
+    self.path.input = ''
+    self.path.processing = ''
+    self.path.storage = ''
+    self.path.output = ''
 
   def __setattr__(self, name, value):
     if not hasattr(self, name) and name[0] is not '_':
@@ -39,6 +41,7 @@ class Config():
     # atrs = dict(vars(type(self)))
     # atrs.update(vars(self))
     # atrs = [a for a in atrs if a[0] is not '_']
+    print(self._atrs)
     for atr in self._atrs:
       if type(inspect.getattr_static(self, atr)) != types.FunctionType:
         if type(self.__getattribute__(atr)) == types.SimpleNamespace:
