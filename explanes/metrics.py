@@ -89,7 +89,7 @@ class Metrics():
         elif isinstance(aggregationType, str):
           indexPercent = aggregationType.find('%')
           if indexPercent>-1:
-            aggregationType.replace('%', '')
+            aggregationType = aggregationType.replace('%', '')
           ags = aggregationType.split('-')
           aggregationType = ags[0]
           if len(ags)>1:
@@ -109,7 +109,7 @@ class Metrics():
           else:
             value = float(data)
       if indexPercent>-1:
-        value *= 100  
+        value *= 100
       return value
 
     def reduce(self, settings, data, aggregationStyle = 'capitalize', naming = 'long', factorDisplayStyle='long'):
