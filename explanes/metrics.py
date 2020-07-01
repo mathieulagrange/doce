@@ -214,3 +214,14 @@ class Metrics():
 
     def __len__(self):
         return len(self.getMetricsNames())
+
+    def __str__(self):
+      cString = ''
+      atrs = dict(vars(type(self)))
+      atrs.update(vars(self))
+      atrs = [a for a in atrs if a[0] is not '_']
+
+      for atr in atrs:
+        if type(inspect.getattr_static(self, atr)) != types.FunctionType:
+          cString+='  '+atr+': '+str(self.__getattribute__(atr))+'\r\n'
+      return cString

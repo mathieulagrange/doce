@@ -301,5 +301,5 @@ class Factors():
 
     for atr in atrs:
       if type(inspect.getattr_static(self, atr)) != types.FunctionType:
-        cString+=atr+': '+str(self.__getattribute__(atr))+'\r\n'
+        cString+='  '+atr+': '+str(self.__getattribute__(atr))+'\r\n'
     return cString
