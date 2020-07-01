@@ -86,7 +86,16 @@ class Metrics():
           else:
             value = float(data)
         elif isinstance(aggregationType, str):
-          value = getattr(np, aggregationType)(data)
+          ags = aggregationType.split('-')
+          aggregationType = ags[0]
+          if len(ags)>1:
+            ignore = int(ags[1])
+            if ignore == 0:
+              value = getattr(np, aggregationType)(data[1:])
+            elif ignore == 1:
+              value = getattr(np, aggregationType)(data[::2])
+          else :
+            value = getattr(np, aggregationType)(data)
       else:
           # print(data)
           # print(data.size)
@@ -146,7 +155,7 @@ class Metrics():
         if si>1 and not s:
           same[si-1] = False
       sameIndex = [i for i, x in enumerate(same) if x]
-      print(sameIndex)
+      #print(sameIndex)
       for s in sameIndex:
           header += description[0][s]+' '
       # print(sameIndex)
