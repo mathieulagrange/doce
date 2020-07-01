@@ -28,9 +28,9 @@ def main():
   config.factor.meanOffset = 10**np.array([0, 1, 2, 3, 4])
   config.factor.nbRuns = [20, 40]
 
-  config.metric.mae = ['mean-0', 'std-0']
+  config.metric.mae = ['mean-0%', 'std-0']
   config.metric.mse = ['mean-1', 'std-1']
-  config.metric.duration = ['mean']
+  config.metric.duration = ['mean%']
   #config.metric.units.duration = 'seconds'
 
   print(config)
