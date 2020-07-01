@@ -1,9 +1,20 @@
 import sys
 import re
 
+def sameColumnsInTable(table):
+  same = [True] * len(table[0])
+  sameValue = [None] * len(table[0])
+
+  for r in table:
+      for cIndex, c in enumerate(r):
+          if sameValue[cIndex] is None:
+              sameValue[cIndex] = c
+          elif sameValue[cIndex] != c:
+              same[cIndex] = False
+  return (same, sameValue)
+
 def compressName(f, type):
-  if type is 'long' or type is 'hash':
-    sf = f
+  sf = f
   if type is 'shortUnderscore':
     sf = ''.join([itf[0] for itf in f.split('_')])
   if type is 'shortCapital':

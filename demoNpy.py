@@ -31,21 +31,24 @@ def main():
   metrics.duration = ['']
   #metrics.units.duration = 'seconds'
 
-  compute = True
+  compute = False
   if compute:
     print('computing...')
-    factors.settings().do(step, resultPath, logFileName=resultPath+'log.txt')
+    factors.settings().do(step, resultPath, logFileName=resultPath+'log.txt') #
     print('done')
   # reduce from npy data
   print('Results:')
   (table, columns, header) = metrics.reduce(factors.settings([-1, -1, -1, 0]), resultPath, naming='hash')
-  # print(columns)
   print(header)
   df = DataFrame(table, columns=columns)
   print(df)
+  # get from npy data
+  (data, legend, title) = metrics.get('mae', factors.settings([0, -1, -1, 0]), resultPath, naming='hash')
+  print('The legend of the figure :')
+  print(legend)
+  print('The title of the figure: '+title)
 
 def step(setting, resultPath):
-  tre
   settingMae = np.zeros((setting.nbRuns))
   settingMse = np.zeros((setting.nbRuns))
 

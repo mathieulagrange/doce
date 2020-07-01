@@ -110,18 +110,10 @@ class Metrics():
                 raise ValueError('The first dimensions of data must be equal to the length of settings. got %i and %i respectively' % (data.shape[0], len(settings)))
 
             table = self.reduceFromVar(settings, data);
-        columns = self.getHeader(settings, metricHasData, aggregationStyle, factorDisplayStyle)
+        columns = self.getColumns(settings, metricHasData, aggregationStyle, factorDisplayStyle)
         header = ''
         if len(table)>1:
-            same = [True] * len(table[0])
-            sameValue = [None] * len(table[0])
-
-            for r in table:
-                for cIndex, c in enumerate(r):
-                    if sameValue[cIndex] is None:
-                        sameValue[cIndex] = c
-                    elif sameValue[cIndex] != c:
-                        same[cIndex] = False
+            (same, sameValue) = expUtils.sameColumnsInTable(table)
 
             sameIndex = [i for i, x in enumerate(same) if x and i<len(settings.getFactorNames())]
             for s in sameIndex:
@@ -147,7 +139,22 @@ class Metrics():
           raise ValueError('The first dimensions of data must be equal to the length of settings. got %i and %i respectively' % (data.shape[0], len(settings)))
 
         (array, description) = self.getFromVar(metric, settings, data); # todo
-      return (array, description)
+
+      header = ''
+      (same, sameValue) = expUtils.sameColumnsInTable(description)
+      for si, s in enumerate(same):
+        if si>1 and not s:
+          same[si-1] = False
+      sameIndex = [i for i, x in enumerate(same) if x]
+      print(sameIndex)
+      for s in sameIndex:
+          header += description[0][s]+' '
+      # print(sameIndex)
+      # print(columns)
+      for s in sorted(sameIndex, reverse=True):
+              for r in description:
+                  r.pop(s)
+      return (array, description, header)
 
     def getFromNpy(self, metric, settings, dataPath, naming = 'long'):
       table = []
@@ -168,7 +175,7 @@ class Metrics():
         if os.path.exists(fileName):
           #data[sIndex, :] = np.load(fileName)
           data.append(np.load(fileName))
-          description.append(setting.getId())
+          description.append(setting.getId(type='list'))
 
       return (data, description)
 
@@ -187,7 +194,7 @@ class Metrics():
                     h5.create_array(sg, metric, np.zeros(( metricDimensions[mIndex])), getattr(self._description, metric))
         return sg
 
-    def getHeader(self, settings, metricHasData, aggregationStyle, factorDisplayStyle):
+    def getColumns(self, settings, metricHasData, aggregationStyle, factorDisplayStyle):
         columns = []
         for factorName in settings.getFactorNames():
             columns.append(expUtils.compressName(factorName, factorDisplayStyle))

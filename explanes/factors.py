@@ -85,18 +85,20 @@ class Factors():
     return  self
 
   def doSetting(self, setting, function, logFileName, *parameters):
-    res = 0
+    failed = 0
     try:
-      res = function(setting, *parameters)
+      function(setting, *parameters)
     except Exception as e:
       if logFileName:
-        print('setting '+setting.getId()+' failed')
+        failed = 1
+        #print('setting '+setting.getId()+' failed')
         logging.info(traceback.format_exc())
       else:
         raise e
-    return res
+    return failed
 
-  def do(self, function, jobs=1, tqdmDisplay=True, logFileName='', *parameters):
+  def do(self, function, *parameters, jobs=1, tqdmDisplay=True, logFileName=''):
+    nbFailed = 0
     if logFileName:
       logging.basicConfig(filename=logFileName,
                 level=logging.DEBUG,
@@ -109,9 +111,10 @@ class Factors():
     else:
       with tqdm(total=len(self), disable= not tqdmDisplay) as t:
         for setting in self:
-          t.set_description(setting.describe())
-          self.doSetting(setting, function, logFileName, *parameters)
+          t.set_description('[f: '+str(nbFailed)+'] '+setting.describe())
+          nbFailed += self.doSetting(setting, function, logFileName, *parameters)
           t.update(1)
+    return nbFailed
 
   def settings(self, mask=None):
     mask = copy.deepcopy(mask)
@@ -284,9 +287,10 @@ class Factors():
           if (singleton or f in self._nonSingleton) and (omitVoid and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or (not isinstance(getattr(self, f), str) and getattr(self, f) != 0)):
             id.append(expUtils.compressName(f, type))
             id.append(str(getattr(self, f)))
-    id = sep.join(id)
-    if type is 'hash':
-      id  = hashlib.md5(id.encode("utf-8")).hexdigest()
+    if type is not 'list':
+      id = sep.join(id)
+      if type is 'hash':
+        id  = hashlib.md5(id.encode("utf-8")).hexdigest()
     return id
 
   def __str__(self):
