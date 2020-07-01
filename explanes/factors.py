@@ -281,11 +281,9 @@ class Factors():
       omit=[omit]
     elif isinstance(omit, int) :
       omit=[fNames[omit]]
-    elif isinstance(omit, list) and isinstance(omit[0], int) :
+    elif isinstance(omit, list) and len(omit) and isinstance(omit[0], int) :
       for oi, o in enumerate(omit):
-        omit[oi]=fNames[omit]
-    else:
-      omit=[fNames[omit]]
+        omit[oi]=fNames[o]
     if sort:
       fNames = sorted(fNames)
 

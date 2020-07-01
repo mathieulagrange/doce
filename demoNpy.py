@@ -53,7 +53,6 @@ def main():
   print('The title of the figure: '+title)
 
 def step(setting, config):
-  print(settig.getId().omit('dataType'))
   settingMae = np.zeros((setting.nbRuns))
   settingMse = np.zeros((setting.nbRuns))
 
