@@ -1,9 +1,7 @@
 import explanes as exp
-from tqdm import trange
 from time import sleep
 from pandas import DataFrame
 import time
-import os
 import numpy as np
 
 
@@ -12,7 +10,7 @@ import numpy as np
 #   - one factor affects the size of the results vectors
 #   - the metrics does not operate on the same data, resulting on result vectors with different sizes per metric
 
-def main():
+def set(args):
   config = exp.Config()
   config.project.name = 'demoNpy'
   config.project.description = 'demonstration of npy storage of metrics'
@@ -24,33 +22,14 @@ def main():
   config.makePaths()
 
   config.factor.dataType = ['float', 'double']
-  config.factor.datasetSize = 1000*np.array([1, 2, 4, 8])
+  config.factor.datasetSize = 1000*np.array([1, 2, 4, 8, 16])
   config.factor.meanOffset = 10**np.array([0, 1, 2, 3, 4])
-  config.factor.nbRuns = [20, 40]
+  config.factor.nbRuns = [2000, 4000]
 
   config.metric.mae = ['mean-0', 'std-0']
   config.metric.mse = ['mean-1%', 'std-1']
   config.metric.duration = ['mean%']
-  #config.metric.units.duration = 'seconds'
-
-  print(config)
-
-  compute = False
-  if compute:
-    print('computing...')
-    config.do([], step, logFileName=config.path.output+'log.txt') #
-    print('done')
-  # reduce from npy data
-  print('Results:')
-  (table, columns, header) = config.metric.reduce(config.factor.settings([-1, -1, -1, 0]), config.path.output, naming='hash')
-  print(header)
-  df = DataFrame(table, columns=columns)
-  print(df)
-  # get from npy data
-  (data, legend, title) = config.metric.get('mae', config.factor.settings([0, -1, -1, 0]), config.path.output, naming='hash')
-  print('The legend of the figure :')
-  print(legend)
-  print('The title of the figure: '+title)
+  return config
 
 def step(setting, config):
   settingMae = np.zeros((setting.nbRuns))
@@ -76,6 +55,3 @@ def step(setting, config):
   np.save(config.path.output+setting.getId('hash')+'_mse.npy', settingMse)
   duration = time.time()-tic
   np.save(config.path.output+setting.getId('hash')+'_duration.npy', duration)
-
-if __name__ == '__main__':
-  main()
