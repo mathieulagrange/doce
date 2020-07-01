@@ -274,17 +274,25 @@ class Factors():
   def describe(self):
     return self.getId(singleton=False, sort=False, sep=' ')
 
-  def getId(self, type='long', sort=True, singleton=True, omitVoid=True, sep='_', omit=[]):
+  def getId(self, type='long', sort=True, singleton=True, noneAndZeroToVoid=True, sep='_', omit=[]):
     id = []
     fNames = self.getFactorNames()
-    if sort:
-        fNames = sorted(fNames)
     if isinstance(omit, str):
       omit=[omit]
+    elif isinstance(omit, int) :
+      omit=[fNames[omit]]
+    elif isinstance(omit, list) and isinstance(omit[0], int) :
+      for oi, o in enumerate(omit):
+        omit[oi]=fNames[omit]
+    else:
+      omit=[fNames[omit]]
+    if sort:
+      fNames = sorted(fNames)
+
     for fIndex, f in enumerate(fNames):
       # print(getattr(self, f))
       if f[0] != '_' and getattr(self, f) is not None and f not in omit:
-          if (singleton or f in self._nonSingleton) and (omitVoid and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or (not isinstance(getattr(self, f), str) and getattr(self, f) != 0)):
+          if (singleton or f in self._nonSingleton) and (noneAndZeroToVoid and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or (not isinstance(getattr(self, f), str) and getattr(self, f) != 0)):
             id.append(expUtils.compressName(f, type))
             id.append(str(getattr(self, f)))
     if type is not 'list':
