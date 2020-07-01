@@ -20,6 +20,12 @@ class Config():
   factor = expFactors.Factors()
   metric = expMetrics.Metrics()
   parameter = types.SimpleNamespace()
+  _atrs = []
+
+  def __setattr__(self, name, value):
+    if not hasattr(self, name) and name[0] is not '_':
+      self._atrs.append(name)
+    return object.__setattr__(self, name, value)
 
   def makePaths(self, force=False):
     for sns in self.__getattribute__('path').__dict__.keys():
@@ -30,11 +36,10 @@ class Config():
 
   def __str__(self):
     cString = ''
-    atrs = dict(vars(type(self)))
-    atrs.update(vars(self))
-    atrs = [a for a in atrs if a[0] is not '_']
-
-    for atr in atrs:
+    # atrs = dict(vars(type(self)))
+    # atrs.update(vars(self))
+    # atrs = [a for a in atrs if a[0] is not '_']
+    for atr in self._atrs:
       if type(inspect.getattr_static(self, atr)) != types.FunctionType:
         if type(self.__getattribute__(atr)) == types.SimpleNamespace:
           cString += atr+': \r\n'
