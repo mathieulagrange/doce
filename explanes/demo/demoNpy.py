@@ -3,6 +3,7 @@ from time import sleep
 from pandas import DataFrame
 import time
 import numpy as np
+from pathlib import Path
 
 
 # more complex case where:
@@ -19,6 +20,7 @@ def set(args):
   config.project.version = '0.1'
 
   config.path.output = '/tmp/'+config.project.name+'/'
+  config.path.code = str(Path.home())+'/tools/explanes.py'
   config.makePaths()
 
   config.host = ['pc-lagrange.irccyn.ec-nantes.fr']
