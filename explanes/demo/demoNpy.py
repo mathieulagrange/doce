@@ -21,9 +21,11 @@ def set(args):
   config.path.output = '/tmp/'+config.project.name+'/'
   config.makePaths()
 
+  config.host = ['pc-lagrange.irccyn.ec-nantes.fr']
+
   config.factor.dataType = ['float', 'double']
-  config.factor.datasetSize = 1000*np.array([1, 2, 4, 8, 16])
-  config.factor.meanOffset = 10**np.array([0, 1, 2, 3, 4])
+  config.factor.datasetSize = 1000*np.array([1, 2, 4, 8])
+  config.factor.meanOffset = 10**np.array([0, 1, 2, 3])
   config.factor.nbRuns = [2000, 4000]
 
   config.metric.mae = ['mean-0', 'std-0']
@@ -35,6 +37,7 @@ def step(setting, config):
   settingMae = np.zeros((setting.nbRuns))
   settingMse = np.zeros((setting.nbRuns))
 
+  print(settingMse.shape)
   tic = time.time()
   for r in range(setting.nbRuns):
     data = np.zeros((2, setting.datasetSize), dtype=np.float32)

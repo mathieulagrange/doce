@@ -23,6 +23,7 @@ class Config():
     self.path.processing = ''
     self.path.storage = ''
     self.path.output = ''
+    self.host = []
 
   def __setattr__(self, name, value):
     if not hasattr(self, name) and name[0] is not '_':

@@ -27,7 +27,7 @@ def show(setting, config):
   print(setting.describe())
   return 1
 
-config.do([], show, jobs=1)
+config.do([], show, jobs=-1)
 
 #
 # for f in factors.settings():

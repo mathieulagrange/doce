@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import pandas as pd
 import argparse
 import ast
@@ -22,6 +23,13 @@ def __main__():
   if args.version:
     print("Experiment version "+experiment.project.version)
     exit(1)
+
+  if args.server:
+    # copy code
+
+    # launch command
+    
+  sys.path.append('explanes/demo/')
 
   mask = ast.literal_eval(args.mask)
 
