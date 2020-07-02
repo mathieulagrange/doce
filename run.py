@@ -39,13 +39,13 @@ def __main__():
   experiment = config.set(args)
   print(experiment)
 
-  if abs(args.server)>-2:
+  if args.server>-2:
     unparser = argunparse.ArgumentUnparser()
     kwargs = vars(parser.parse_args())
     kwargs['server'] = -2
     command = unparser.unparse(**kwargs)# kwargs = vars(parser.parse_args())
     print(command)
-    command = 'screen -dm bash -c \'python run.py '+command+'\''
+    command = 'screen -dm bash -c \'python3 run.py '+command+'\''
     if args.server>-1:
       # copy code
       command = 'ssh '+experiment.host[args.server]+' "'+command+'"'
