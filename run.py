@@ -15,7 +15,7 @@ def __main__():
   parser.add_argument('-e', '--experiment', type=str, help='name of the experiment')
   parser.add_argument('-m', '--mask', type=str, help='mask of the experiment to run', default='[]')
   parser.add_argument('-M', '--mail', help='send email at the end of the computation', action='store_true')
-  parser.add_argument('-s', '--server', type=int, help='running server side', default=0)
+  parser.add_argument('-s', '--server', type=int, help='running server side', default=-1)
   parser.add_argument('-d', '--display', help='display metrics', action='store_true')
   parser.add_argument('-r', '--run', type=int, help='perform computation (integer parameter sets the number of jobs computed in parallel)', nargs='?', const=1)
   parser.add_argument('-D', '--debug', help='debug mode', action='store_true')
@@ -26,22 +26,6 @@ def __main__():
     print("Experiment version "+experiment.project.version)
     exit(1)
 
-
-  # if args.server>0:
-    # copy code
-
-  if abs(args.server)>0:
-    unparser = argunparse.ArgumentUnparser()
-    kwargs = vars(parser.parse_args())
-    kwargs['server'] = 0
-    command = unparser.unparse(**kwargs)# kwargs = vars(parser.parse_args())
-    print(command)
-    command = 'screen -dm bash -c \'python run.py '+command+'\''
-    if args.server>0:
-      command = 'ssh '+config.host[args.server]+' "'+command+'"'
-    print(command)
-    os.system(command)
-    exit()
 
   sys.path.append('explanes/demo/')
 
@@ -54,6 +38,20 @@ def __main__():
     exit(1)
   experiment = config.set(args)
   print(experiment)
+
+  if abs(args.server)>-2:
+    unparser = argunparse.ArgumentUnparser()
+    kwargs = vars(parser.parse_args())
+    kwargs['server'] = -2
+    command = unparser.unparse(**kwargs)# kwargs = vars(parser.parse_args())
+    print(command)
+    command = 'screen -dm bash -c \'python run.py '+command+'\''
+    if args.server>-1:
+      # copy code
+      command = 'ssh '+experiment.host[args.server]+' "'+command+'"'
+    print(command)
+    os.system(command)
+    exit()
 
   if args.run:
     experiment.do(mask, config.step, jobs=args.run)
