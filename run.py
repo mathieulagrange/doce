@@ -15,6 +15,7 @@ def __main__():
   parser.add_argument('-e', '--experiment', type=str, help='name of the experiment')
   parser.add_argument('-m', '--mask', type=str, help='mask of the experiment to run', default='[]')
   parser.add_argument('-M', '--mail', help='send email at the end of the computation', action='store_true')
+  parser.add_argument('-S', '--sync', help='sync to server defined', action='store_true')
   parser.add_argument('-s', '--server', type=int, help='running server side', default=-1)
   parser.add_argument('-d', '--display', help='display metrics', action='store_true')
   parser.add_argument('-r', '--run', type=int, help='perform computation (integer parameter sets the number of jobs computed in parallel)', nargs='?', const=1)
@@ -43,14 +44,18 @@ def __main__():
     unparser = argunparse.ArgumentUnparser()
     kwargs = vars(parser.parse_args())
     kwargs['server'] = -2
-    command = unparser.unparse(**kwargs)# kwargs = vars(parser.parse_args())
-    print(command)
+    command = unparser.unparse(**kwargs)
     command = 'screen -dm bash -c \'python3 run.py '+command+'\''
+    message = 'experiment launched on local host'
     if args.server>-1:
-      # copy code
-      command = 'ssh '+experiment.host[args.server]+' "'+command+'"'
-    print(command)
+      if args.sync:
+        syncCommand = 'rsync -r '+experiment.path.code+' '+experiment.host[args.server]+':'+experiment.path.code
+        print(syncCommand)
+        os.system(syncCommand)
+      command = 'ssh '+experiment.host[args.server]+' "cd '+experiment.path.code+'; '+command+'"'
+      message = 'experiment launched on host: '+experiment.host[args.server]
     os.system(command)
+    print(message)
     exit()
 
   if args.run:

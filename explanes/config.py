@@ -33,9 +33,9 @@ class Config():
   def makePaths(self, force=False):
     for sns in self.__getattribute__('path').__dict__.keys():
       path = self.__getattribute__('path').__getattribute__(sns)
-      if path and not os.path.exists(path):
+      if path and not os.path.exists(os.path.expanduser(path)):
         if force or expUtils.query_yes_no(sns+' path: '+path+' does not exist. Do you want to create it ?'):
-          os.makedirs(path)
+          os.makedirs(os.path.expanduser(path))
 
   def __str__(self):
     cString = ''
