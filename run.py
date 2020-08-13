@@ -8,17 +8,15 @@ import ast
 import importlib
 import os
 
-
-
 def __main__():
   parser = argparse.ArgumentParser()
   parser.add_argument('-e', '--experiment', type=str, help='name of the experiment')
   parser.add_argument('-m', '--mask', type=str, help='mask of the experiment to run', default='[]')
   parser.add_argument('-M', '--mail', help='send email at the end of the computation', action='store_true')
   parser.add_argument('-S', '--sync', help='sync to server defined', action='store_true')
-  parser.add_argument('-s', '--server', type=int, help='running server side', default=-1)
+  parser.add_argument('-s', '--server', type=int, help='running server side. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside', default=-2)
   parser.add_argument('-d', '--display', help='display metrics', action='store_true')
-  parser.add_argument('-r', '--run', type=int, help='perform computation (integer parameter sets the number of jobs computed in parallel)', nargs='?', const=1)
+  parser.add_argument('-r', '--run', type=int, help='perform computation. Integer parameter sets the number of jobs computed in parallel (default to one core).', nargs='?', const=1)
   parser.add_argument('-D', '--debug', help='debug mode', action='store_true')
   parser.add_argument('-v', '--version', help='print version', action='store_true')
   args = parser.parse_args()
@@ -26,7 +24,6 @@ def __main__():
   if args.version:
     print("Experiment version "+experiment.project.version)
     exit(1)
-
 
   sys.path.append('explanes/demo/')
 
@@ -43,17 +40,18 @@ def __main__():
   if args.server>-2:
     unparser = argunparse.ArgumentUnparser()
     kwargs = vars(parser.parse_args())
-    kwargs['server'] = -2
-    command = unparser.unparse(**kwargs)
+    kwargs['server'] = -3
+    command = unparser.unparse(**kwargs).replace('\'', '\"').replace('\"', '\\\"')
     command = 'screen -dm bash -c \'python3 run.py '+command+'\''
     message = 'experiment launched on local host'
     if args.server>-1:
       if args.sync:
-        syncCommand = 'rsync -r '+experiment.path.code+' '+experiment.host[args.server]+':'+experiment.path.code
+        syncCommand = 'rsync -r '+experiment.path.code+'/* '+experiment.host[args.server]+':'+experiment.path.code
         print(syncCommand)
         os.system(syncCommand)
       command = 'ssh '+experiment.host[args.server]+' "cd '+experiment.path.code+'; '+command+'"'
       message = 'experiment launched on host: '+experiment.host[args.server]
+    print(command)
     os.system(command)
     print(message)
     exit()

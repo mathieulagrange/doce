@@ -55,7 +55,14 @@ class Factors():
           # print('filt setting ')
           # print(self._setting)
           # print(value)
-          value = value[self._setting[idx]]
+          try:
+            value = value[self._setting[idx]]
+          except IndexError:
+            value = 'null'
+            print('Error: factor '+name+' have modalities 0 to '+str(len(value)-1)+'. Requested '+str(self._setting[idx]))
+            raise
+
+
     return value
 
   def __iter__(self):
