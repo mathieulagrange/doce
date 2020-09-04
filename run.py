@@ -36,12 +36,14 @@ def __main__():
     exit(1)
   experiment = config.set(args)
   print(experiment)
-
+  logFileName = ''
   if args.server>-2:
     unparser = argunparse.ArgumentUnparser()
     kwargs = vars(parser.parse_args())
     kwargs['server'] = -3
     command = unparser.unparse(**kwargs).replace('\'', '\"').replace('\"', '\\\"')
+    if args.debug:
+      command += '; bash '
     command = 'screen -dm bash -c \'python3 run.py '+command+'\''
     message = 'experiment launched on local host'
     if args.server>-1:
@@ -56,8 +58,10 @@ def __main__():
     print(message)
     exit()
 
+  if args.server == -3:
+    logFileName = '/tmp/test'
   if args.run:
-    experiment.do(mask, config.step, jobs=args.run)
+    experiment.do(mask, config.step, jobs=args.run, logFileName=logFileName)
   elif not args.display:
     experiment.do(mask, show, tqdmDisplay=False)
 
