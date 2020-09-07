@@ -39,7 +39,7 @@ def step(setting, config):
   settingMae = np.zeros((setting.nbRuns))
   settingMse = np.zeros((setting.nbRuns))
 
-  print(settingMse.shape)
+  # print(settingMse.shape)
   tic = time.time()
   for r in range(setting.nbRuns):
     data = np.zeros((2, setting.datasetSize), dtype=np.float32)

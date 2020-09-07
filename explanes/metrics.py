@@ -33,13 +33,13 @@ class Metrics():
             table.append(row)
         return table
 
-    def reduceFromNpy(self, settings, dataPath, naming = 'long'):
+    def reduceFromNpy(self, settings, dataPath, **kwargs):
         table = []
         metricHasData = np.zeros((len(self.getMetricsNames())))
         for sIndex, setting in enumerate(settings):
             row = []
             for mIndex, metric in enumerate(self.getMetricsNames()):
-                fileName = dataPath+setting.getId(naming)+'_'+metric+'.npy'
+                fileName = dataPath+setting.getId(**kwargs)+'_'+metric+'.npy'
                 if os.path.exists(fileName):
                     metricHasData[mIndex] = 1
                     data = np.load(fileName)
@@ -112,13 +112,13 @@ class Metrics():
         value *= 100
       return value
 
-    def reduce(self, settings, data, aggregationStyle = 'capitalize', naming = 'long', factorDisplayStyle='long'):
+    def reduce(self, settings, data, aggregationStyle = 'capitalize', factorDisplayStyle='long', **kwargs):
 
         if isinstance(data, str):
             if data.endswith('.h5'):
                 table = self.reduceFromH5(settings, data)
             else:
-                (table, metricHasData) = self.reduceFromNpy(settings, data, naming)
+                (table, metricHasData) = self.reduceFromNpy(settings, data, **kwargs)
         else:
             # check consistency between settings and data
             if (len(settings) != data.shape[0]):

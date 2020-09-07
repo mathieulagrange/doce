@@ -23,6 +23,7 @@ class Factors():
   _mask = []
   _nonSingleton = []
   _factors = []
+  _default = types.SimpleNamespace()
 
   def __setattr__(self, name, value):
     if not name == '_settings':
@@ -38,9 +39,9 @@ class Factors():
     return object.__setattr__(self, name, value)
 
   def __getattribute__(self, name):
+
     value = object.__getattribute__(self, name)
     # print(name)
-
     # print(type(inspect.getattr_static(self, name))) hasattr(self, '_setting')
     if name[0] != '_' and self._setting and type(inspect.getattr_static(self, name)) != types.FunctionType:
       # print('getFactorNames')
@@ -61,8 +62,6 @@ class Factors():
             value = 'null'
             print('Error: factor '+name+' have modalities 0 to '+str(len(value)-1)+'. Requested '+str(self._setting[idx]))
             raise
-
-
     return value
 
   def __iter__(self):
@@ -90,6 +89,12 @@ class Factors():
     self.__setSettings__()
     # print(self._mask)
     return  self
+
+  def setDefault(self, name, value):
+    if hasattr(self, name):
+      self._default.__setattr__(name, value)
+    else:
+      self.__setattr__(name, value)
 
   def doSetting(self, setting, function, logFileName, *parameters):
     failed = 0
@@ -282,7 +287,7 @@ class Factors():
   def describe(self):
     return self.getId(singleton=False, sort=False, sep=' ')
 
-  def getId(self, type='long', sort=True, singleton=True, noneAndZeroToVoid=True, sep='_', omit=[]):
+  def getId(self, idFormat='long', sort=True, singleton=True, noneAndZero2void=True, default2void=True, sep='_', omit=[]):
     id = []
     fNames = self.getFactorNames()
     if isinstance(omit, str):
@@ -298,12 +303,12 @@ class Factors():
     for fIndex, f in enumerate(fNames):
       # print(getattr(self, f))
       if f[0] != '_' and getattr(self, f) is not None and f not in omit:
-          if (singleton or f in self._nonSingleton) and (noneAndZeroToVoid and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or (not isinstance(getattr(self, f), str) and getattr(self, f) != 0)):
+          if (singleton or f in self._nonSingleton) and (not noneAndZero2void or (noneAndZero2void and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and (not default2void or not hasattr(self._default, f) or (default2void and hasattr(self._default, f) and getattr(self._default, f) is not getattr(self, f))):
             id.append(expUtils.compressName(f, type))
             id.append(str(getattr(self, f)))
-    if type is not 'list':
+    if idFormat is not 'list':
       id = sep.join(id)
-      if type is 'hash':
+      if idFormat is 'hash':
         id  = hashlib.md5(id.encode("utf-8")).hexdigest()
     return id
 

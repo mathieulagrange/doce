@@ -19,6 +19,7 @@ def __main__():
   parser.add_argument('-r', '--run', type=int, help='perform computation. Integer parameter sets the number of jobs computed in parallel (default to one core).', nargs='?', const=1)
   parser.add_argument('-D', '--debug', help='debug mode', action='store_true')
   parser.add_argument('-v', '--version', help='print version', action='store_true')
+  parser.add_argument('-P', '--progress', help='display progress bar', action='store_true')
   args = parser.parse_args()
 
   if args.version:
@@ -63,12 +64,12 @@ def __main__():
   if args.mail:
     experiment.sendMail('has started.', '<div> Mask = '+args.mask+'</div>')
   if args.run:
-    experiment.do(mask, config.step, jobs=args.run, logFileName=logFileName)
+    experiment.do(mask, config.step, jobs=args.run, logFileName=logFileName, tqdmDisplay=args.progress)
   elif not args.display:
     experiment.do(mask, show, tqdmDisplay=False)
 
   if args.mail or args.display:
-    (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, naming='hash')
+    (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, idFormat='hash')
     df = pd.DataFrame(table, columns=columns).round(decimals=2)
     print(header)
     print(df)
