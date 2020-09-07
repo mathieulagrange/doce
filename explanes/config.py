@@ -16,6 +16,7 @@ class Config():
     self.project.description = ''
     self.project.author = ''
     self.project.address = ''
+    self.project.runId = str(int(time.time()))
     self.factor = expFactors.Factors()
     self.parameter = types.SimpleNamespace()
     self.metric = expMetrics.Metrics()
@@ -25,7 +26,6 @@ class Config():
     self.path.storage = ''
     self.path.output = ''
     self.host = []
-    self.runId = time.time()
 
   def __setattr__(self, name, value):
     if not hasattr(self, name) and name[0] is not '_':
@@ -60,8 +60,8 @@ class Config():
   def toHtml(self):
     return '<h3> '+self.__str__().replace('\r\n', '<br>').replace('\t', '&emsp;')+'</h3>'
 
-  def sendMail(self, title, msg):
-    header = 'From: expLanes mailer <expcode.mailer@gmail.com> \r\nTo: '+self.project.author+' '+self.project.address+'\r\nMIME-Version: 1.0 \r\nContent-type: text/html \r\nSubject: [expLanes] '+self.project.name+' '+self.project.runId+': '+title+'\r\n'
+  def sendMail(self, title='', msg=''):
+    header = 'From: expLanes mailer <expcode.mailer@gmail.com> \r\nTo: '+self.project.author+' '+self.project.address+'\r\nMIME-Version: 1.0 \r\nContent-type: text/html \r\nSubject: [expLanes] '+self.project.name+' id '+self.project.runId+' '+title+'\r\n'
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
