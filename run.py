@@ -12,7 +12,7 @@ def __main__():
   parser = argparse.ArgumentParser()
   parser.add_argument('-e', '--experiment', type=str, help='name of the experiment')
   parser.add_argument('-m', '--mask', type=str, help='mask of the experiment to run', default='[]')
-  parser.add_argument('-M', '--mail', help='send email at the end of the computation', action='store_true')
+  parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation', action='store_true')
   parser.add_argument('-S', '--sync', help='sync to server defined', action='store_true')
   parser.add_argument('-s', '--server', type=int, help='running server side. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside', default=-2)
   parser.add_argument('-d', '--display', help='display metrics', action='store_true')
@@ -60,6 +60,8 @@ def __main__():
 
   if args.server == -3:
     logFileName = '/tmp/test'
+  if args.mail:
+    experiment.sendMail('has started.', '<div> Mask = '+args.mask+'</div>')
   if args.run:
     experiment.do(mask, config.step, jobs=args.run, logFileName=logFileName)
   elif not args.display:
@@ -71,7 +73,7 @@ def __main__():
     print(header)
     print(df)
     if args.mail:
-      experiment.sendMail('<div> '+header+' </div><br>'+df.to_html()) #
+      experiment.sendMail('is over.', '<div> Mask = '+args.mask+'</div>'+'<div> '+header+' </div><br>'+df.to_html()) #
 
 def show(setting, config):
   print(setting.describe())
