@@ -69,7 +69,7 @@ def __main__():
     experiment.do(mask, show, tqdmDisplay=False)
 
   if args.mail or args.display:
-    (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, idFormat='hash')
+    (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, **experiment.idFormat)
     df = pd.DataFrame(table, columns=columns).round(decimals=2)
     print(header)
     print(df)

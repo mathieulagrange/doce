@@ -26,6 +26,7 @@ class Config():
     self.path.storage = ''
     self.path.output = ''
     self.host = []
+    self.idFormat = {}
 
   def __setattr__(self, name, value):
     if not hasattr(self, name) and name[0] is not '_':

@@ -90,11 +90,17 @@ class Factors():
     # print(self._mask)
     return  self
 
-  def setDefault(self, name, value):
+  def setDefault(self, name, value, force=False):
     if hasattr(self, name):
+      if not force and any(item in getattr(self, name) for item in [0, 'none']):
+        print('Setting an explicit default modality to factor '+name+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <noneAndZero2void> set to False when using getId. You can remove this warning by setting the flag <force> to True.')
+        if value not in getattr(self, name):
+          print('The default modality of factor '+name+' should be available in the set of modalities.')
+          raise ValueError
       self._default.__setattr__(name, value)
     else:
-      self.__setattr__(name, value)
+      print('Please set the factor '+name+' before choosing its default modality.')
+      raise ValueError
 
   def doSetting(self, setting, function, logFileName, *parameters):
     failed = 0
@@ -287,7 +293,7 @@ class Factors():
   def describe(self):
     return self.getId(singleton=False, sort=False, sep=' ')
 
-  def getId(self, idFormat='long', sort=True, singleton=True, noneAndZero2void=True, default2void=True, sep='_', omit=[]):
+  def getId(self, format='long', sort=True, singleton=True, noneAndZero2void=True, default2void=True, sep='_', omit=[]):
     id = []
     fNames = self.getFactorNames()
     if isinstance(omit, str):
@@ -306,9 +312,9 @@ class Factors():
           if (singleton or f in self._nonSingleton) and (not noneAndZero2void or (noneAndZero2void and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and (not default2void or not hasattr(self._default, f) or (default2void and hasattr(self._default, f) and getattr(self._default, f) is not getattr(self, f))):
             id.append(expUtils.compressName(f, type))
             id.append(str(getattr(self, f)))
-    if idFormat is not 'list':
+    if format is not 'list':
       id = sep.join(id)
-      if idFormat is 'hash':
+      if format is 'hash':
         id  = hashlib.md5(id.encode("utf-8")).hexdigest()
     return id
 
