@@ -55,15 +55,16 @@ class Metrics():
     def reduceFromH5(self, settings, dataPath):
         table = []
         h5 = tb.open_file(dataPath, mode='r')
+        metricHasData = np.zeros((len(self.getMetricsNames())))
         for sIndex, setting in enumerate(settings):
             row = []
-            if h5.root.__contains__(setting.getId(type='shortCapital')):
-                sg = h5.root._f_get_child(setting.getId(type='shortCapital'))
-
+            if h5.root.__contains__(setting.getId(format='shortCapital')):
+                sg = h5.root._f_get_child(setting.getId(format='shortCapital'))
                 for mIndex, metric in enumerate(self.getMetricsNames()):
                     for aggregationType in self.__getattribute__(metric):
                         value = np.nan
                         if sg.__contains__(metric):
+                            metricHasData[mIndex] = 1
                             data = sg._f_get_child(metric)
                             # if aggregationType:
                             #     value = getattr(np, aggregationType)(sgm)
@@ -75,7 +76,7 @@ class Metrics():
                         row.insert(0, setting.__getattribute__(factorName))
                 table.append(row)
         h5.close()
-        return table
+        return (table, metricHasData)
 
     def getValue(self, aggregationType, data):
       # print(aggregationType)
@@ -102,9 +103,10 @@ class Metrics():
           else :
             value = getattr(np, aggregationType)(data)
       else:
-          # print(data)
+          # print(data.shape)
           # print(data.size)
           # print(type(data))
+          data = np.array(data)
           if data.size>1:
             value = float(data[0])
           else:
@@ -117,7 +119,7 @@ class Metrics():
 
         if isinstance(data, str):
             if data.endswith('.h5'):
-                table = self.reduceFromH5(settings, data)
+                (table, metricHasData) = self.reduceFromH5(settings, data)
             else:
                 (table, metricHasData) = self.reduceFromNpy(settings, data, **kwargs)
         else:
@@ -204,10 +206,10 @@ class Metrics():
       return (data, description)
 
     def h5addSetting(self, h5, setting, metricDimensions=[]):
-        if not h5.__contains__('/'+setting.getId(type='shortCapital')):
-            sg = h5.create_group('/', setting.getId(type='shortCapital'), setting.getId(type='long', sep=' '))
+        if not h5.__contains__('/'+setting.getId(format='shortCapital')):
+            sg = h5.create_group('/', setting.getId(format='shortCapital'), setting.getId(format='long', sep=' '))
         else:
-            sg = h5.root._f_get_child(setting.getId(type='shortCapital'))
+            sg = h5.root._f_get_child(setting.getId(format='shortCapital'))
         for mIndex, metric in enumerate(self.getMetricsNames()):
             if not metricDimensions:
                 if sg.__contains__(metric):
