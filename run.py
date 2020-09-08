@@ -7,6 +7,7 @@ import argunparse
 import ast
 import importlib
 import os
+import explanes as exp
 
 def __main__():
   parser = argparse.ArgumentParser()
@@ -34,8 +35,9 @@ def __main__():
     config = importlib.import_module(args.experiment)
   else:
     print('Please provide a valid project name')
-    exit(1)
-  experiment = config.set(args)
+    raise ValueError
+  experiment = exp.Config()
+  experiment = config.set(experiment, args)
   print(experiment)
   logFileName = ''
   if args.server>-2:
@@ -63,16 +65,19 @@ def __main__():
     logFileName = '/tmp/test'
   if args.mail:
     experiment.sendMail('has started.', '<div> Mask = '+args.mask+'</div>')
-  if args.run:
+  if args.run and hasattr(config, 'step'):
     experiment.do(mask, config.step, jobs=args.run, logFileName=logFileName, tqdmDisplay=args.progress)
   elif not args.display:
     experiment.do(mask, show, tqdmDisplay=False)
 
   if args.mail or args.display:
-    (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, factorDisplayStyle=experiment.factorFormatInReduce, **experiment.idFormat)
-    df = pd.DataFrame(table, columns=columns).round(decimals=2)
-    print(header)
-    print(df)
+    if hasattr(config, 'display'):
+      config.display(experiment, experiment.factor.settings(mask))
+    else:
+      (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, factorDisplayStyle=experiment.factorFormatInReduce, **experiment.idFormat)
+      df = pd.DataFrame(table, columns=columns).round(decimals=2)
+      print(header)
+      print(df)
     if args.mail:
       experiment.sendMail('is over.', '<div> Mask = '+args.mask+'</div>'+'<div> '+header+' </div><br>'+df.to_html()) #
 

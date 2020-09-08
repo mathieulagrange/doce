@@ -13,11 +13,11 @@ def sameColumnsInTable(table):
               same[cIndex] = False
   return (same, sameValue)
 
-def compressName(f, type):
+def compressName(f, format):
   sf = f
-  if type is 'shortUnderscore':
+  if 'shortUnderscore' in format:
     sf = ''.join([itf[0] for itf in f.split('_')])
-  if type is 'shortCapital':
+  if 'shortCapital' in format:
     sf = f[0]+''.join([itf[0] for itf in re.findall('[A-Z][^A-Z]*', f)]).lower()
   return sf
 

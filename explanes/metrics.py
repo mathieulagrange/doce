@@ -142,12 +142,12 @@ class Metrics():
                         r.pop(s)
         return (table, columns, header)
 
-    def get(self, metric, settings, data, aggregationStyle = 'capitalize', naming = 'long'):
+    def get(self, metric, settings, data, aggregationStyle = 'capitalize', **kwargs):
       if isinstance(data, str):
         if data.endswith('.h5'):
           (array, description) = self.getFromH5(metric, settings, data) # todo
         else:
-          (array, description) = self.getFromNpy(metric, settings, data, naming)
+          (array, description) = self.getFromNpy(metric, settings, data, **kwargs)
       else:
         # check consistency between settings and data
         if (len(settings) != data.shape[0]):
@@ -156,27 +156,31 @@ class Metrics():
         (array, description) = self.getFromVar(metric, settings, data); # todo
 
       header = ''
-      (same, sameValue) = expUtils.sameColumnsInTable(description)
-      for si, s in enumerate(same):
-        if si>1 and not s:
-          same[si-1] = False
-      sameIndex = [i for i, x in enumerate(same) if x]
-      #print(sameIndex)
-      for s in sameIndex:
-          header += description[0][s]+' '
-      # print(sameIndex)
-      # print(columns)
-      for s in sorted(sameIndex, reverse=True):
-              for r in description:
-                  r.pop(s)
+      print(array)
+      print(description)
+      if description:
+        (same, sameValue) = expUtils.sameColumnsInTable(description)
+        for si, s in enumerate(same):
+          if si>1 and not s:
+            same[si-1] = False
+        sameIndex = [i for i, x in enumerate(same) if x]
+        #print(sameIndex)
+        for s in sameIndex:
+            header += description[0][s]+' '
+        # print(sameIndex)
+        # print(columns)
+        for s in sorted(sameIndex, reverse=True):
+                for r in description:
+                    r.pop(s)
       return (array, description, header)
 
-    def getFromNpy(self, metric, settings, dataPath, naming = 'long'):
+    def getFromNpy(self, metric, settings, dataPath, **kwargs):
       table = []
       nbSettings = 0
       firstTry = True
       for sIndex, setting in enumerate(settings):
-        fileName = dataPath+setting.getId(naming)+'_'+metric+'.npy'
+        fileName = dataPath+setting.getId(**kwargs)+'_'+metric+'.npy'
+        print(fileName)
         if os.path.exists(fileName):
           nbSettings+=1
           if firstTry:
@@ -186,11 +190,11 @@ class Metrics():
       data = [] #np.zeros((nbSettings, nbValues))
       description = []
       for setting in settings:
-        fileName = dataPath+setting.getId(naming)+'_'+metric+'.npy'
+        fileName = dataPath+setting.getId(**kwargs)+'_'+metric+'.npy'
         if os.path.exists(fileName):
           #data[sIndex, :] = np.load(fileName)
           data.append(np.load(fileName))
-          description.append(setting.getId(type='list'))
+          description.append(setting.getId(format='list'))
 
       return (data, description)
 
