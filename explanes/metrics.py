@@ -132,7 +132,7 @@ class Metrics():
 
             sameIndex = [i for i, x in enumerate(same) if x and i<len(settings.getFactorNames())]
             for s in sameIndex:
-                header += columns[s]+': '+str(sameValue[s])+' '
+                header += expUtils.compressName(columns[s], factorDisplayStyle)+': '+str(sameValue[s])+' '
             # print(sameIndex)
             # print(columns)
             for s in sorted(sameIndex, reverse=True):

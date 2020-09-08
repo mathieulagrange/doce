@@ -27,6 +27,7 @@ class Config():
     self.path.output = ''
     self.host = []
     self.idFormat = {}
+    self.factorFormatInReduce = 'shortCapital'
 
   def __setattr__(self, name, value):
     if not hasattr(self, name) and name[0] is not '_':
