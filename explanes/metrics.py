@@ -6,6 +6,7 @@ import hashlib
 import numpy as np
 import tables as tb
 import explanes.utils as expUtils
+import copy
 
 class Metrics():
     _unit = types.SimpleNamespace()
@@ -124,7 +125,7 @@ class Metrics():
             if (len(settings) != data.shape[0]):
                 raise ValueError('The first dimensions of data must be equal to the length of settings. got %i and %i respectively' % (data.shape[0], len(settings)))
 
-            table = self.reduceFromVar(settings, data);
+            table = self.reduceFromVar(settings, data)
         columns = self.getColumns(settings, metricHasData, aggregationStyle, factorDisplayStyle)
         header = ''
         if len(table)>1:
@@ -156,8 +157,6 @@ class Metrics():
         (array, description) = self.getFromVar(metric, settings, data); # todo
 
       header = ''
-      print(array)
-      print(description)
       if description:
         (same, sameValue) = expUtils.sameColumnsInTable(description)
         for si, s in enumerate(same):
@@ -189,12 +188,18 @@ class Metrics():
             nbValues = data.shape[0]
       data = [] #np.zeros((nbSettings, nbValues))
       description = []
+      descriptionFormat = copy.deepcopy(kwargs)
+      descriptionFormat['format'] = 'list'
+      descriptionFormat['noneAndZero2void'] = False
+      descriptionFormat['default2void'] = False
       for setting in settings:
         fileName = dataPath+setting.getId(**kwargs)+'_'+metric+'.npy'
         if os.path.exists(fileName):
           #data[sIndex, :] = np.load(fileName)
           data.append(np.load(fileName))
-          description.append(setting.getId(format='list'))
+          # print(setting.getId(format='list'))
+          # print(setting.getId(**descriptionFormat))
+          description.append(setting.getId(**descriptionFormat))
 
       return (data, description)
 

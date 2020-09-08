@@ -125,7 +125,7 @@ class Factors():
 
     print('Number of settings: '+str(len(self)))
     if jobs>1 or jobs<0:
-      print(jobs)
+      # print(jobs)
       result = Parallel(n_jobs=jobs, require='sharedmem')(delayed(self.doSetting)(setting, function, logFileName, *parameters) for setting in tqdm(self))
     else:
       with tqdm(total=len(self), disable= not tqdmDisplay) as t:

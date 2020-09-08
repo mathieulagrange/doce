@@ -24,14 +24,18 @@ def set(experiment, args):
   experiment.factor.dataType = 'float'
 
   experiment.metric.m = ['mean']
-  experiment.idFormat = {'format': 'long', 'noneAndZero2void': False}
-  experiment.factorFormatInReduce = 'shortCapital'
+  experiment._idFormat = {'format': 'long', 'noneAndZero2void': False}
+  experiment._factorFormatInReduce = 'shortCapital'
   return experiment
 
 def step(setting, experiment):
 
-  print(setting.getId(**experiment.idFormat))
-  np.save(experiment.path.output+setting.getId(**experiment.idFormat)+'_m.npy',  np.random.rand(1, 3))
+  print(setting.getId(**experiment._idFormat))
+  np.save(experiment.path.output+setting.getId(**experiment._idFormat)+'_m.npy',  np.random.rand(1, 3))
 
 def display(experiment, settings):
-    (dataLossEval, desc, header)  = experiment.metric.get('m', settings, experiment.path.output, **experiment.idFormat)
+    (data, desc, header)  = experiment.metric.get('m', settings, experiment.path.output, **experiment._idFormat)
+
+    print(header)
+    print(desc)
+    print(len(data))
