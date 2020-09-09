@@ -18,22 +18,6 @@ class Metrics():
         self._metrics.append(name)
       return object.__setattr__(self, name, value)
 
-    def reduceFromVar(self, settings, data):
-        table = []
-        for sIndex, setting in enumerate(settings):
-            row = []
-            for factorName in settings.getFactorNames():
-                row.append(setting.__getattribute__(factorName))
-            for mIndex, metric in enumerate(self.getMetricsNames()):
-                for aggregationType in self.__getattribute__(metric):
-                    # if aggregationType:
-                    #     value = getattr(np, aggregationType)()
-                    # else:
-                    #     value = data[sIndex, mIndex]
-                    row.append(self.getValue(aggregationType, data[sIndex, mIndex, :]))
-            table.append(row)
-        return table
-
     def reduceFromNpy(self, settings, dataPath, **kwargs):
         table = []
         metricHasData = np.zeros((len(self.getMetricsNames())))
@@ -52,24 +36,20 @@ class Metrics():
                 table.append(row)
         return (table, metricHasData)
 
-    def reduceFromH5(self, settings, dataPath):
+    def reduceFromH5(self, settings, dataPath, **kwargs):
         table = []
         h5 = tb.open_file(dataPath, mode='r')
         metricHasData = np.zeros((len(self.getMetricsNames())))
         for sIndex, setting in enumerate(settings):
             row = []
-            if h5.root.__contains__(setting.getId(format='shortCapital')):
-                sg = h5.root._f_get_child(setting.getId(format='shortCapital'))
+            if h5.root.__contains__(setting.getId(**kwargs)):
+                sg = h5.root._f_get_child(setting.getId(**kwargs))
                 for mIndex, metric in enumerate(self.getMetricsNames()):
                     for aggregationType in self.__getattribute__(metric):
                         value = np.nan
                         if sg.__contains__(metric):
                             metricHasData[mIndex] = 1
                             data = sg._f_get_child(metric)
-                            # if aggregationType:
-                            #     value = getattr(np, aggregationType)(sgm)
-                            # else:
-                            #     value = sgm[0]
                         row.append(self.getValue(aggregationType, data))
                 if len(row):
                     for factorName in reversed(settings.getFactorNames()):
@@ -79,8 +59,6 @@ class Metrics():
         return (table, metricHasData)
 
     def getValue(self, aggregationType, data):
-      # print(aggregationType)
-      # print(data)
       indexPercent=-1
       if aggregationType:
         if isinstance(aggregationType, int):
@@ -103,9 +81,6 @@ class Metrics():
           else :
             value = getattr(np, aggregationType)(data)
       else:
-          # print(data.shape)
-          # print(data.size)
-          # print(type(data))
           data = np.array(data)
           if data.size>1:
             value = float(data[0])
@@ -122,12 +97,7 @@ class Metrics():
                 (table, metricHasData) = self.reduceFromH5(settings, data)
             else:
                 (table, metricHasData) = self.reduceFromNpy(settings, data, **kwargs)
-        else:
-            # check consistency between settings and data
-            if (len(settings) != data.shape[0]):
-                raise ValueError('The first dimensions of data must be equal to the length of settings. got %i and %i respectively' % (data.shape[0], len(settings)))
 
-            table = self.reduceFromVar(settings, data)
         columns = self.getColumns(settings, metricHasData, aggregationStyle, factorDisplayStyle)
         header = ''
         if len(table)>1:
@@ -151,12 +121,6 @@ class Metrics():
           (array, description) = self.getFromH5(metric, settings, data) # todo
         else:
           (array, description) = self.getFromNpy(metric, settings, data, **kwargs)
-      else:
-        # check consistency between settings and data
-        if (len(settings) != data.shape[0]):
-          raise ValueError('The first dimensions of data must be equal to the length of settings. got %i and %i respectively' % (data.shape[0], len(settings)))
-
-        (array, description) = self.getFromVar(metric, settings, data); # todo
 
       header = ''
       if description:
@@ -175,20 +139,25 @@ class Metrics():
                     r.pop(s)
       return (array, description, header)
 
+    def getFromH5(self, metric, settings, dataPath, **kwargs):
+      h5 = tb.open_file(dataPath, mode='r')
+      data = []
+      description = []
+      descriptionFormat = copy.deepcopy(kwargs)
+      descriptionFormat['format'] = 'list'
+      descriptionFormat['noneAndZero2void'] = False
+      descriptionFormat['default2void'] = False
+      for setting in settings:
+        if h5.root.__contains__(setting.getId(**kwargs)):
+            sg = h5.root._f_get_child(setting.getId(**kwargs))
+            if sg.__contains__(metric):
+                data.append(sg._f_get_child(metric))
+                description.append(setting.getId(**descriptionFormat))
+      h5.close()
+      return (data, description)
+
     def getFromNpy(self, metric, settings, dataPath, **kwargs):
-      table = []
-      nbSettings = 0
-      firstTry = True
-      for sIndex, setting in enumerate(settings):
-        fileName = dataPath+setting.getId(**kwargs)+'_'+metric+'.npy'
-        print(fileName)
-        if os.path.exists(fileName):
-          nbSettings+=1
-          if firstTry:
-            firstTry = False
-            data = np.load(fileName)
-            nbValues = data.shape[0]
-      data = [] #np.zeros((nbSettings, nbValues))
+      data = []
       description = []
       descriptionFormat = copy.deepcopy(kwargs)
       descriptionFormat['format'] = 'list'
@@ -197,19 +166,17 @@ class Metrics():
       for setting in settings:
         fileName = dataPath+setting.getId(**kwargs)+'_'+metric+'.npy'
         if os.path.exists(fileName):
-          #data[sIndex, :] = np.load(fileName)
           data.append(np.load(fileName))
-          # print(setting.getId(format='list'))
-          # print(setting.getId(**descriptionFormat))
           description.append(setting.getId(**descriptionFormat))
 
       return (data, description)
 
-    def h5addSetting(self, h5, setting, metricDimensions=[]):
-        if not h5.__contains__('/'+setting.getId(format='shortCapital')):
-            sg = h5.create_group('/', setting.getId(format='shortCapital'), setting.getId(format='long', sep=' '))
+    def h5addSetting(self, h5, setting, metricDimensions=[], **kwargs):
+        groupName = setting.getId(**kwargs)
+        if not h5.__contains__('/'+groupName):
+            sg = h5.create_group('/', groupName, setting.getId(format='long', sep=' '))
         else:
-            sg = h5.root._f_get_child(setting.getId(format='shortCapital'))
+            sg = h5.root._f_get_child(groupName)
         for mIndex, metric in enumerate(self.getMetricsNames()):
             if not metricDimensions:
                 if sg.__contains__(metric):
@@ -236,7 +203,6 @@ class Metrics():
 
     def getMetricsNames(self):
       return self._metrics
-      # return [s for s in self.__dict__.keys() if s[0] is not '_']
 
     def __len__(self):
         return len(self.getMetricsNames())

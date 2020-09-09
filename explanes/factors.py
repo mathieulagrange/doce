@@ -41,21 +41,12 @@ class Factors():
   def __getattribute__(self, name):
 
     value = object.__getattribute__(self, name)
-    # print(name)
-    # print(type(inspect.getattr_static(self, name))) hasattr(self, '_setting')
     if name[0] != '_' and self._setting and type(inspect.getattr_static(self, name)) != types.FunctionType:
-      # print('getFactorNames')
-      # print(self.getFactorNames())
       idx = self.getFactorNames().index(name)
-      # print(idx)
-      # print(self._setting)
       if self._setting[idx] == -2:
         value = None
       else:
         if  type(inspect.getattr_static(self, name)) in {list, np.ndarray} :
-          # print('filt setting ')
-          # print(self._setting)
-          # print(value)
           try:
             value = value[self._setting[idx]]
           except IndexError:
@@ -65,13 +56,7 @@ class Factors():
     return value
 
   def __iter__(self):
-    # expand the mask to an iterable format aka -1 to full list
-    #build a list of settings
-    # print('iter mask: ')
-    # print(self._mask)
     self.__setSettings__()
-    # print('all settings: ')
-    # print(self._settings)
     self._currentSetting = 0
     return self
 
@@ -150,9 +135,7 @@ class Factors():
       for il, l in enumerate(m):
           if not isinstance(l, list) and l > -1:
               mask[im][il] = [l]
-    # print('mask')
     self._mask = mask
-    # print(nbFactors)
     return self
 
   def __len__(self):
@@ -191,21 +174,13 @@ class Factors():
         self._settings = settings
 
   def __setSettingsMask__(self, mask, done):
-    # print(mask)
     if done == len(mask):
       return []
 
     s = self.__setSettingsMask__(mask, done+1)
-    # print('mask[done]')
-    # print(mask[done])
-    # print('s')
-    # print(s)
     if isinstance(mask[done], list):
       settings = []
       for mod in mask[done]:
-        # print('mod')
-        # print(mod)
-
         if len(s) > 0:
           for ss in s:
             if isinstance(ss, list):
@@ -213,10 +188,7 @@ class Factors():
             else:
                 mList = [ss]
             mList.insert(0, mod)
-            # print(mList)
-            # print('mList')
             settings.append(mList)
-            # print(settings)
         else:
             mList = list(s)
             mList.insert(0, mod)
@@ -231,14 +203,7 @@ class Factors():
       return s
 
   def getFactorNames(self):
-  #  return [s for s in self.__dict__.keys() if s[0] is not '_']
-    # for s in self.__fields__:
-    #   if  s[0] is not '_':
-    #     print(s)
-    #     print(type(inspect.getattr_static(self, s)))
-    # print(self.__fields__)
     return self._factors
-    # return [s for s in self.__dict__.keys()if not callable(s) and s[0] is not '_']
 
   def clone(self):
     return copy.deepcopy(self)
@@ -269,11 +234,6 @@ class Factors():
           set = self._setting
           self._setting = None
           modalities = self.__getattribute__(factorName)
-          # if all(isinstance(m, int) for m in modalities):
-          #   modality = modalities.index(int(modality))
-          # elif all(isinstance(m, float) for m in modalities):
-          #   modality = modalities.index(float(modality))
-          # else:
           modality = modalities.index(modality)
           self._setting = set
 
@@ -306,7 +266,6 @@ class Factors():
     if sort:
       fNames = sorted(fNames)
     for fIndex, f in enumerate(fNames):
-      # print(getattr(self, f))
       if f[0] != '_' and getattr(self, f) is not None and f not in omit:
           if (singleton or f in self._nonSingleton) and (not noneAndZero2void or (noneAndZero2void and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and (not default2void or not hasattr(self._default, f) or (default2void and hasattr(self._default, f) and getattr(self._default, f) is not getattr(self, f))):
             id.append(expUtils.compressName(f, format))

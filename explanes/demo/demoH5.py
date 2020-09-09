@@ -14,6 +14,8 @@ def set(experiment, args):
     experiment.project.address = 'mathieu.lagrange@ls2n.fr'
     experiment.path.output = '/tmp/results.h5'
 
+    experiment._idFormat = {'format': 'shortCapital'}
+
     experiment.factor.dataType = ['float', 'double']
     experiment.factor.datasetSize = 1000*np.array([1, 2, 4, 8])
     experiment.factor.meanOffset = 10**np.array([0, 1, 2, 3, 4])
@@ -30,7 +32,7 @@ def set(experiment, args):
     return experiment
 
 def step(setting, experiment):
-    h5 = tb.open_file(experiment.path.processing, mode='a')
+    h5 = tb.open_file(experiment.path.output, mode='a')
     sg = experiment.metric.h5addSetting(h5, setting,
         metricDimensions = [setting.nbRuns, setting.nbRuns, 1])
 
@@ -59,7 +61,9 @@ def step(setting, experiment):
     sg.duration[0] = duration
     h5.close()
 
-# def display(experiment, settings):
-#     h5 = tb.open_file(experiment.path.processing, mode='a')
-#     print(h5)
-#     h5.close()
+def display(experiment, settings):
+    (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output, **experiment._idFormat)
+
+    print(header)
+    print(desc)
+    print(len(data))

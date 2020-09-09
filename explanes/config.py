@@ -43,10 +43,6 @@ class Config():
 
   def __str__(self):
     cString = ''
-    # atrs = dict(vars(type(self)))
-    # atrs.update(vars(self))
-    # atrs = [a for a in atrs if a[0] is not '_']
-    # print(self._atrs)
     for atr in self._atrs:
       if type(inspect.getattr_static(self, atr)) != types.FunctionType:
         if type(self.__getattribute__(atr)) == types.SimpleNamespace:
