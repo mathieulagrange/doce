@@ -157,7 +157,7 @@ class Factors():
         for m in mask:
           # handle -1 in mask
           for mfi, mf in enumerate(m):
-            if isinstance(mf, int) and mf == -1:
+            if isinstance(mf, int) and mf == -1 and mfi<len(self.getFactorNames()):
               attr = self.__getattribute__(self.getFactorNames()
               [mfi])
               # print(attr)

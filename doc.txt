@@ -1,0 +1,25 @@
+
+
+Issues:
+
+addition and removal of factors
+
+implicit and explicit default values
+
+multiple mask: ambiguity between factors and modality in array of array of mask
+
+example:
+
+  [[0], [1]] refers to
+    1. one mask with first factor set to 0 and one mask with first factor set to 1
+    or
+    2. one mask with first factor set to 0 and second factor set to 1, equivalent to [0, 1] ?
+
+  [[0, 1], [1, 0]] refers to
+    1. one mask with first factor set to 0 and and second factor set to 1 one mask with first factor set to 1 and second factor set to 0
+    or
+    2. one mask with first factor set to 0 and 1 and second factor set to 0 and 1 ?
+
+  answer: 1 always, that is an array of array is interpreted as an array of Mask
+
+  If the second interpretation is needed, the solution is to add a -1, that is [[0, 1], [1, 0], -1] for the second example. Addition of the -1 is allowed even if it leads to a mask length larger than the number of factors
