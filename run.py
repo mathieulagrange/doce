@@ -70,7 +70,7 @@ def __main__():
   if args.run and hasattr(config, 'step'):
     experiment.do(mask, config.step, jobs=args.run, logFileName=logFileName, tqdmDisplay=args.progress)
   elif not args.display:
-    experiment.do(mask, show, tqdmDisplay=False)
+    experiment.do(mask, tqdmDisplay=False)
 
   if args.mail or args.display:
     if hasattr(config, 'display'):
@@ -82,9 +82,6 @@ def __main__():
       print(df)
     if args.mail:
       experiment.sendMail('is over.', '<div> Mask = '+args.mask+'</div>'+'<div> '+header+' </div><br>'+df.to_html()) #
-
-def show(setting, config):
-  print(setting.describe())
 
 if __name__ == "__main__":
     __main__()

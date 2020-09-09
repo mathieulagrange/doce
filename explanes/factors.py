@@ -100,7 +100,7 @@ class Factors():
         raise e
     return failed
 
-  def do(self, function, *parameters, jobs=1, tqdmDisplay=True, logFileName=''):
+  def do(self, function=None, *parameters, jobs=1, tqdmDisplay=True, logFileName=''):
     nbFailed = 0
     if logFileName:
       logging.basicConfig(filename=logFileName,
@@ -120,7 +120,10 @@ class Factors():
                 description = '[failed: '+str(nbFailed)+']'
             description += setting.describe()
             t.set_description(description)
-            nbFailed += self.doSetting(setting, function, logFileName, *parameters)
+            if function:
+                nbFailed += self.doSetting(setting, function, logFileName, *parameters)
+            else:
+                print(setting.describe())
             t.update(1)
     return nbFailed
 
