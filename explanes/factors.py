@@ -115,9 +115,13 @@ class Factors():
     else:
       with tqdm(total=len(self), disable= not tqdmDisplay) as t:
         for setting in self:
-          t.set_description('[f: '+str(nbFailed)+'] '+setting.describe())
-          nbFailed += self.doSetting(setting, function, logFileName, *parameters)
-          t.update(1)
+            description = ''
+            if nbFailed:
+                description = '[failed: '+str(nbFailed)+']'
+            description += setting.describe()
+            t.set_description(description)
+            nbFailed += self.doSetting(setting, function, logFileName, *parameters)
+            t.update(1)
     return nbFailed
 
   def settings(self, mask=None):

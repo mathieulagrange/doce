@@ -5,37 +5,37 @@ import time
 import numpy as np
 from pathlib import Path
 
-
-# more complex case where:
+# use case where:
 #   - the results are stored on disk using npy files
 #   - one factor affects the size of the results vectors
 #   - the metrics does not operate on the same data, resulting on result vectors with different sizes per metric
 
-def set(args):
-  config = exp.Config()
-  config.project.name = 'demoNpy'
-  config.project.description = 'demonstration of npy storage of metrics'
-  config.project.author = 'mathieu Lagrange'
-  config.project.address = 'mathieu.lagrange@ls2n.fr'
-  config.project.version = '0.1'
+def set(experiment, args):
+  experiment.project.name = 'demoNpy'
+  experiment.project.description = 'demonstration of npy storage of metrics'
+  experiment.project.author = 'mathieu Lagrange'
+  experiment.project.address = 'mathieu.lagrange@ls2n.fr'
+  experiment.project.version = '0.1'
 
-  config.path.output = '/tmp/'+config.project.name+'/'
-  config.path.code = '~/tools/explanes.py/'
-  config.makePaths()
+  experiment.path.output = '/tmp/'+experiment.project.name+'/'
+  experiment.path.code = '~/tools/explanes.py/'
+  experiment.makePaths()
 
-  config.host = ['pc-lagrange.irccyn.ec-nantes.fr']
+  experiment._idFormat = {'format': 'hash'}
 
-  config.factor.dataType = ['float', 'double']
-  config.factor.datasetSize = 1000*np.array([1, 2, 4, 8])
-  config.factor.meanOffset = 10**np.array([0, 1, 2, 3])
-  config.factor.nbRuns = [2000, 4000]
+  experiment.host = ['pc-lagrange.irccyn.ec-nantes.fr']
 
-  config.metric.mae = ['mean-0', 'std-0']
-  config.metric.mse = ['mean-1%', 'std-1']
-  config.metric.duration = ['mean%']
-  return config
+  experiment.factor.dataType = ['float', 'double']
+  experiment.factor.datasetSize = 1000*np.array([1, 2, 4, 8])
+  experiment.factor.meanOffset = 10**np.array([0, 1, 2, 3])
+  experiment.factor.nbRuns = [2000, 4000]
 
-def step(setting, config):
+  experiment.metric.mae = ['mean-0', 'std-0']
+  experiment.metric.mse = ['mean-1%', 'std-1']
+  experiment.metric.duration = ['mean']
+  return experiment
+
+def step(setting, experiment):
   settingMae = np.zeros((setting.nbRuns))
   settingMse = np.zeros((setting.nbRuns))
 
@@ -56,7 +56,16 @@ def step(setting, config):
     settingMse[r] = abs(reference - estimate)
     settingMae[r] = np.square(reference - estimate)
 
-  np.save(config.path.output+setting.getId('hash')+'_mae.npy', settingMae)
-  np.save(config.path.output+setting.getId('hash')+'_mse.npy', settingMse)
+  baseFileName = setting.getId(**experiment._idFormat)
+  np.save(experiment.path.output+baseFileName+'_mae.npy', settingMae)
+  np.save(experiment.path.output+baseFileName+'_mse.npy', settingMse)
   duration = time.time()-tic
-  np.save(config.path.output+setting.getId('hash')+'_duration.npy', duration)
+  np.save(experiment.path.output+baseFileName+'_duration.npy', duration)
+
+# uncomment this to fine tune display of metrics
+def display(experiment, settings):
+    (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output, **experiment._idFormat)
+
+    print(header)
+    print(desc)
+    print(len(data))

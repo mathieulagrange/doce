@@ -2,11 +2,12 @@ import numpy as np
 import tables as tb
 import time
 
-# more complex case where:
+# use case where:
 #   - the results are stored on disk in a h5 sink
 #   - one factor affects the size of the results vectors
 #   - the metric does not operate on the same data, resulting on result vectors with different sizes per metric
 #   - thank to the description capabilities of the h5 file format, some information about the metric can be stored
+
 def set(experiment, args):
     experiment.project.name = 'demoH5'
     experiment.project.description = 'demonstration of explanes using H5'
@@ -61,9 +62,10 @@ def step(setting, experiment):
     sg.duration[0] = duration
     h5.close()
 
-def display(experiment, settings):
-    (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output, **experiment._idFormat)
-
-    print(header)
-    print(desc)
-    print(len(data))
+## uncomment this to fine tune display of metrics
+# def display(experiment, settings):
+#     (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output, **experiment._idFormat)
+#
+#     print(header)
+#     print(desc)
+#     print(len(data))
