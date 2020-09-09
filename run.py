@@ -12,6 +12,7 @@ import explanes as exp
 def __main__():
   parser = argparse.ArgumentParser()
   parser.add_argument('-e', '--experiment', type=str, help='name of the experiment')
+  parser.add_argument('-i', '--information', help='show information about the the experiment', action='store_true')
   parser.add_argument('-m', '--mask', type=str, help='mask of the experiment to run', default='[]')
   parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation', action='store_true')
   parser.add_argument('-S', '--sync', help='sync to server defined', action='store_true')
@@ -38,7 +39,8 @@ def __main__():
     raise ValueError
   experiment = exp.Config()
   experiment = config.set(experiment, args)
-  print(experiment)
+  if args.information:
+      print(experiment)
   logFileName = ''
   if args.server>-2:
     unparser = argunparse.ArgumentUnparser()
