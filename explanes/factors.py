@@ -16,6 +16,23 @@ else:
     from tqdm import tqdm as tqdm
 
 class Factors():
+  """one liner
+
+  Desc
+
+  Parameters
+  ----------
+
+  Returns
+  -------
+
+  See Also
+  --------
+
+  Examples
+  --------
+
+  """
   _setting = None
   _changed = False
   _currentSetting = 0
@@ -76,6 +93,23 @@ class Factors():
     return  self
 
   def setDefault(self, name, value, force=False):
+    """one liner
+
+  	Desc
+
+  	Parameters
+  	----------
+
+  	Returns
+  	-------
+
+  	See Also
+  	--------
+
+  	Examples
+  	--------
+
+    """
     if hasattr(self, name):
       if not force and any(item in getattr(self, name) for item in [0, 'none']):
         print('Setting an explicit default modality to factor '+name+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <noneAndZero2void> set to False when using getId. You can remove this warning by setting the flag <force> to True.')
