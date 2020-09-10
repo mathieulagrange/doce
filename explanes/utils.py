@@ -2,6 +2,23 @@ import sys
 import re
 
 def sameColumnsInTable(table):
+"""one liner
+
+Desc
+
+Parameters
+----------
+
+Returns
+-------
+
+See Also
+--------
+
+Examples
+--------
+
+"""
   same = [True] * len(table[0])
   sameValue = [None] * len(table[0])
 
