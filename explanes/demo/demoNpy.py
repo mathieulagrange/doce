@@ -22,6 +22,7 @@ def set(experiment, args):
   experiment.makePaths()
 
   experiment._idFormat = {'format': 'hash'}
+  experiment._archivePath = '/tmp'
 
   experiment.host = ['pc-lagrange.irccyn.ec-nantes.fr']
 

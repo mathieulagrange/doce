@@ -13,6 +13,7 @@ def __main__():
   parser = argparse.ArgumentParser()
   parser.add_argument('-e', '--experiment', type=str, help='name of the experiment')
   parser.add_argument('-i', '--information', help='show information about the the experiment', action='store_true')
+  parser.add_argument('-l', '--list', help='list settings', action='store_true')
   parser.add_argument('-m', '--mask', type=str, help='mask of the experiment to run', default='[]')
   parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation', action='store_true')
   parser.add_argument('-S', '--sync', help='sync to server defined', action='store_true')
@@ -22,6 +23,9 @@ def __main__():
   parser.add_argument('-D', '--debug', help='debug mode', action='store_true')
   parser.add_argument('-v', '--version', help='print version', action='store_true')
   parser.add_argument('-P', '--progress', help='display progress bar', action='store_true')
+  parser.add_argument('-R', '--remove', type=str, help='remove the selected  settings from a given path (all paths of the experiment by default, if the argument does not have / or \, the argument is interpreted as a member of the experiments path)', nargs='?', const='all')
+  parser.add_argument('-K', '--keep', type=str, help='keep only the selected settings from a given path (all paths of the experiment by default, if the argument does not have / or \, the argument is interpreted as a member of the experiments path)', nargs='?', const='all')
+
   args = parser.parse_args()
 
   if args.version:
@@ -41,6 +45,23 @@ def __main__():
   experiment = config.set(experiment, args)
   if args.information:
       print(experiment)
+  if args.list:
+    experiment.do(mask, tqdmDisplay=False)
+
+  if args.remove:
+    path2clean = args.remove
+    if path2clean is 'all':
+      experiment.cleanExperiment(mask, idFormat=experiment._idFormat)
+    else:
+      experiment.clean(path2clean, mask, idFormat=experiment._idFormat)
+      
+  if args.keep:
+    path2clean = args.keep
+    if path2clean is 'all':
+      experiment.cleanExperiment(mask, reverse=True, idFormat=experiment._idFormat)
+    else:
+      experiment.clean(path2clean, mask, reverse=True, idFormat=experiment._idFormat)
+
   logFileName = ''
   if args.server>-2:
     unparser = argunparse.ArgumentUnparser()
@@ -69,8 +90,6 @@ def __main__():
     experiment.sendMail('has started.', '<div> Mask = '+args.mask+'</div>')
   if args.run and hasattr(config, 'step'):
     experiment.do(mask, config.step, jobs=args.run, logFileName=logFileName, tqdmDisplay=args.progress)
-  elif not args.display:
-    experiment.do(mask, tqdmDisplay=False)
 
   if args.mail or args.display:
     if hasattr(config, 'display'):

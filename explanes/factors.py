@@ -200,14 +200,14 @@ class Factors():
             mList = list(s)
             mList.insert(0, mod)
             settings.append(mList)
-      return settings
     else:
-      if len(s) > 0 and all(isinstance(ss, list) for ss in s):
-        for ss in s:
+      settings = s
+      if len(settings) > 0 and all(isinstance(ss, list) for ss in settings):
+        for ss in settings:
           ss.insert(0, mask[done])
       else:
-        s.insert(0, mask[done])
-      return s
+        settings.insert(0, mask[done])
+    return settings
 
   def getFactorNames(self):
     return self._factors
@@ -220,16 +220,28 @@ class Factors():
           name = self.getFactorNames()[factor]
       return len(object.__getattribute__(self, name))
 
-  def clearPath(self, path, force=False, selector='*'):
+  def clean(self, path, reverse=True, force=False, selector='*', idFormat={}, archivePath=''):
       fileNames = []
-      for s in self:
-          for f in glob.glob(path+s.fileName()+selector):
+      complete = []
+      for f in glob.glob(path+selector):
+          complete.append(f)
+      for setting in self:
+          for f in glob.glob(path+setting.getId(**idFormat)+selector):
               fileNames.append(f)
-          for f in glob.glob(path+s.getId()+selector):
-              fileNames.append(f)
-      if len(fileNames) and (force or expUtils.query_yes_no('About to remove '+str(len(fileNames))+' files. Proceed ?')):
+      # print(len(fileNames))
+      # print(len(complete))
+      fileNames = [i for i in complete if i not in fileNames]
+      # print(len(fileNames))
+      if archivePath:
+        destination = 'move to '+archivePath+' '
+      else:
+        destination = 'remove '
+      if len(fileNames) and (force or expUtils.query_yes_no('About to '+destination+str(len(fileNames))+' files from '+path+' \n Proceed ?')):
           for f in fileNames:
-              os.remove(f)
+              if archivePath:
+                os.rename(f, archivePath+'/'+f)
+              else:
+                os.remove(f)
 
   def alternative(self, factor, modality, positional=False, relative=False):
       if isinstance(modality, int) and modality<0:
@@ -253,9 +265,6 @@ class Factors():
           return None
       else:
           return f
-
-  def fileName(self):
-      return self.getId('hash')
 
   def describe(self):
     return self.getId(singleton=False, sort=False, sep=' ')

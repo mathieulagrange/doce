@@ -27,6 +27,7 @@ class Config():
     self.path.output = ''
     self.host = []
     self._idFormat = {}
+    self._archivePath = ''
     self._factorFormatInReduce = 'shortCapital'
 
   def __setattr__(self, name, value):
@@ -70,10 +71,13 @@ class Config():
   def do(self, mask, function=None, jobs=1, tqdmDisplay=True, logFileName='', *parameters):
     return self.factor.settings(mask).do(function, self, *parameters, jobs=jobs, tqdmDisplay=tqdmDisplay, logFileName=logFileName)
 
-  def clearPath(self, mask, path, force=False, selector='*'):
-    return self.factor.settings(mask).clearPath(path, force, selector)
+  def clean(self, path, mask, reverse=True, force=False, selector='*', idFormat={}):
+    if '/' not in path and '\\' not in path:
+      path = self.__getattribute__('path').__getattribute__(path)
 
-  def clearPaths(self, mask, force=False, selector='*'):
+    return self.factor.settings(mask).clean(path, reverse, force, selector, idFormat, archivePath=self._archivePath)
+
+  def cleanExperiment(self, mask, reverse=True, force=False, selector='*', idFormat={}):
     for sns in self.__getattribute__('path').__dict__.keys():
-      path = self.__getattribute__('path').__getattribute__(sns)
-      self.clearPath(mask, path, force, selector)
+      print('checking '+sns+' path')
+      self.clean(sns, mask, reverse, force, selector, idFormat)
