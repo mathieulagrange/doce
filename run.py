@@ -41,7 +41,7 @@ def __main__():
   else:
     print('Please provide a valid project name')
     raise ValueError
-  experiment = exp.Config()
+  experiment = exp.Experiment()
   experiment = config.set(experiment, args)
   if args.information:
       print(experiment)
@@ -54,7 +54,7 @@ def __main__():
       experiment.cleanExperiment(mask, idFormat=experiment._idFormat)
     else:
       experiment.clean(path2clean, mask, idFormat=experiment._idFormat)
-      
+
   if args.keep:
     path2clean = args.keep
     if path2clean is 'all':

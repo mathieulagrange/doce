@@ -1,4 +1,4 @@
 from explanes.metrics import Metrics
 from explanes.factors import Factors
-from explanes.config import Config
+from explanes.experiment import Experiment
 import explanes.utils

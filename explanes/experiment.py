@@ -7,7 +7,7 @@ import explanes.utils as expUtils
 import explanes.factors as expFactors
 import explanes.metrics as expMetrics
 
-class Config():
+class Experiment():
   _atrs = []
 
   def __init__(self):
