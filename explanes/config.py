@@ -71,13 +71,14 @@ class Config():
   def do(self, mask, function=None, jobs=1, tqdmDisplay=True, logFileName='', *parameters):
     return self.factor.settings(mask).do(function, self, *parameters, jobs=jobs, tqdmDisplay=tqdmDisplay, logFileName=logFileName)
 
-  def clean(self, path, mask, reverse=True, force=False, selector='*', idFormat={}):
+  def clean(self, path, mask, reverse=False, force=False, selector='*', idFormat={}):
+
     if '/' not in path and '\\' not in path:
       path = self.__getattribute__('path').__getattribute__(path)
+    if path:
+      self.factor.settings(mask).clean(path, reverse, force, selector, idFormat, archivePath=self._archivePath)
 
-    return self.factor.settings(mask).clean(path, reverse, force, selector, idFormat, archivePath=self._archivePath)
-
-  def cleanExperiment(self, mask, reverse=True, force=False, selector='*', idFormat={}):
+  def cleanExperiment(self, mask, reverse=False, force=False, selector='*', idFormat={}):
     for sns in self.__getattribute__('path').__dict__.keys():
       print('checking '+sns+' path')
       self.clean(sns, mask, reverse, force, selector, idFormat)

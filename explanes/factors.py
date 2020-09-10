@@ -220,17 +220,25 @@ class Factors():
           name = self.getFactorNames()[factor]
       return len(object.__getattribute__(self, name))
 
-  def clean(self, path, reverse=True, force=False, selector='*', idFormat={}, archivePath=''):
+  def cleanH5(self, path, reverse=False, force=False, idFormat={}):
+    h5 = tb.open_file(dataPath, mode='r')
+    for sIndex, setting in enumerate(settings):
+        if h5.root.__contains__(setting.getId(**idFormat)):
+          print('')
+    h5.close()
+
+  def clean(self, path, reverse=False, force=False, selector='*', idFormat={}, archivePath=''):
       fileNames = []
-      complete = []
-      for f in glob.glob(path+selector):
-          complete.append(f)
       for setting in self:
           for f in glob.glob(path+setting.getId(**idFormat)+selector):
               fileNames.append(f)
       # print(len(fileNames))
-      # print(len(complete))
-      fileNames = [i for i in complete if i not in fileNames]
+      # print(len(complete
+      if reverse:
+        complete = []
+        for f in glob.glob(path+selector):
+            complete.append(f)
+        fileNames = [i for i in complete if i not in fileNames]
       # print(len(fileNames))
       if archivePath:
         destination = 'move to '+archivePath+' '
@@ -239,7 +247,7 @@ class Factors():
       if len(fileNames) and (force or expUtils.query_yes_no('About to '+destination+str(len(fileNames))+' files from '+path+' \n Proceed ?')):
           for f in fileNames:
               if archivePath:
-                os.rename(f, archivePath+'/'+f)
+                os.rename(f, archivePath+'/'+os.path.basename(f))
               else:
                 os.remove(f)
 
