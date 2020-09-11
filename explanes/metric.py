@@ -101,16 +101,13 @@ class Metric():
         columns = self.getColumns(settings, metricHasData, aggregationStyle, factorDisplayStyle)
         header = ''
         if len(table)>1:
-            (same, sameValue) = eu.sameColumnsInTable(table)
+            (ccIndex, ccValue) = eu.constantColumn(table)
 
-            sameIndex = [i for i, x in enumerate(same) if x and i<len(settings.getFactorNames())]
-            for s in sameIndex:
-                header += eu.compressName(columns[s], factorDisplayStyle)+': '+str(sameValue[s])+' '
-            # print(sameIndex)
-            # print(columns)
-            for s in sorted(sameIndex, reverse=True):
+            ccIndex = [i for i, x in enumerate(ccIndex) if x and i<len(settings.getFactorNames())]
+            for s in ccIndex:
+                header += eu.compressName(columns[s], factorDisplayStyle)+': '+str(ccValue[s])+' '
+            for s in sorted(ccIndex, reverse=True):
                     columns.pop(s)
-                    # same.pop(sIndex)
                     for r in table:
                         r.pop(s)
         return (table, columns, header)
@@ -124,17 +121,14 @@ class Metric():
 
       header = ''
       if description:
-        (same, sameValue) = eu.sameColumnsInTable(description)
-        for si, s in enumerate(same):
+        (ccIndex, ccValue) = eu.constantColumn(description)
+        for si, s in enumerate(ccIndex):
           if si>1 and not s:
-            same[si-1] = False
-        sameIndex = [i for i, x in enumerate(same) if x]
-        #print(sameIndex)
-        for s in sameIndex:
+            ccIndex[si-1] = False
+        ccIndex = [i for i, x in enumerate(same) if x]
+        for s in ccIndex:
             header += description[0][s]+' '
-        # print(sameIndex)
-        # print(columns)
-        for s in sorted(sameIndex, reverse=True):
+        for s in sorted(ccIndex, reverse=True):
                 for r in description:
                     r.pop(s)
       return (array, description, header)

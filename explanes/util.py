@@ -1,10 +1,47 @@
 import sys
 import re
 
-def sameColumnsInTable(table):
-  """one liner
+def constantColumn(
+  table=None
+):
+  """Store which column(s) have the same value for all lines.
 
-	Desc
+	Parameters
+	----------
+
+  table : list of equal size lists or None
+    table of literals
+
+	Returns
+	-------
+
+  indexes :
+    indexes of constant valued columns
+
+  values :
+    values of the constant valued columns
+
+	See Also
+	--------
+
+	Examples
+	--------
+
+  """
+
+  indexes = [True] * len(table[0])
+  values = [None] * len(table[0])
+
+  for r in table:
+      for cIndex, c in enumerate(r):
+          if values[cIndex] == None:
+              values[cIndex] = c
+          elif values[cIndex] != c:
+              indexes[cIndex] = False
+  return (indexes, values)
+
+def compressName(f, format):
+  """.
 
 	Parameters
 	----------
@@ -19,19 +56,6 @@ def sameColumnsInTable(table):
 	--------
 
   """
-
-  same = [True] * len(table[0])
-  sameValue = [None] * len(table[0])
-
-  for r in table:
-      for cIndex, c in enumerate(r):
-          if sameValue[cIndex] == None:
-              sameValue[cIndex] = c
-          elif sameValue[cIndex] != c:
-              same[cIndex] = False
-  return (same, sameValue)
-
-def compressName(f, format):
   sf = f
   if 'shortUnderscore' in format:
     sf = ''.join([itf[0] for itf in f.split('_')])
