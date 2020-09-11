@@ -29,6 +29,7 @@ author = 'Mathieu Lagrange'
 # ones.
 extensions = [
   'sphinx.ext.todo',
+  'numpydoc',
   'sphinx.ext.viewcode',
   'sphinx.ext.autodoc',
   'sphinx.ext.napoleon'

@@ -8,12 +8,12 @@ a package overview, basic and advanced usage.  We will assume basic familiarity 
 Overview
 ~~~~~~~~
 
-The *librosa* package is structured as collection of submodules:
+The *explanes* package is structured as collection of submodules:
 
-  - librosa
+  - explanes
 
-    - :ref:`librosa.beat <beat>`
-        Functions for estimating tempo and detecting beat events.
+    - :ref:`explanes.metric <metric>`
+        test
 
 .. _quickstart:
 

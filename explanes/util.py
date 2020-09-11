@@ -6,6 +6,7 @@ def constantColumn(
 ):
   """Store which column(s) have the same value for all lines.
 
+
 	Parameters
 	----------
 
