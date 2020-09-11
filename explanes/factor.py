@@ -3,6 +3,7 @@ import inspect
 import types
 import hashlib
 import numpy as np
+import tables as tb
 import copy
 import glob
 import explanes.util as eu
@@ -256,30 +257,38 @@ class Factor():
       return len(object.__getattribute__(self, name))
 
   def cleanH5(self, path, reverse=False, force=False, idFormat={}):
-    h5 = tb.open_file(dataPath, mode='r')
-    for sIndex, setting in enumerate(settings):
-        if h5.root.__contains__(setting.getId(**idFormat)):
-          print('')
+    h5 = tb.open_file(path, mode='a')
+    if reverse:
+      ids = [setting.getId(**idFormat) for setting in self]
+      for g in h5.iter_nodes('/'):
+        if g._v_name not in ids:
+          h5.remove_node(h5.root, g._v_name, recursive=True)
+    else:
+      for setting in self:
+        groupName = setting.getId(**idFormat)
+        if h5.root.__contains__(groupName):
+          h5.remove_node(h5.root, groupName, recursive=True)
     h5.close()
 
     # repack
-    outfilename = dataPath+'Tmp'
-    command = ["ptrepack", "-o", "--chunkshape=auto", "--propindexes", dataPath, outfilename]
-    print('Size of %s is %.2fMiB' % (dataPath, float(os.stat(filename).st_size)/1024**2))
+    outfilename = path+'Tmp'
+    command = ["ptrepack", "-o", "--chunkshape=auto", "--propindexes", path, outfilename]
+    print('Original size is %.2fMiB' % (float(os.stat(path).st_size)/1024**2))
     if call(command) != 0:
-        print('Unable to repack. Is ptrepack installed ?')
+      print('Unable to repack. Is ptrepack installed ?')
     else:
-        print('Size of %s is %.2fMiB' % (outfilename, float(os.stat(outfilename).st_size)/1024**2))
-        os.rename(outfilename, dataPath)
+      print('Repacked size is %.2fMiB' % (float(os.stat(outfilename).st_size)/1024**2))
+      os.rename(outfilename, path)
 
 
   def clean(self, path, reverse=False, force=False, selector='*', idFormat={}, archivePath=''):
+    if path.endswith('.h5'):
+      self.cleanH5(path, reverse, force, idFormat)
+    else:
       fileNames = []
       for setting in self:
           for f in glob.glob(path+setting.getId(**idFormat)+selector):
               fileNames.append(f)
-      # print(len(fileNames))
-      # print(len(complete
       if reverse:
         complete = []
         for f in glob.glob(path+selector):
