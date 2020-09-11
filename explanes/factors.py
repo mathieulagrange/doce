@@ -9,6 +9,7 @@ import explanes.utils as expUtils
 import traceback
 import logging
 from joblib import Parallel, delayed
+from subprocess import call
 
 if expUtils.runFromNoteBook():
     from tqdm.notebook import tqdm as tqdm
@@ -226,6 +227,17 @@ class Factors():
         if h5.root.__contains__(setting.getId(**idFormat)):
           print('')
     h5.close()
+
+    # repack
+    outfilename = dataPath+'Tmp'
+    command = ["ptrepack", "-o", "--chunkshape=auto", "--propindexes", dataPath, outfilename]
+    print('Size of %s is %.2fMiB' % (dataPath, float(os.stat(filename).st_size)/1024**2))
+    if call(command) != 0:
+        print('Unable to repack. Is ptrepack installed ?')
+    else:
+        print('Size of %s is %.2fMiB' % (outfilename, float(os.stat(outfilename).st_size)/1024**2))
+        os.rename(outfilename, dataPath)
+
 
   def clean(self, path, reverse=False, force=False, selector='*', idFormat={}, archivePath=''):
       fileNames = []
