@@ -25,7 +25,7 @@ def sameColumnsInTable(table):
 
   for r in table:
       for cIndex, c in enumerate(r):
-          if sameValue[cIndex] is None:
+          if sameValue[cIndex] == None:
               sameValue[cIndex] = c
           elif sameValue[cIndex] != c:
               same[cIndex] = False
