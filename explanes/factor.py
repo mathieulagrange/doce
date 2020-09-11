@@ -1,22 +1,22 @@
 import os
-import inspect # remove ??
+import inspect
 import types
 import hashlib
 import numpy as np
 import copy
 import glob
-import explanes.utils as expUtils
+import explanes.util as eu
 import traceback
 import logging
 from joblib import Parallel, delayed
 from subprocess import call
 
-if expUtils.runFromNoteBook():
+if eu.runFromNoteBook():
     from tqdm.notebook import tqdm as tqdm
 else:
     from tqdm import tqdm as tqdm
 
-class Factors():
+class Factor():
   """one liner
 
   Desc
@@ -46,13 +46,13 @@ class Factors():
   def __setattr__(self, name, value):
     if not name == '_settings':
       _settings = []
-    if not hasattr(self, name) and name[0] is not '_':
+    if not hasattr(self, name) and name[0] != '_':
       self._factors.append(name)
     if hasattr(self, name) and type(inspect.getattr_static(self, name)) == types.FunctionType:
       raise Exception('the attribute '+name+' is shadowing a builtin function')
-    if name is '_mask' or name[0] is not '_':
+    if name == '_mask' or name[0] != '_':
       self._changed = True
-    if name[0] is not '_' and type(value) in {list, np.ndarray} and name not in self._nonSingleton:
+    if name[0] != '_' and type(value) in {list, np.ndarray} and name not in self._nonSingleton:
       self._nonSingleton.append(name)
     return object.__setattr__(self, name, value)
 
@@ -290,7 +290,7 @@ class Factors():
         destination = 'move to '+archivePath+' '
       else:
         destination = 'remove '
-      if len(fileNames) and (force or expUtils.query_yes_no('About to '+destination+str(len(fileNames))+' files from '+path+' \n Proceed ?')):
+      if len(fileNames) and (force or eu.query_yes_no('About to '+destination+str(len(fileNames))+' files from '+path+' \n Proceed ?')):
           for f in fileNames:
               if archivePath:
                 os.rename(f, archivePath+'/'+os.path.basename(f))
@@ -337,12 +337,12 @@ class Factors():
       fNames = sorted(fNames)
     for fIndex, f in enumerate(fNames):
       if f[0] != '_' and getattr(self, f) is not None and f not in omit:
-          if (singleton or f in self._nonSingleton) and (not noneAndZero2void or (noneAndZero2void and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and (not default2void or not hasattr(self._default, f) or (default2void and hasattr(self._default, f) and getattr(self._default, f) is not getattr(self, f))):
-            id.append(expUtils.compressName(f, format))
+          if (singleton or f in self._nonSingleton) and (not noneAndZero2void or (noneAndZero2void and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and (not default2void or not hasattr(self._default, f) or (default2void and hasattr(self._default, f) and getattr(self._default, f) != getattr(self, f))):
+            id.append(eu.compressName(f, format))
             id.append(str(getattr(self, f)))
     if 'list' not in format:
       id = sep.join(id)
-      if format is 'hash':
+      if format == 'hash':
         id  = hashlib.md5(id.encode("utf-8")).hexdigest()
     return id
 
@@ -350,7 +350,7 @@ class Factors():
     cString = ''
     atrs = dict(vars(type(self)))
     atrs.update(vars(self))
-    atrs = [a for a in atrs if a[0] is not '_']
+    atrs = [a for a in atrs if a[0] != '_']
 
     for atr in atrs:
       if type(inspect.getattr_static(self, atr)) != types.FunctionType:

@@ -32,7 +32,7 @@ def __main__():
     print("Experiment version "+experiment.project.version)
     exit(1)
 
-  sys.path.append('explanes/demo/')
+  sys.path.append('demonstrations')
 
   mask = ast.literal_eval(args.mask)
 
@@ -50,14 +50,14 @@ def __main__():
 
   if args.remove:
     path2clean = args.remove
-    if path2clean is 'all':
+    if path2clean == 'all':
       experiment.cleanExperiment(mask, idFormat=experiment._idFormat)
     else:
       experiment.clean(path2clean, mask, idFormat=experiment._idFormat)
 
   if args.keep:
     path2clean = args.keep
-    if path2clean is 'all':
+    if path2clean == 'all':
       experiment.cleanExperiment(mask, reverse=True, idFormat=experiment._idFormat)
     else:
       experiment.clean(path2clean, mask, reverse=True, idFormat=experiment._idFormat)

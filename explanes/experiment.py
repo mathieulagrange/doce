@@ -3,9 +3,9 @@ import types
 import inspect
 import os
 import time
-import explanes.utils as expUtils
-import explanes.factors as expFactors
-import explanes.metrics as expMetrics
+import explanes.util as eu
+import explanes.factor as ef
+import explanes.metric as em
 
 class Experiment():
   _atrs = []
@@ -17,9 +17,9 @@ class Experiment():
     self.project.author = ''
     self.project.address = ''
     self.project.runId = str(int(time.time()))
-    self.factor = expFactors.Factors()
+    self.factor = ef.Factor()
     self.parameter = types.SimpleNamespace()
-    self.metric = expMetrics.Metrics()
+    self.metric = em.Metric()
     self.path = types.SimpleNamespace()
     self.path.input = ''
     self.path.processing = ''
@@ -31,7 +31,7 @@ class Experiment():
     self._factorFormatInReduce = 'shortCapital'
 
   def __setattr__(self, name, value):
-    if not hasattr(self, name) and name[0] is not '_':
+    if not hasattr(self, name) and name[0] != '_':
       self._atrs.append(name)
     return object.__setattr__(self, name, value)
 
@@ -39,7 +39,7 @@ class Experiment():
     for sns in self.__getattribute__('path').__dict__.keys():
       path = self.__getattribute__('path').__getattribute__(sns)
       if path and not os.path.exists(os.path.expanduser(path)):
-        if force or expUtils.query_yes_no(sns+' path: '+path+' does not exist. Do you want to create it ?'):
+        if force or eu.query_yes_no(sns+' path: '+path+' does not exist. Do you want to create it ?'):
           os.makedirs(os.path.expanduser(path))
 
   def __str__(self):

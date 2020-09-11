@@ -5,16 +5,16 @@ import re
 import hashlib
 import numpy as np
 import tables as tb
-import explanes.utils as expUtils
+import explanes.util as eu
 import copy
 
-class Metrics():
+class Metric():
     _unit = types.SimpleNamespace()
     _description = types.SimpleNamespace()
     _metrics = []
 
     def __setattr__(self, name, value):
-      if not hasattr(self, name) and name[0] is not '_':
+      if not hasattr(self, name) and name[0] != '_':
         self._metrics.append(name)
       return object.__setattr__(self, name, value)
 
@@ -101,16 +101,13 @@ class Metrics():
         columns = self.getColumns(settings, metricHasData, aggregationStyle, factorDisplayStyle)
         header = ''
         if len(table)>1:
-            (same, sameValue) = expUtils.sameColumnsInTable(table)
+            (ccIndex, ccValue) = eu.constantColumn(table)
 
-            sameIndex = [i for i, x in enumerate(same) if x and i<len(settings.getFactorNames())]
-            for s in sameIndex:
-                header += expUtils.compressName(columns[s], factorDisplayStyle)+': '+str(sameValue[s])+' '
-            # print(sameIndex)
-            # print(columns)
-            for s in sorted(sameIndex, reverse=True):
+            ccIndex = [i for i, x in enumerate(ccIndex) if x and i<len(settings.getFactorNames())]
+            for s in ccIndex:
+                header += eu.compressName(columns[s], factorDisplayStyle)+': '+str(ccValue[s])+' '
+            for s in sorted(ccIndex, reverse=True):
                     columns.pop(s)
-                    # same.pop(sIndex)
                     for r in table:
                         r.pop(s)
         return (table, columns, header)
@@ -124,17 +121,14 @@ class Metrics():
 
       header = ''
       if description:
-        (same, sameValue) = expUtils.sameColumnsInTable(description)
-        for si, s in enumerate(same):
+        (ccIndex, ccValue) = eu.constantColumn(description)
+        for si, s in enumerate(ccIndex):
           if si>1 and not s:
-            same[si-1] = False
-        sameIndex = [i for i, x in enumerate(same) if x]
-        #print(sameIndex)
-        for s in sameIndex:
+            ccIndex[si-1] = False
+        ccIndex = [i for i, x in enumerate(same) if x]
+        for s in ccIndex:
             header += description[0][s]+' '
-        # print(sameIndex)
-        # print(columns)
-        for s in sorted(sameIndex, reverse=True):
+        for s in sorted(ccIndex, reverse=True):
                 for r in description:
                     r.pop(s)
       return (array, description, header)
@@ -190,11 +184,11 @@ class Metrics():
     def getColumns(self, settings, metricHasData, aggregationStyle, factorDisplayStyle):
         columns = []
         for factorName in settings.getFactorNames():
-            columns.append(expUtils.compressName(factorName, factorDisplayStyle))
+            columns.append(eu.compressName(factorName, factorDisplayStyle))
         for mIndex, metric in enumerate(self.getMetricsNames()):
             if metricHasData[mIndex]:
               for aggregationType in self.__getattribute__(metric):
-                  if aggregationStyle is 'capitalize':
+                  if aggregationStyle == 'capitalize':
                       name = metric+str(aggregationType).capitalize()
                   else :
                       name = metric+'_'+aggregationType
@@ -211,7 +205,7 @@ class Metrics():
       cString = ''
       atrs = dict(vars(type(self)))
       atrs.update(vars(self))
-      atrs = [a for a in atrs if a[0] is not '_']
+      atrs = [a for a in atrs if a[0] !=  '_']
 
       for atr in atrs:
         if type(inspect.getattr_static(self, atr)) != types.FunctionType:
