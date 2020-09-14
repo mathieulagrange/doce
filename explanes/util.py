@@ -90,7 +90,7 @@ def compressDescription(description, format='long', atomLength=2):
 def query_yes_no(question, default="yes"):
   """Ask a yes/no question via input() and return their answer.
 
-  The "answer" return value is True for "yes" or False for "no".
+  The 'answer' return value is True for 'yes' or False for 'no'.
 
 	Parameters
 	----------
@@ -98,13 +98,15 @@ def query_yes_no(question, default="yes"):
   question : str
     phrase presented to the user.
   default : str or None, optional
-    presumed answer if the user just hits <Enter>. It must be "yes" (the default), "no" or None (meaning an answer is required of the user).
+    presumed answer if the user just hits <Enter>. It must be 'yes', 'no' or None. The latter meaning an answer is required of the user (default is 'yes').
 
 	Returns
 	-------
 
   answer : bool
-    True for "yes" or False for "no"
+    True if prompt is 'yes'.
+
+    False if prompt is 'no'.  
   """
 
   valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}

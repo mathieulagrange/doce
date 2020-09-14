@@ -6,19 +6,6 @@ import time
 import explanes as el
 
 class Experiment():
-  """
-
-	Parameters
-	----------
-
-	Returns
-	-------
-
-	Examples
-	--------
-
-  """
-
   # list of attributes (preserving order of insertion for aloder versions of python)
   _atrs = []
 
@@ -59,12 +46,28 @@ class Experiment():
       If True, do not prompt the user before creating the missing directories.
 
       If False, prompt the user before creation of each missing directory.
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+
+    >>> import explanes as el
+    >>> e=el.Experiment()
+    >>> e.project.name = 'experiment'
+    >>> e.path.processing = '/tmp/'+e.project.name+'/processing'
+    >>> e.path.output = '/tmp/'+e.project.name+'/output'
+    >>> e.makePaths()
+    The processing path: /tmp/experiment/processing does not exist. Do you want to create it ? [Y/n] <press Enter> Done.
+    The output path: /tmp/experiment/output does not exist. Do you want to create it ? [Y/n] <press Enter> Done.
     """
     for sns in self.__getattribute__('path').__dict__.keys():
       path = self.__getattribute__('path').__getattribute__(sns)
       if path and not os.path.exists(os.path.expanduser(path)):
-        if force or el.util.query_yes_no(sns+' path: '+path+' does not exist. Do you want to create it ?'):
+        if force or el.util.query_yes_no('The '+sns+' path: '+path+' does not exist. Do you want to create it ?'):
           os.makedirs(os.path.expanduser(path))
+          print('Done.')
 
   def __str__(self, format='str'):
     """Provide a textual description of the experiment
