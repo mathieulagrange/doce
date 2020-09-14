@@ -6,6 +6,24 @@ import time
 import explanes as el
 
 class Experiment():
+  """one liner
+
+  Desc
+
+  Members
+  -------
+
+  See Also
+  --------
+
+  truc
+
+  Examples
+  --------
+
+  machin
+
+  """
   # list of attributes (preserving order of insertion for aloder versions of python)
   _atrs = []
 
