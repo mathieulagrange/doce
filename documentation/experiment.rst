@@ -5,3 +5,4 @@ Experiment
 
 .. automodule:: explanes.experiment
   :members:
+  :special-members: __str__

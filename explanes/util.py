@@ -16,7 +16,7 @@ def constantColumn(
 	Returns
 	-------
 
-  indexes : list of booleans
+  indexes : list of bool
     indexes of constant valued columns
 
   values : list of literals
@@ -50,20 +50,17 @@ def compressDescription(description, format='long', atomLength=2):
 
 	Parameters
 	----------
-  description : string
+  description : str
     The structured description
 
-  format : string
+  format : str, optional
     The expected format. 'long' (default) do not lead to any reduction. 'shortUnderscore' assumes pythonCase delimitation. 'shortCapital' assumes camelCase delimitation. 'short' attempts to perform reduction by guessing the type of delimitation.
 
 	Returns
 	-------
 
-  compressedDescription : string
+  compressedDescription : str
     The compressed description
-
-	See Also
-	--------
 
 	Examples
 	--------
@@ -98,15 +95,15 @@ def query_yes_no(question, default="yes"):
 	Parameters
 	----------
 
-  question : string
+  question : str
     phrase presented to the user.
-  default : string or None
+  default : str or None, optional
     presumed answer if the user just hits <Enter>. It must be "yes" (the default), "no" or None (meaning an answer is required of the user).
 
 	Returns
 	-------
 
-  answer : boolean
+  answer : bool
     True for "yes" or False for "no"
   """
 
@@ -138,8 +135,9 @@ def inNotebook():
 	Returns
 	-------
 
-  answer : boolean
-    True if running from Ipython notebook, False otherwise
+  answer : bool
+    True if running from Ipython notebook,
+    False otherwise
   """
   try:
     __IPYTHON__

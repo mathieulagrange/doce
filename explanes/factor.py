@@ -281,7 +281,7 @@ class Factor():
       os.rename(outfilename, path)
 
 
-  def clean(self, path, reverse=False, force=False, selector='*', idFormat={}, archivePath=''):
+  def cleanPath(self, path, reverse=False, force=False, selector='*', idFormat={}, archivePath=''):
     if path.endswith('.h5'):
       self.cleanH5(path, reverse, force, idFormat)
     else:
