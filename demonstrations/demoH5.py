@@ -35,7 +35,7 @@ def set(experiment, args):
 def step(setting, experiment):
     h5 = tb.open_file(experiment.path.output, mode='a')
     sg = experiment.metric.h5addSetting(h5, setting,
-        metricDimensions = [setting.nbRuns, setting.nbRuns, 1])
+        metricDimensions = [setting.nbRuns, setting.nbRuns, 1], idFormat = experiment._idFormat)
 
     tic = time.time()
     for r in range(setting.nbRuns):
