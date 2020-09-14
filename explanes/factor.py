@@ -12,7 +12,7 @@ import logging
 from joblib import Parallel, delayed
 from subprocess import call
 
-if eu.runFromNoteBook():
+if eu.inNotebook():
     from tqdm.notebook import tqdm as tqdm
 else:
     from tqdm import tqdm as tqdm

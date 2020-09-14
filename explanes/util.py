@@ -132,16 +132,17 @@ def query_yes_no(question, default="yes"):
                            "(or 'y' or 'n').\n")
 
 
-def runFromNoteBook():
-    try:
-        __IPYTHON__
-        return True
-    except NameError:
-        return False
+def inNotebook():
+  """detect if running from Ipython notebook
 
-def runFromColab():
-    try:
-        import google.colab
-        return True
-    except:
-        return False
+	Returns
+	-------
+
+  answer : boolean
+    True if running from Ipython notebook, False otherwise
+  """
+  try:
+    __IPYTHON__
+    return True
+  except NameError:
+    return False
