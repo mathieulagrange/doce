@@ -39,8 +39,7 @@ class Experiment():
     processing: /tmp
     storage:
     output:
-  host:
-  []
+  host: []
 
   Each level can be complemented with new members to store specific information:
 
