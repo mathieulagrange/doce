@@ -45,7 +45,11 @@ def constantColumn(
               indexes[cIndex] = False
   return (indexes, values)
 
-def compressDescription(description, format='long', atomLength=2):
+def compressDescription(
+  description,
+  format='long',
+  atomLength=2
+  ):
   """ reduce the number of letters for each word in a given description structured with underscores (pythonCase) or capital letters (camelCase).
 
 	Parameters
@@ -87,7 +91,10 @@ def compressDescription(description, format='long', atomLength=2):
     sf = description[0:atomLength]+''.join([itf[0:atomLength] for itf in re.findall('[A-Z][^A-Z]*', description)]).lower()
   return sf
 
-def query_yes_no(question, default="yes"):
+def query_yes_no(
+  question,
+  default="yes"
+  ):
   """Ask a yes/no question via input() and return their answer.
 
   The 'answer' return value is True for 'yes' or False for 'no'.
@@ -106,7 +113,7 @@ def query_yes_no(question, default="yes"):
   answer : bool
     True if prompt is 'yes'.
 
-    False if prompt is 'no'.  
+    False if prompt is 'no'.
   """
 
   valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}

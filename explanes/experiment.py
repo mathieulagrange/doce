@@ -6,28 +6,76 @@ import time
 import explanes as el
 
 class Experiment():
-  """one liner
+  """Stores high level information about the experiment and tools to control the processing and storage of data.
 
-  Desc
-
-  Members
-  -------
+  The experiment class displays high level information about the experiment in the experiment.project NameSpace such as its name, description, author, author's email address, and run identification. Information about storage of data is specified using the experiment.path NameSpace. It also stores a Factor object and a Metric object to respectively specify the factors and the metrics considered in the experiment.
 
   See Also
   --------
 
-  truc
+  explanes.factor.Factor, explanes.metric.Metric
 
   Examples
   --------
 
-  machin
+  >>> import explanes as el
+  >>> e=el.experiment.Experiment()
+  >>> e.project.name='myExperiment'
+  >>> e.project.author='Mathieu Lagrange'
+  >>> e.project.address='mathieu.lagrange@cnrs.fr'
+  >>> e.path.processing='/tmp'
+  >>> print(e)
+  project:
+    name: myExperiment
+    description:
+    author: Mathieu Lagrange
+    address: mathieu.lagrange@cnrs.fr
+    runId: 1600171143
+  factor:
+  parameter:
+  metric:
+  path:
+    input:
+    processing: /tmp
+    storage:
+    output:
+  host:
+  []
 
+  Each level can be complemented with new members to store specific information:
+
+  >>> e.specificInfo = 'stuff'
+  >>> import types
+  >>> e.myData = types.SimpleNamespace()
+  >>> e.myData.info1= 1
+  >>> e.myData.info2= 2
+  >>> print(e)
+    project: myProject
+    name:
+    description:
+    author: Mathieu Lagrange
+    address: mathieu.lagrange@cnrs.fr
+    runId: 1600171908
+  factor:
+  parameter:
+  metric:
+  path:
+    input:
+    processing: /tmp
+    storage:
+    output:
+  host: []
+  myData:
+    info1: 1
+    info2: 2
+  specificInfo: stuff
   """
   # list of attributes (preserving order of insertion for aloder versions of python)
   _atrs = []
 
-  def __init__(self):
+  def __init__(
+    self
+    ):
     self.project = types.SimpleNamespace()
     self.project.name = ''
     self.project.description = ''
@@ -47,12 +95,19 @@ class Experiment():
     self._archivePath = ''
     self._factorFormatInReduce = 'shortCapital'
 
-  def __setattr__(self, name, value):
+  def __setattr__(
+    self,
+    name,
+    value
+    ):
     if not hasattr(self, name) and name[0] != '_':
       self._atrs.append(name)
     return object.__setattr__(self, name, value)
 
-  def makePaths(self, force=False):
+  def makePaths(
+    self,
+    force=False
+    ):
     """Create directories whose path described in experiment.path are not available.
 
     For each path set in experiment.path, create the directory if not existing. The user may be prompted before creation.
@@ -87,7 +142,10 @@ class Experiment():
           os.makedirs(os.path.expanduser(path))
           print('Done.')
 
-  def __str__(self, format='str'):
+  def __str__(
+    self,
+    format='str'
+    ):
     """Provide a textual description of the experiment
 
     List all members of the class and theirs values
@@ -125,8 +183,7 @@ class Experiment():
       processing:
       storage:
       output:
-    host:
-    []
+    host: []
 
     >>> import explanes as el
     >>> print(el.Experiment().__str__(format='html'))
@@ -139,11 +196,11 @@ class Experiment():
           description += atr+': \r\n'
           for sns in self.__getattribute__(atr).__dict__.keys():
             description+='  '+sns+': '+str(self.__getattribute__(atr).__getattribute__(sns))+'\r\n'
-        elif isinstance(self.__getattribute__(atr), str):
-          description+='  '+atr+': '+str(self.__getattribute__(atr))+'\r\n'
+        elif isinstance(self.__getattribute__(atr), str) or isinstance(self.__getattribute__(atr), list):
+          description+=atr+': '+str(self.__getattribute__(atr))+'\r\n'
         else:
           description+=atr+': \r\n'+str(self.__getattribute__(atr))#+'\r\n'
-    if format is 'html':
+    if format == 'html':
       description = '<div>'+description.replace('\r\n', '</div><div>').replace('\t', '&emsp;')+'</div>'
     return description
 
