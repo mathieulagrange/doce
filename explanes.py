@@ -89,9 +89,10 @@ def __main__():
   if args.mail:
     experiment.sendMail('has started.', '<div> Mask = '+args.mask+'</div>')
   if args.run and hasattr(config, 'step'):
-    experiment.do(mask, config.step, jobs=args.run, logFileName=logFileName, tqdmDisplay=args.progress)
+    experiment.do(mask, config.step, nbJobs=args.run, logFileName=logFileName, tqdmDisplay=args.progress)
 
-  if args.mail or args.display:
+  body = '<div> Mask = '+args.mask+'</div>'
+  if args.display:
     if hasattr(config, 'display'):
       config.display(experiment, experiment.factor.settings(mask))
     else:
@@ -99,8 +100,9 @@ def __main__():
       df = pd.DataFrame(table, columns=columns).round(decimals=2)
       print(header)
       print(df)
-    if args.mail:
-      experiment.sendMail('is over.', '<div> Mask = '+args.mask+'</div>'+'<div> '+header+' </div><br>'+df.to_html()) #
+      body += '<div> '+header+' </div><br>'+df.to_html()
+  if args.mail:
+    experiment.sendMail('is over.', body) #
 
 if __name__ == "__main__":
     __main__()

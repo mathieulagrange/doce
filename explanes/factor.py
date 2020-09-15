@@ -22,15 +22,6 @@ class Factor():
 
   Desc
 
-  Parameters
-  ----------
-
-  Returns
-  -------
-
-  See Also
-  --------
-
   Examples
   --------
 
@@ -136,18 +127,51 @@ class Factor():
         raise e
     return failed
 
-  def do(self, function=None, *parameters, jobs=1, tqdmDisplay=True, logFileName=''):
+  def do(
+    self,
+    function=None,
+    *parameters,
+    nbJobs=1,
+    tqdmDisplay=True,
+    logFileName=''):
+    """one liner
+
+    Desc
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    See Also
+    --------
+
+    Examples
+    --------
+
+    import explanes as el
+    e=el.experiment.Experiment()
+    e.factor.factor1=[1, 3]
+    e.factor.factor2=[2, 4]
+
+    def myFunction(setting, experiment):
+      print('{}+{}={}'.format(setting.factor1, setting.factor2, setting.factor1+setting.factor2))
+
+    e.do([], myFunction, nbJobs=1, tqdmDisplay=False)
+
+    """
     nbFailed = 0
     if logFileName:
       logging.basicConfig(filename=logFileName,
                 level=logging.DEBUG,
                 format='%(levelname)s: %(asctime)s %(message)s',
                 datefmt='%m/%d/%Y %I:%M:%S')
-
-    print('Number of settings: '+str(len(self)))
-    if jobs>1 or jobs<0:
-      # print(jobs)
-      result = Parallel(n_jobs=jobs, require='sharedmem')(delayed(self.doSetting)(setting, function, logFileName, *parameters) for setting in tqdm(self))
+    if tqdmDisplay:
+      print('Number of settings: '+str(len(self)))
+    if nbJobs>1 or nbJobs<0:
+      # print(nbJobs)
+      result = Parallel(n_jobs=nbJobs, require='sharedmem')(delayed(self.doSetting)(setting, function, logFileName, *parameters) for setting in tqdm(self))
     else:
       with tqdm(total=len(self), disable= not tqdmDisplay) as t:
         for setting in self:
@@ -347,7 +371,7 @@ class Factor():
     for fIndex, f in enumerate(fNames):
       if f[0] != '_' and getattr(self, f) is not None and f not in omit:
           if (singleton or f in self._nonSingleton) and (not noneAndZero2void or (noneAndZero2void and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and (not default2void or not hasattr(self._default, f) or (default2void and hasattr(self._default, f) and getattr(self._default, f) != getattr(self, f))):
-            id.append(eu.compressName(f, format))
+            id.append(eu.compressDescription(f, format))
             id.append(str(getattr(self, f)))
     if 'list' not in format:
       id = sep.join(id)

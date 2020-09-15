@@ -11,3 +11,9 @@ Glossary
 
   metric
     A metric is
+
+  mask
+    A mask is
+
+  setting
+    A setting is

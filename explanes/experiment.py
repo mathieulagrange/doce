@@ -93,6 +93,8 @@ class Experiment():
     self._idFormat = {}
     self._archivePath = ''
     self._factorFormatInReduce = 'shortCapital'
+    self._gmailId = 'expcode.mailer'
+    self._gmailAppPassword = 'tagsqtlirkznoxro'
 
   def __setattr__(
     self,
@@ -203,26 +205,174 @@ class Experiment():
       description = '<div>'+description.replace('\r\n', '</div><div>').replace('\t', '&emsp;')+'</div>'
     return description
 
-  def sendMail(self, title='', msg=''):
-    header = 'From: expLanes mailer <expcode.mailer@gmail.com> \r\nTo: '+self.project.author+' '+self.project.address+'\r\nMIME-Version: 1.0 \r\nContent-type: text/html \r\nSubject: [expLanes] '+self.project.name+' id '+self.project.runId+' '+title+'\r\n'
+  def sendMail(
+    self,
+    title='',
+    body=''):
+    """Send an email to the email given in experiment.project.address.
+
+    Send an email to the experiment.project.address email address using the smtp service from gmail. For privacy, please consider using a dedicated gmail account by setting experiment._gmailId and experiment._gmailAppPassword. For this, you will need to create a gmail account, set two-step validation and allow connection with app password (see https://support.google.com/accounts/answer/185833?hl=en).
+
+    Parameters
+    ----------
+
+    title : str
+      the title of the email in plain text format
+
+    body : str
+      the body of the email in html format
+
+    Examples
+    --------
+    >>> import explanes as el
+    >>> e=el.experiment.Experiment()
+    >>> e.project.address = 'mathieu.lagrange@cnrs.fr'
+    >>> e.sendMail('hello', '<div> good day </div>')
+    Sent message entitled: [explanes]  id 1600177004 hello
+
+    """
+    header = 'From: expLanes mailer <'+self._gmailId+'@gmail.com> \r\nTo: '+self.project.author+' '+self.project.address+'\r\nMIME-Version: 1.0 \r\nContent-type: text/html \r\nSubject: [explanes] '+self.project.name+' id '+self.project.runId+' '+title+'\r\n'
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
-    server.login('expcode.mailer@gmail.com', 'tagsqtlirkznoxro')
-    server.sendmail("expcode.mailer@gmail.com", self.project.address, header+msg+'<h3> '+self.__str__(format = 'html')+'</h3>')
+    server.login(self._gmailId+'@gmail.com', self._gmailAppPassword)
+    server.sendmail(self._gmailId, self.project.address, header+body+'<h3> '+self.__str__(format = 'html')+'</h3>')
     server.quit
+    print('Sent message entitled: [explanes] '+self.project.name+' id '+self.project.runId+' '+title)
 
-  def do(self, mask, function=None, jobs=1, tqdmDisplay=True, logFileName='', *parameters):
-    return self.factor.settings(mask).do(function, self, *parameters, jobs=jobs, tqdmDisplay=tqdmDisplay, logFileName=logFileName)
+  def do(
+    self,
+    mask,
+    function=None,
+    *parameters,
+    nbJobs=1,
+    tqdmDisplay=True,
+    logFileName=''
+    ):
+    """Operate the function with parameters on the setting set generated using mask.
 
-  def cleanPath(self, path, mask, reverse=False, force=False, selector='*', idFormat={}):
+    Operate a given function on the setting set generated using mask. The setting set can be browsed in parallel by setting nbJobs>1. If logFileName is not empty, a faulty setting do not stop the execution, the error is stored and another setting is executed. If tqdmDisplay is set to True, a graphical display of the progress through the setting set is displayed.
 
+    This function is essentially a wrapper to the function :meth:`explanes.factor.Factor.do`.
+
+    Parameters
+    ----------
+
+    mask : a list of literals or a list of lists of literals
+      :term:`mask` used to specify the :term:`settings<setting>` set
+
+    function : function(explanes.factor.Factor, explanes.experiment.Experiment, *parameters)
+      A function that operates on a given setting within the experiment environnment with optional parameters.
+
+    *parameters : any type (optional)
+      parameters given to the function.
+
+    nbJobs : int > 0 (optional)
+      number of jobs.
+
+      If nbJobs = 1, the setting set is browsed sequentially in depth first.
+
+      If nbJobs > 1, the settings set is browsed randomly, and settings are distributed over the different processes.
+
+    tqdmDisplay : bool (optional)
+      display progress of browsing the setting set.
+
+      If True, use tqdm to display progress
+
+      If False, do not display progress
+
+    logFileName : str (optional)
+      path to a file where potential errors will be logged.
+
+      If empty, the execution is stopped on the first faulty setting.
+
+      If not empty, the execution is not stopped on a faulty setting,
+
+
+    See Also
+    --------
+
+    explanes.factor.Factor.do
+
+    Examples
+    --------
+
+    >>> import explanes as el
+    >>> e=el.experiment.Experiment()
+    >>> e.factor.factor1=[1, 3]
+    >>> e.factor.factor2=[2, 4]
+
+    # this function displays the sum of the two modalities of the current setting
+    >>> def myFunction(setting, experiment):
+        print('{}+{}={}'.format(setting.factor1, setting.factor2, setting.factor1+setting.factor2))
+
+    >>> e.do([], myFunction, nbJobs=1, tqdmDisplay=False)
+    1+2=3
+    1+4=5
+    3+2=5
+    3+4=7
+
+    In this example, since nbJobs<2, the browsing of the setting set is deterministic and implemented as depth first.
+
+    """
+    return self.factor.settings(mask).do(function, self, *parameters, nbJobs=nbJobs, tqdmDisplay=tqdmDisplay, logFileName=logFileName)
+
+  def cleanPath(
+    self,
+    path,
+    mask,
+    reverse=False,
+    force=False,
+    selector='*',
+    idFormat={}
+    ):
+    """one liner
+
+    Desc
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    See Also
+    --------
+
+    Examples
+    --------
+
+    """
     if '/' not in path and '\\' not in path:
       path = self.__getattribute__('path').__getattribute__(path)
     if path:
       self.factor.settings(mask).cleanPath(path, reverse, force, selector, idFormat, archivePath=self._archivePath)
 
-  def cleanPaths(self, mask, reverse=False, force=False, selector='*', idFormat={}):
+  def cleanPaths(
+    self,
+    mask,
+    reverse=False,
+    force=False,
+    selector='*',
+    idFormat={}
+    ):
+    """one liner
+
+    Desc
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    See Also
+    --------
+
+    Examples
+    --------
+
+    """
     for sns in self.__getattribute__('path').__dict__.keys():
       print('checking '+sns+' path')
       self.cleanPath(sns, mask, reverse, force, selector, idFormat)

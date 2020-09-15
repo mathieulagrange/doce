@@ -18,13 +18,13 @@ class Metric():
       self._metrics.append(name)
     return object.__setattr__(self, name, value)
 
-  def reduceFromNpy(self, settings, dataPath, **kwargs):
+  def reduceFromNpy(self, settings, dataPath, idFormat={}):
       table = []
       metricHasData = np.zeros((len(self.getMetricsNames())))
       for sIndex, setting in enumerate(settings):
           row = []
           for mIndex, metric in enumerate(self.getMetricsNames()):
-              fileName = dataPath+setting.getId(**kwargs)+'_'+metric+'.npy'
+              fileName = dataPath+setting.getId(**idFormat)+'_'+metric+'.npy'
               if os.path.exists(fileName):
                   metricHasData[mIndex] = 1
                   data = np.load(fileName)
@@ -107,7 +107,7 @@ class Metric():
 
         ccIndex = [i for i, x in enumerate(ccIndex) if x and i<len(settings.getFactorNames())]
         for s in ccIndex:
-          header += eu.compressName(columns[s], factorDisplayStyle)+': '+str(ccValue[s])+' '
+          header += eu.compressDescription(columns[s], factorDisplayStyle)+': '+str(ccValue[s])+' '
         for s in sorted(ccIndex, reverse=True):
           columns.pop(s)
           for r in table:
@@ -187,7 +187,7 @@ class Metric():
   def getColumns(self, settings, metricHasData, aggregationStyle, factorDisplayStyle):
     columns = []
     for factorName in settings.getFactorNames():
-      columns.append(eu.compressName(factorName, factorDisplayStyle))
+      columns.append(eu.compressDescription(factorName, factorDisplayStyle))
     for mIndex, metric in enumerate(self.getMetricsNames()):
       if metricHasData[mIndex]:
         for aggregationType in self.__getattribute__(metric):

@@ -86,10 +86,10 @@ def compressDescription(
       format = 'shortCapital'
   compressedDescription = description
   if 'shortUnderscore' in format:
-    sf = ''.join([itf[0:atomLength] for itf in description.split('_')])
+    compressedDescription = ''.join([itf[0:atomLength] for itf in description.split('_')])
   if 'shortCapital' in format:
-    sf = description[0:atomLength]+''.join([itf[0:atomLength] for itf in re.findall('[A-Z][^A-Z]*', description)]).lower()
-  return sf
+    compressedDescription = description[0:atomLength]+''.join([itf[0:atomLength] for itf in re.findall('[A-Z][^A-Z]*', description)]).lower()
+  return compressedDescription
 
 def query_yes_no(
   question,
