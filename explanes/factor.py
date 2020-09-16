@@ -134,31 +134,14 @@ class Factor():
     nbJobs=1,
     tqdmDisplay=True,
     logFileName=''):
-    """one liner
+    """Iterate over the setting set and operate the function with the given parameters.
 
-    Desc
-
-    Parameters
-    ----------
-
-    Returns
-    -------
+    This function is wrapped by :meth:`explanes.experiment.Experiment.do`, which should be more convenient to use. Please refer to this method for usage.
 
     See Also
     --------
 
-    Examples
-    --------
-
-    import explanes as el
-    e=el.experiment.Experiment()
-    e.factor.factor1=[1, 3]
-    e.factor.factor2=[2, 4]
-
-    def myFunction(setting, experiment):
-      print('{}+{}={}'.format(setting.factor1, setting.factor2, setting.factor1+setting.factor2))
-
-    e.do([], myFunction, nbJobs=1, tqdmDisplay=False)
+    explanes.experiment.Experiment.do
 
     """
     nbFailed = 0
@@ -305,19 +288,24 @@ class Factor():
       os.rename(outfilename, path)
 
 
-  def cleanPath(self, path, reverse=False, force=False, selector='*', idFormat={}, archivePath=''):
+  def cleanDataSink(self, path, reverse=False, force=False, selector='*', idFormat={}, archivePath=''):
+    path = os.path.expanduser(path)
     if path.endswith('.h5'):
       self.cleanH5(path, reverse, force, idFormat)
     else:
       fileNames = []
       for setting in self:
-          for f in glob.glob(path+setting.getId(**idFormat)+selector):
+          # print(path+'/'+setting.getId(**idFormat)+selector)
+          for f in glob.glob(path+'/'+setting.getId(**idFormat)+selector):
               fileNames.append(f)
       if reverse:
         complete = []
-        for f in glob.glob(path+selector):
+        for f in glob.glob(path+'/'+selector):
             complete.append(f)
+        # print(fileNames)
         fileNames = [i for i in complete if i not in fileNames]
+      #   print(complete)
+      # print(fileNames)
       # print(len(fileNames))
       if archivePath:
         destination = 'move to '+archivePath+' '

@@ -53,14 +53,14 @@ def __main__():
     if path2clean == 'all':
       experiment.cleanExperiment(mask, idFormat=experiment._idFormat)
     else:
-      experiment.clean(path2clean, mask, idFormat=experiment._idFormat)
+      experiment.cleanDataSink(path2clean, mask, idFormat=experiment._idFormat)
 
   if args.keep:
     path2clean = args.keep
     if path2clean == 'all':
       experiment.cleanExperiment(mask, reverse=True, idFormat=experiment._idFormat)
     else:
-      experiment.clean(path2clean, mask, reverse=True, idFormat=experiment._idFormat)
+      experiment.cleanDataSink(path2clean, mask, reverse=True, idFormat=experiment._idFormat)
 
   logFileName = ''
   if args.server>-2:

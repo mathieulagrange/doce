@@ -265,7 +265,7 @@ class Experiment():
       A function that operates on a given setting within the experiment environnment with optional parameters.
 
     *parameters : any type (optional)
-      parameters given to the function.
+      parameters to be given to the function.
 
     nbJobs : int > 0 (optional)
       number of jobs.
@@ -275,7 +275,7 @@ class Experiment():
       If nbJobs > 1, the settings set is browsed randomly, and settings are distributed over the different processes.
 
     tqdmDisplay : bool (optional)
-      display progress of browsing the setting set.
+      display progress of scheduling the setting set.
 
       If True, use tqdm to display progress
 
@@ -312,43 +312,110 @@ class Experiment():
     3+2=5
     3+4=7
 
-    In this example, since nbJobs<2, the browsing of the setting set is deterministic and implemented as depth first.
+    In this example, since nbJobs<2, the scheduling of the setting set is deterministic and implemented as depth first.
+
+    e.do([], myFunction, nbJobs=3, tqdmDisplay=False)
+    1+2=3
+    1+4=5
+    3+4=7
+    3+2=5
+
+    In this example, since nbJobs>1, the scheduling of the setting set is non deterministic.
 
     """
+
     return self.factor.settings(mask).do(function, self, *parameters, nbJobs=nbJobs, tqdmDisplay=tqdmDisplay, logFileName=logFileName)
 
-  def cleanPath(
+  def cleanDataSink(
     self,
     path,
-    mask,
+    mask=[],
     reverse=False,
     force=False,
     selector='*',
-    idFormat={}
+    idFormat={},
+    archivePath = None
     ):
-    """one liner
+    """ Perform a cleaning of a data sink (directory or h5 file).
 
-    Desc
+    This method is essentially a wrapper to :meth:`explanes.factor.Factor.clean`
 
     Parameters
     ----------
 
-    Returns
-    -------
+    path : str
+      If has a / or \\, should specify of valid path to a directory or .h5 file.
+
+      If has no / or \\, should specify a member of the NameSpace experiment.path.
+
+    mask : a list of literals or a list of lists of literals (optional)
+      :term:`mask` used to specify the :term:`settings<setting>` set
+
+    reverse : bool (optional)
+      If False, remove any entry corresponding to the setting set (default).
+
+      If True, remove all except the entries corresponding to the setting set.
+    force=False,
+      If False, prompt the user before modifying the data sink (default).
+
+      If True, do not prompt the user before modifying the data sink.
+
+    selector : str (optional)
+      string specifying the end of the wildcard used to select the entries to remove or to keep (default: '*').
+
+    idFormat : dict (optional)
+      Dictionary specifying the format of the id describing the :term:`setting`. Please see :method:explanes.factor.Factor.getId for further information.
+
+    archivePath : str
+      If None, the archivePath is set to explanes.experiment.Experiment._archivePath.
+
+      If not None, specify an existing directory where the specified data will be moved.
 
     See Also
     --------
 
+    explanes.factor.Factor.cleanDataSink, explanes.factor.Factor.getId
+
     Examples
     --------
 
+    >>> import explanes as el
+    >>> import numpy as np
+    >>> import os
+
+    >>> e=el.experiment.Experiment()
+    >>> e.path.output = '/tmp/test'
+    >>> e.makePaths()
+
+    >>> e.factor.factor1=[1, 3]
+    >>> e.factor.factor2=[2, 4]
+
+    >>> def myFunction(setting, experiment):
+      np.save(experiment.path.output+'/'+setting.getId()+'_sum.npy', e.factor.factor1+e.factor.factor2)
+      np.save(experiment.path.output+'/'+setting.getId()+'_mult.npy', e.factor.factor1*e.factor.factor2)
+
+    >>> e.do([], myFunction, tqdmDisplay=False)
+    >>> print(os.listdir(e.path.output))
+    ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_2_mult.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_1_factor2_2_sum.npy', 'factor1_1_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy', 'factor1_1_factor2_2_mult.npy', 'factor1_1_factor2_4_sum.npy']
+
+    >>> e.cleanDataSink('output', [0], force=True)
+    >>> print(os.listdir(e.path.output))
+
+    ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_2_mult.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy']
+
+    >>> e.cleanDataSink('output', [1, 1], force=True, reverse=True, selector='*mult*')
+    >>> print(os.listdir(e.path.output))
+    ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy']
+
     """
+    if not archivePath:
+      archivePath=self._archivePath
     if '/' not in path and '\\' not in path:
       path = self.__getattribute__('path').__getattribute__(path)
     if path:
-      self.factor.settings(mask).cleanPath(path, reverse, force, selector, idFormat, archivePath=self._archivePath)
+      self.factor.settings(mask).cleanDataSink(path, reverse, force, selector, idFormat, archivePath)
 
-  def cleanPaths(
+  def cleanExperiment(
     self,
     mask,
     reverse=False,
