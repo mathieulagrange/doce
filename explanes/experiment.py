@@ -391,8 +391,8 @@ class Experiment():
     >>> e.factor.factor2=[2, 4]
 
     >>> def myFunction(setting, experiment):
-      np.save(experiment.path.output+'/'+setting.getId()+'_sum.npy', e.factor.factor1+e.factor.factor2)
-      np.save(experiment.path.output+'/'+setting.getId()+'_mult.npy', e.factor.factor1*e.factor.factor2)
+    >>>   np.save(experiment.path.output+'/'+setting.getId()+'_sum.npy', e.factor.factor1+e.factor.factor2)
+    >>>   np.save(experiment.path.output+'/'+setting.getId()+'_mult.npy', e.factor.factor1*e.factor.factor2)
 
     >>> e.do([], myFunction, tqdmDisplay=False)
     >>> print(os.listdir(e.path.output))
@@ -400,7 +400,6 @@ class Experiment():
 
     >>> e.cleanDataSink('output', [0], force=True)
     >>> print(os.listdir(e.path.output))
-
     ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_2_mult.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy']
 
     >>> e.cleanDataSink('output', [1, 1], force=True, reverse=True, selector='*mult*')
