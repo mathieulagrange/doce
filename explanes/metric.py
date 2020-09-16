@@ -169,19 +169,27 @@ class Metric():
 
   def h5addSetting(self, h5, setting, metricDimensions=[], idFormat={}):
     groupName = setting.getId(**idFormat)
-    print(groupName)
+    # print(groupName)
     if not h5.__contains__('/'+groupName):
       sg = h5.create_group('/', groupName, setting.getId(format='long', sep=' '))
     else:
       sg = h5.root._f_get_child(groupName)
     for mIndex, metric in enumerate(self.getMetricsNames()):
+      if hasattr(self._description, metric):
+        description = getattr(self._description, metric)
+      else:
+        description = metric
+
+      if hasattr(self._unit, metric):
+        description += ' in ' + getattr(self._unit, metric)
+
       if not metricDimensions:
         if sg.__contains__(metric):
-            sg._f_get_child(metric)._f_remove()
-        h5.create_earray(sg, metric, tb.Float64Atom(), (0,), getattr(self._description, metric))
+          sg._f_get_child(metric)._f_remove()
+        h5.create_earray(sg, metric, tb.Float64Atom(), (0,), description)
       else:
         if not sg.__contains__(metric):
-          h5.create_array(sg, metric, np.zeros(( metricDimensions[mIndex])), getattr(self._description, metric))
+          h5.create_array(sg, metric, np.zeros(( metricDimensions[mIndex])), description)
     return sg
 
   def getColumns(self, settings, metricHasData, aggregationStyle, factorDisplayStyle):

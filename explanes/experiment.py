@@ -135,6 +135,7 @@ class Experiment():
     >>> e.makePaths()
     The processing path: /tmp/experiment/processing does not exist. Do you want to create it ? [Y/n] <press Enter> Done.
     The output path: /tmp/experiment/output does not exist. Do you want to create it ? [Y/n] <press Enter> Done.
+
     """
     for sns in self.__getattribute__('path').__dict__.keys():
       path = self.__getattribute__('path').__getattribute__(sns)
@@ -382,30 +383,95 @@ class Experiment():
     >>> import explanes as el
     >>> import numpy as np
     >>> import os
-
     >>> e=el.experiment.Experiment()
     >>> e.path.output = '/tmp/test'
     >>> e.makePaths()
-
     >>> e.factor.factor1=[1, 3]
     >>> e.factor.factor2=[2, 4]
-
     >>> def myFunction(setting, experiment):
     >>>   np.save(experiment.path.output+'/'+setting.getId()+'_sum.npy', e.factor.factor1+e.factor.factor2)
     >>>   np.save(experiment.path.output+'/'+setting.getId()+'_mult.npy', e.factor.factor1*e.factor.factor2)
-
     >>> e.do([], myFunction, tqdmDisplay=False)
     >>> print(os.listdir(e.path.output))
     ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_2_mult.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_1_factor2_2_sum.npy', 'factor1_1_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy', 'factor1_1_factor2_2_mult.npy', 'factor1_1_factor2_4_sum.npy']
 
-    >>> e.cleanDataSink('output', [0], force=True)
+    In this example, we store the result of the sum and the multiplication.
+
+    >>> e.cleanDataSink('output', mask = [0], force=True)
     >>> print(os.listdir(e.path.output))
     ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_2_mult.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy']
 
-    >>> e.cleanDataSink('output', [1, 1], force=True, reverse=True, selector='*mult*')
+    Here, we remove all the files in the directory /tmp/test that correspond to the settings that have the first factor set to the first modality.
+
+    >>> e.cleanDataSink('output', mask = [1, 1], force=True, reverse=True, selector='*mult*')
     >>> print(os.listdir(e.path.output))
     ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy']
 
+    Here, we remove all the files that match the wildcard *mult* in the directory /tmp/test that do not correspond to the settings that have the first factor set to the second modality and the second factor set to the second modality.
+
+    >>> import explanes as el
+    >>> import tables as tb
+    >>> e=el.experiment.Experiment()
+    >>> e.path.output = '/tmp/test.h5'
+    >>> e.factor.factor1=[1, 3]
+    >>> e.factor.factor2=[2, 4]
+    >>> e.metric.sum = ['']
+    >>> e.metric.mult = ['']
+    >>> def myFunction(setting, experiment):
+    >>>   h5 = tb.open_file(experiment.path.output, mode='a')
+    >>>   sg = experiment.metric.h5addSetting(h5, setting, metricDimensions=[1, 1])
+    >>>   sg.sum[0] = e.factor.factor1+e.factor.factor2
+    >>>   sg.mult[0] = e.factor.factor1*e.factor.factor2
+    >>>   h5.close()
+    >>> e.do([], myFunction, tqdmDisplay=False)
+    >>> h5 = tb.open_file(e.path.output, mode='r')
+    >>> print(h5)
+    /tmp/test.h5 (File) ''
+    Last modif.: 'Wed Sep 16 17:54:07 2020'
+    Object Tree:
+    / (RootGroup) ''
+    /factor1_1_factor2_2 (Group) 'factor1 1 factor2 2'
+    /factor1_1_factor2_2/mult (Array(1,)) 'mult'
+    /factor1_1_factor2_2/sum (Array(1,)) 'sum'
+    /factor1_1_factor2_4 (Group) 'factor1 1 factor2 4'
+    /factor1_1_factor2_4/mult (Array(1,)) 'mult'
+    /factor1_1_factor2_4/sum (Array(1,)) 'sum'
+    /factor1_3_factor2_2 (Group) 'factor1 3 factor2 2'
+    /factor1_3_factor2_2/mult (Array(1,)) 'mult'
+    /factor1_3_factor2_2/sum (Array(1,)) 'sum'
+    /factor1_3_factor2_4 (Group) 'factor1 3 factor2 4'
+    /factor1_3_factor2_4/mult (Array(1,)) 'mult'
+    /factor1_3_factor2_4/sum (Array(1,)) 'sum'
+    >>> h5.close()
+
+    >>> e.cleanDataSink('output', [0], force=True)
+    >>> h5 = tb.open_file(e.path.output, mode='r')
+    >>> print(h5)
+    /tmp/test.h5 (File) ''
+    Last modif.: 'Wed Sep 16 17:54:08 2020'
+    Object Tree:
+    / (RootGroup) ''
+    /factor1_3_factor2_2 (Group) 'factor1 3 factor2 2'
+    /factor1_3_factor2_2/mult (Array(1,)) 'mult'
+    /factor1_3_factor2_2/sum (Array(1,)) 'sum'
+    /factor1_3_factor2_4 (Group) 'factor1 3 factor2 4'
+    /factor1_3_factor2_4/mult (Array(1,)) 'mult'
+    /factor1_3_factor2_4/sum (Array(1,)) 'sum'
+    >>> h5.close()
+
+    >>> e.cleanDataSink('output', [1, 1], force=True, reverse=True, selector='*mult*')
+    >>> h5 = tb.open_file(e.path.output, mode='r')
+    >>> print(h5)
+    /tmp/test.h5 (File) ''
+    Last modif.: 'Wed Sep 16 17:54:08 2020'
+    Object Tree:
+    / (RootGroup) ''
+    /factor1_3_factor2_4 (Group) 'factor1 3 factor2 4'
+    /factor1_3_factor2_4/mult (Array(1,)) 'mult'
+    /factor1_3_factor2_4/sum (Array(1,)) 'sum'
+    >>> h5.close()
+
+    Here, the same operations are conducted on a h5 file.
     """
     if not archivePath:
       archivePath=self._archivePath
@@ -441,4 +507,4 @@ class Experiment():
     """
     for sns in self.__getattribute__('path').__dict__.keys():
       print('checking '+sns+' path')
-      self.cleanPath(sns, mask, reverse, force, selector, idFormat)
+      self.cleanDataSink(sns, mask, reverse, force, selector, idFormat)

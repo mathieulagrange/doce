@@ -280,11 +280,11 @@ class Factor():
     # repack
     outfilename = path+'Tmp'
     command = ["ptrepack", "-o", "--chunkshape=auto", "--propindexes", path, outfilename]
-    print('Original size is %.2fMiB' % (float(os.stat(path).st_size)/1024**2))
+    # print('Original size is %.2fMiB' % (float(os.stat(path).st_size)/1024**2))
     if call(command) != 0:
       print('Unable to repack. Is ptrepack installed ?')
     else:
-      print('Repacked size is %.2fMiB' % (float(os.stat(outfilename).st_size)/1024**2))
+      # print('Repacked size is %.2fMiB' % (float(os.stat(outfilename).st_size)/1024**2))
       os.rename(outfilename, path)
 
 
