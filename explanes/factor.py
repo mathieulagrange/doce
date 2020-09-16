@@ -77,7 +77,7 @@ class Factor():
       self._setting = self._settings[self._currentSetting]
       # print(self._setting)
       self._currentSetting += 1
-      return self
+      return copy.deepcopy(self)
 
   def __getitem__(self, index):
     # print('get item')
@@ -171,7 +171,7 @@ class Factor():
       print('Number of settings: '+str(len(self)))
     if nbJobs>1 or nbJobs<0:
       # print(nbJobs)
-      result = Parallel(n_jobs=nbJobs, require='sharedmem')(delayed(self.doSetting)(setting, function, logFileName, *parameters) for setting in tqdm(self))
+      result = Parallel(n_jobs=nbJobs, require='sharedmem')(delayed(self.doSetting)(setting, function, logFileName, *parameters) for setting in self)
     else:
       with tqdm(total=len(self), disable= not tqdmDisplay) as t:
         for setting in self:
