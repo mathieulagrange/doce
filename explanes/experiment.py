@@ -364,7 +364,7 @@ class Experiment():
       string specifying the end of the wildcard used to select the entries to remove or to keep (default: '*').
 
     idFormat : dict (optional)
-      Dictionary specifying the format of the id describing the :term:`setting`. Please see :method:explanes.factor.Factor.getId for further information.
+      Dictionary specifying the format of the id describing the :term:`setting`. Please see the documention of  :meth:`explanes.factor.Factor.getId` for further information.
 
     archivePath : str
       If None, the archivePath is set to explanes.experiment.Experiment._archivePath.
@@ -420,25 +420,20 @@ class Experiment():
     reverse=False,
     force=False,
     selector='*',
-    idFormat={}
+    idFormat={},
+    archivePath = None
     ):
-    """one liner
+    """Clean all relevant directories specified in the NameSpace explanes.Experiment.experiment.path.
 
-    Desc
-
-    Parameters
-    ----------
-
-    Returns
-    -------
-
+    Apply :meth:`explanes.experiment.Experiment.cleanDataSink` on each relevant directories specified in the NameSpace explanes.experiment.Experiment.path.
+    
     See Also
     --------
 
-    Examples
-    --------
+    explanes.experiment.Experiment.cleanDataSink
 
     """
     for sns in self.__getattribute__('path').__dict__.keys():
       print('checking '+sns+' path')
-      self.cleanPath(sns, mask, reverse, force, selector, idFormat)
+      self.cleanDataSink(sns, mask, reverse, force, selector, idFormat,
+      archivePath)
