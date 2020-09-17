@@ -123,7 +123,7 @@ class Experiment():
 
     Returns
     -------
-    
+
     None
 
     Examples
@@ -136,7 +136,7 @@ class Experiment():
     >>> e.path.processing = '/tmp/'+e.project.name+'/processing'
     >>> e.path.output = '/tmp/'+e.project.name+'/output'
     >>> e.makePaths(force=True)
-    >>> print(os.listdir('/tmp/'+e.project.name))
+    >>> os.listdir('/tmp/'+e.project.name)
     ['processing', 'output']
     """
     for sns in self.__getattribute__('path').__dict__.keys():
@@ -194,7 +194,7 @@ class Experiment():
     host: []
 
     >>> import explanes as el
-    >>> print(el.Experiment().__str__(format='html'))
+    >>> el.Experiment().__str__(format='html')
     <h3> <div>project: </div><div>  name: </div><div>  description: </div><div>  author: </div><div>  address: </div><div>  runId: 1600100112</div><div>factor: </div><div>parameter: </div><div>metric: </div><div>path: </div><div>  input: </div><div>  processing: </div><div>  storage: </div><div>  output: </div><div>host: </div><div>[]</div></h3>
     """
     description = ''
@@ -402,15 +402,15 @@ class Experiment():
     >>>   np.save(experiment.path.output+'/'+setting.getId()+'_mult.npy', e.factor.factor1*e.factor.factor2)
 
     >>> e.do([], myFunction, tqdmDisplay=False)
-    >>> print(os.listdir(e.path.output))
+    >>> os.listdir(e.path.output)
     ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_2_mult.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_1_factor2_2_sum.npy', 'factor1_1_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy', 'factor1_1_factor2_2_mult.npy', 'factor1_1_factor2_4_sum.npy']
 
     >>> e.cleanDataSink('output', [0], force=True)
-    >>> print(os.listdir(e.path.output))
+    >>> os.listdir(e.path.output)
     ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_2_mult.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy']
 
     >>> e.cleanDataSink('output', [1, 1], force=True, reverse=True, selector='*mult*')
-    >>> print(os.listdir(e.path.output))
+    >>> os.listdir(e.path.output)
     ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy']
 
     """
@@ -423,7 +423,7 @@ class Experiment():
 
   def cleanExperiment(
     self,
-    mask,
+    mask=[],
     reverse=False,
     force=False,
     selector='*',
@@ -438,6 +438,19 @@ class Experiment():
     --------
 
     explanes.experiment.Experiment.cleanDataSink
+
+    Examples
+    --------
+
+    >>> import explanes as el
+    >>> e=el.experiment.Experiment()
+    >>> e.path.output = '/tmp/test'
+    >>> e.makePaths()
+    >>> e.cleanExperiment()
+    checking input path
+    checking processing path
+    checking storage path
+    checking output path
 
     """
     for sns in self.__getattribute__('path').__dict__.keys():
