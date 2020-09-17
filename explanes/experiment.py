@@ -120,6 +120,7 @@ class Experiment():
       If True, do not prompt the user before creating the missing directories.
 
       If False, prompt the user before creation of each missing directory.
+
     Returns
     -------
     None
@@ -128,20 +129,25 @@ class Experiment():
     --------
 
     >>> import explanes as el
+    >>> import os
     >>> e=el.Experiment()
     >>> e.project.name = 'experiment'
     >>> e.path.processing = '/tmp/'+e.project.name+'/processing'
     >>> e.path.output = '/tmp/'+e.project.name+'/output'
-    >>> e.makePaths()
-    The processing path: /tmp/experiment/processing does not exist. Do you want to create it ? [Y/n] <press Enter> Done.
-    The output path: /tmp/experiment/output does not exist. Do you want to create it ? [Y/n] <press Enter> Done.
+    >>> e.makePaths(force=True)
+    >>> print(os.listdir('/tmp/'+e.project.name))
+    ['processing', 'output']
     """
     for sns in self.__getattribute__('path').__dict__.keys():
-      path = self.__getattribute__('path').__getattribute__(sns)
-      if path and not os.path.exists(os.path.expanduser(path)):
-        if force or el.util.query_yes_no('The '+sns+' path: '+path+' does not exist. Do you want to create it ?'):
-          os.makedirs(os.path.expanduser(path))
-          print('Done.')
+      path = os.path.abspath(os.path.expanduser(self.__getattribute__('path').__getattribute__(sns)))
+      if path:
+        if path.endswith('.h5'):
+          path = os.path.dirname(os.path.abspath(path))
+        if not os.path.exists(path):
+          if force or el.util.query_yes_no('The '+sns+' path: '+path+' does not exist. Do you want to create it ?'):
+            os.makedirs(path)
+            if not force:
+              print('Done.')
 
   def __str__(
     self,
@@ -426,7 +432,7 @@ class Experiment():
     """Clean all relevant directories specified in the NameSpace explanes.Experiment.experiment.path.
 
     Apply :meth:`explanes.experiment.Experiment.cleanDataSink` on each relevant directories specified in the NameSpace explanes.experiment.Experiment.path.
-    
+
     See Also
     --------
 
