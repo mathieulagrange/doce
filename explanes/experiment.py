@@ -268,7 +268,7 @@ class Experiment():
     mask : a list of literals or a list of lists of literals
       :term:`mask` used to specify the :term:`settings<setting>` set
 
-    function : function(explanes.factor.Factor, explanes.experiment.Experiment, *parameters)
+    function : function(explanes.factor.Factor, explanes.experiment.Experiment, \*parameters)
       A function that operates on a given setting within the experiment environnment with optional parameters.
 
     *parameters : any type (optional)
@@ -293,7 +293,7 @@ class Experiment():
 
       If empty, the execution is stopped on the first faulty setting.
 
-      If not empty, the execution is not stopped on a faulty setting,
+      If not empty, the execution is not stopped on a faulty setting.
 
 
     See Also
@@ -311,7 +311,7 @@ class Experiment():
 
     # this function displays the sum of the two modalities of the current setting
     >>> def myFunction(setting, experiment):
-        print('{}+{}={}'.format(setting.factor1, setting.factor2, setting.factor1+setting.factor2))
+    >>>   print('{}+{}={}'.format(setting.factor1, setting.factor2, setting.factor1+setting.factor2))
 
     >>> e.do([], myFunction, nbJobs=1, tqdmDisplay=False)
     1+2=3
@@ -345,7 +345,7 @@ class Experiment():
     ):
     """ Perform a cleaning of a data sink (directory or h5 file).
 
-    This method is essentially a wrapper to :meth:`explanes.factor.Factor.clean`
+    This method is essentially a wrapper to :meth:`explanes.factor.Factor.cleanDataSink`.
 
     Parameters
     ----------

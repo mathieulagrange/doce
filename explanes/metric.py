@@ -9,34 +9,98 @@ import explanes.util as eu
 import copy
 
 class Metric():
+  """Stores information about the way evaluation metrics are stored and manipulated.
+
+  Stores information about the way evaluation metrics are stored and manipulated. Each member of this class describes an evaluation metric and the way it may be abstracted. Two NameSpaces (explanes.metric.Metric._unit, explanes.metric.Metric._description) are available to respectively provide information about the unit of the metric and its semantic.
+
+  Each metric may be reduced by any mathematical operation that operate on a vector made available by the numpy library with default parameters.
+
+  Two pruning strategies can be complemented to this description in order to remove some items of the metric vector before being abstracted.
+
+  One can select one value of the vector by providing its index.
+
+  Examples
+  --------
+
+  >>> import explanes as el
+  >>> m = el.metric.Metric()
+  >>> m.duration = ['mean', 'std']
+  >>> m._unit.duration = 'second'
+  >>> m._description = 'duration of the processing'
+
+  It is sometimes useful to store complementary data useful for plotting that must not be considered during the reduction.
+
+  >>> m.metric1 = ['median-0', 'min-0', 'max-0']
+
+  In this case, the first value will be removed before reduction.
+
+  >>> m.metric2 = ['median-2', 'min-2', 'max-2', '0']
+
+  In this case, the odd values will be removed before reduction and the last reduction will select the first value of the metric vector.
+  """
+
   _unit = types.SimpleNamespace()
   _description = types.SimpleNamespace()
   _metrics = []
 
-  def __setattr__(self, name, value):
+  def __setattr__(
+    self,
+    name,
+    value
+    ):
     if not hasattr(self, name) and name[0] != '_':
       self._metrics.append(name)
     return object.__setattr__(self, name, value)
 
-  def reduceFromNpy(self, settings, dataPath, idFormat={}):
-      table = []
-      metricHasData = np.zeros((len(self.getMetricsNames())))
-      for sIndex, setting in enumerate(settings):
-          row = []
-          for mIndex, metric in enumerate(self.getMetricsNames()):
-              fileName = dataPath+setting.getId(**idFormat)+'_'+metric+'.npy'
-              if os.path.exists(fileName):
-                  metricHasData[mIndex] = 1
-                  data = np.load(fileName)
-                  for aggregationType in self.__getattribute__(metric):
-                      row.append(self.getValue(aggregationType, data))
-          if len(row):
-              for factorName in reversed(settings.getFactorNames()):
-                  row.insert(0, setting.__getattribute__(factorName))
-              table.append(row)
-      return (table, metricHasData)
+  def reduceFromNpy(
+    self,
+    settings,
+    dataPath,
+    idFormat={}
+    ):
+    """Handle reduction of the metrics when considering numpy storage.
 
-  def reduceFromH5(self, settings, dataPath, idFormat={}):
+    The method handles the reduction of the metrics when considering numpy storage. For each metric, a .npy file is assumed to be available which the following naming convention: <id_of_setting>_<metricName>.npy.
+
+    The method :meth:`explanes.metric.Metric.reduce` wraps this method and should be considered as the user interface, see its documentation for usage.
+
+    See Also
+    --------
+
+    explanes.metric.Metric.reduce
+
+    """
+    table = []
+    metricHasData = np.zeros((len(self.getMetricsNames())))
+    for sIndex, setting in enumerate(settings):
+      row = []
+      for mIndex, metric in enumerate(self.getMetricsNames()):
+        fileName = dataPath+setting.getId(**idFormat)+'_'+metric+'.npy'
+        if os.path.exists(fileName):
+            metricHasData[mIndex] = 1
+            data = np.load(fileName)
+            for reductionType in self.__getattribute__(metric):
+              row.append(self.reduceMetric(reductionType, data))
+      if len(row):
+        for factorName in reversed(settings.getFactorNames()):
+          row.insert(0, setting.__getattribute__(factorName))
+        table.append(row)
+    return (table, metricHasData)
+
+  def reduceFromH5(
+    self,
+    settings,
+    dataPath,
+    idFormat={}
+    ):
+    """one liner
+
+    Desc
+
+    Examples
+    --------
+
+    """
     table = []
     h5 = tb.open_file(dataPath, mode='r')
     metricHasData = np.zeros((len(self.getMetricsNames())))
@@ -47,12 +111,12 @@ class Metric():
         # print(sg._v_name)
         # print(setting.getId(**idFormat))
         for mIndex, metric in enumerate(self.getMetricsNames()):
-          for aggregationType in self.__getattribute__(metric):
+          for reductionType in self.__getattribute__(metric):
             value = np.nan
             if sg.__contains__(metric):
               metricHasData[mIndex] = 1
               data = sg._f_get_child(metric)
-            row.append(self.getValue(aggregationType, data))
+            row.append(self.reduceMetric(reductionType, data))
         if len(row):
           for factorName in reversed(settings.getFactorNames()):
             row.insert(0, setting.__getattribute__(factorName))
@@ -60,28 +124,43 @@ class Metric():
     h5.close()
     return (table, metricHasData)
 
-  def getValue(self, aggregationType, data):
+  def reduceMetric(
+    self,
+    reductionType,
+    data
+    ):
+    """one liner
+
+    Desc
+
+    Examples
+    --------
+
+    """
     indexPercent=-1
-    if aggregationType:
-      if isinstance(aggregationType, int):
+    if reductionType:
+      if isinstance(reductionType, int):
         if data.size>1:
-          value = float(data[aggregationType])
+          value = float(data[reductionType])
         else:
           value = float(data)
-      elif isinstance(aggregationType, str):
-        indexPercent = aggregationType.find('%')
+      elif isinstance(reductionType, str):
+        indexPercent = reductionType.find('%')
         if indexPercent>-1:
-          aggregationType = aggregationType.replace('%', '')
-        ags = aggregationType.split('-')
-        aggregationType = ags[0]
+          reductionType = reductionType.replace('%', '')
+        ags = reductionType.split('-')
+        reductionType = ags[0]
         if len(ags)>1:
           ignore = int(ags[1])
           if ignore == 0:
-            value = getattr(np, aggregationType)(data[1:])
-          elif ignore == 1:
-            value = getattr(np, aggregationType)(data[::2])
+            value = getattr(np, reductionType)(data[1:])
+          elif ignore == 2:
+            value = getattr(np, reductionType)(data[::2])
+          else:
+            print('Unrecognized pruning directive')
+            raise ValueError
         else :
-          value = getattr(np, aggregationType)(data)
+          value = getattr(np, reductionType)(data)
     else:
       data = np.array(data)
       if data.size>1:
@@ -92,34 +171,63 @@ class Metric():
       value *= 100
     return value
 
-  def reduce(self, settings, data, aggregationStyle = 'capitalize', factorDisplayStyle='long', idFormat={}):
+  def reduce(
+    self,
+    settings,
+    data,
+    aggregationStyle = 'capitalize',
+    factorDisplayStyle='long',
+    idFormat={}
+    ):
+    """one liner
 
-      if isinstance(data, str):
-        if data.endswith('.h5'):
-          (table, metricHasData) = self.reduceFromH5(settings, data, idFormat)
-        else:
-          (table, metricHasData) = self.reduceFromNpy(settings, data, idFormat)
+    Desc
 
-      columns = self.getColumns(settings, metricHasData, aggregationStyle, factorDisplayStyle)
-      header = ''
-      if len(table)>1:
-        (ccIndex, ccValue) = eu.constantColumn(table)
+    Examples
+    --------
 
-        ccIndex = [i for i, x in enumerate(ccIndex) if x and i<len(settings.getFactorNames())]
-        for s in ccIndex:
-          header += eu.compressDescription(columns[s], factorDisplayStyle)+': '+str(ccValue[s])+' '
-        for s in sorted(ccIndex, reverse=True):
-          columns.pop(s)
-          for r in table:
-            r.pop(s)
-      return (table, columns, header)
+    """
+    if isinstance(data, str):
+      if data.endswith('.h5'):
+        (table, metricHasData) = self.reduceFromH5(settings, data, idFormat)
+      else:
+        (table, metricHasData) = self.reduceFromNpy(settings, data, idFormat)
 
-  def get(self, metric, settings, data, aggregationStyle = 'capitalize', **kwargs):
+    columns = self.getColumns(settings, metricHasData, aggregationStyle, factorDisplayStyle)
+    header = ''
+    if len(table)>1:
+      (ccIndex, ccValue) = eu.constantColumn(table)
+
+      ccIndex = [i for i, x in enumerate(ccIndex) if x and i<len(settings.getFactorNames())]
+      for s in ccIndex:
+        header += eu.compressDescription(columns[s], factorDisplayStyle)+': '+str(ccValue[s])+' '
+      for s in sorted(ccIndex, reverse=True):
+        columns.pop(s)
+        for r in table:
+          r.pop(s)
+    return (table, columns, header)
+
+  def get(
+    self,
+    metric,
+    settings,
+    data,
+    aggregationStyle = 'capitalize',
+    idFormat={}
+    ):
+    """one liner
+
+    Desc
+
+    Examples
+    --------
+
+    """
     if isinstance(data, str):
       if data.endswith('.h5'):
         (array, description) = self.getFromH5(metric, settings, data) # todo
       else:
-        (array, description) = self.getFromNpy(metric, settings, data, **kwargs)
+        (array, description) = self.getFromNpy(metric, settings, data, idFormat)
 
     header = ''
     if description:
@@ -135,7 +243,21 @@ class Metric():
           r.pop(s)
     return (array, description, header)
 
-  def getFromH5(self, metric, settings, dataPath, **kwargs):
+  def getFromH5(
+    self,
+    metric,
+    settings,
+    dataPath,
+    idFormat={}
+    ):
+    """one liner
+
+    Desc
+
+    Examples
+    --------
+
+    """
     h5 = tb.open_file(dataPath, mode='r')
     data = []
     description = []
@@ -144,15 +266,29 @@ class Metric():
     descriptionFormat['noneAndZero2void'] = False
     descriptionFormat['default2void'] = False
     for setting in settings:
-      if h5.root.__contains__(setting.getId(**kwargs)):
-        sg = h5.root._f_get_child(setting.getId(**kwargs))
+      if h5.root.__contains__(setting.getId(idFormat)):
+        sg = h5.root._f_get_child(setting.getId(idFormat))
         if sg.__contains__(metric):
           data.append(sg._f_get_child(metric))
           description.append(setting.getId(**descriptionFormat))
     h5.close()
     return (data, description)
 
-  def getFromNpy(self, metric, settings, dataPath, **kwargs):
+  def getFromNpy(
+    self,
+    metric,
+    settings,
+    dataPath,
+    idFormat={}
+    ):
+    """one liner
+
+    Desc
+
+    Examples
+    --------
+
+    """
     data = []
     description = []
     descriptionFormat = copy.deepcopy(kwargs)
@@ -160,14 +296,28 @@ class Metric():
     descriptionFormat['noneAndZero2void'] = False
     descriptionFormat['default2void'] = False
     for setting in settings:
-      fileName = dataPath+setting.getId(**kwargs)+'_'+metric+'.npy'
+      fileName = dataPath+setting.getId(idFormat)+'_'+metric+'.npy'
       if os.path.exists(fileName):
         data.append(np.load(fileName))
         description.append(setting.getId(**descriptionFormat))
 
     return (data, description)
 
-  def h5addSetting(self, h5, setting, metricDimensions=[], idFormat={}):
+  def h5addSetting(
+    self,
+    h5,
+    setting,
+    metricDimensions=[],
+    idFormat={}
+    ):
+    """one liner
+
+    Desc
+
+    Examples
+    --------
+
+    """
     groupName = setting.getId(**idFormat)
     print(groupName)
     if not h5.__contains__('/'+groupName):
@@ -184,27 +334,71 @@ class Metric():
           h5.create_array(sg, metric, np.zeros(( metricDimensions[mIndex])), getattr(self._description, metric))
     return sg
 
-  def getColumns(self, settings, metricHasData, aggregationStyle, factorDisplayStyle):
+  def getColumns(
+    self,
+    settings,
+    metricHasData,
+    aggregationStyle,
+    factorDisplayStyle
+    ):
+    """one liner
+
+    Desc
+
+    Examples
+    --------
+
+    """
     columns = []
     for factorName in settings.getFactorNames():
       columns.append(eu.compressDescription(factorName, factorDisplayStyle))
     for mIndex, metric in enumerate(self.getMetricsNames()):
       if metricHasData[mIndex]:
-        for aggregationType in self.__getattribute__(metric):
+        for reductionType in self.__getattribute__(metric):
           if aggregationStyle == 'capitalize':
-            name = metric+str(aggregationType).capitalize()
+            name = metric+str(reductionType).capitalize()
           else :
-            name = metric+'_'+aggregationType
+            name = metric+'_'+reductionType
           columns.append(name)
     return columns
 
-  def getMetricsNames(self):
+  def getMetricsNames(
+    self
+    ):
+    """one liner
+
+    Desc
+
+    Examples
+    --------
+
+    """
     return self._metrics
 
-  def __len__(self):
+  def __len__(
+    self
+    ):
+    """one liner
+
+    Desc
+
+    Examples
+    --------
+
+    """
     return len(self.getMetricsNames())
 
-  def __str__(self):
+  def __str__(
+    self
+    ):
+    """one liner
+
+    Desc
+
+    Examples
+    --------
+
+    """
     cString = ''
     atrs = dict(vars(type(self)))
     atrs.update(vars(self))
