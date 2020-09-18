@@ -120,29 +120,35 @@ class Experiment():
       If True, do not prompt the user before creating the missing directories.
 
       If False, prompt the user before creation of each missing directory.
+
     Returns
     -------
+
     None
 
     Examples
     --------
 
     >>> import explanes as el
+    >>> import os
     >>> e=el.Experiment()
     >>> e.project.name = 'experiment'
     >>> e.path.processing = '/tmp/'+e.project.name+'/processing'
     >>> e.path.output = '/tmp/'+e.project.name+'/output'
-    >>> e.makePaths()
-    The processing path: /tmp/experiment/processing does not exist. Do you want to create it ? [Y/n] <press Enter> Done.
-    The output path: /tmp/experiment/output does not exist. Do you want to create it ? [Y/n] <press Enter> Done.
-
+    >>> e.makePaths(force=True)
+    >>> os.listdir('/tmp/'+e.project.name)
+    ['processing', 'output']
     """
     for sns in self.__getattribute__('path').__dict__.keys():
-      path = self.__getattribute__('path').__getattribute__(sns)
-      if path and not os.path.exists(os.path.expanduser(path)):
-        if force or el.util.query_yes_no('The '+sns+' path: '+path+' does not exist. Do you want to create it ?'):
-          os.makedirs(os.path.expanduser(path))
-          print('Done.')
+      path = os.path.abspath(os.path.expanduser(self.__getattribute__('path').__getattribute__(sns)))
+      if path:
+        if path.endswith('.h5'):
+          path = os.path.dirname(os.path.abspath(path))
+        if not os.path.exists(path):
+          if force or el.util.query_yes_no('The '+sns+' path: '+path+' does not exist. Do you want to create it ?'):
+            os.makedirs(path)
+            if not force:
+              print('Done.')
 
   def __str__(
     self,
@@ -188,7 +194,7 @@ class Experiment():
     host: []
 
     >>> import explanes as el
-    >>> print(el.Experiment().__str__(format='html'))
+    >>> el.Experiment().__str__(format='html')
     <h3> <div>project: </div><div>  name: </div><div>  description: </div><div>  author: </div><div>  address: </div><div>  runId: 1600100112</div><div>factor: </div><div>parameter: </div><div>metric: </div><div>path: </div><div>  input: </div><div>  processing: </div><div>  storage: </div><div>  output: </div><div>host: </div><div>[]</div></h3>
     """
     description = ''
@@ -262,7 +268,7 @@ class Experiment():
     mask : a list of literals or a list of lists of literals
       :term:`mask` used to specify the :term:`settings<setting>` set
 
-    function : function(explanes.factor.Factor, explanes.experiment.Experiment, *parameters)
+    function : function(explanes.factor.Factor, explanes.experiment.Experiment, \*parameters)
       A function that operates on a given setting within the experiment environnment with optional parameters.
 
     *parameters : any type (optional)
@@ -287,7 +293,7 @@ class Experiment():
 
       If empty, the execution is stopped on the first faulty setting.
 
-      If not empty, the execution is not stopped on a faulty setting,
+      If not empty, the execution is not stopped on a faulty setting.
 
 
     See Also
@@ -305,7 +311,7 @@ class Experiment():
 
     # this function displays the sum of the two modalities of the current setting
     >>> def myFunction(setting, experiment):
-        print('{}+{}={}'.format(setting.factor1, setting.factor2, setting.factor1+setting.factor2))
+    >>>   print('{}+{}={}'.format(setting.factor1, setting.factor2, setting.factor1+setting.factor2))
 
     >>> e.do([], myFunction, nbJobs=1, tqdmDisplay=False)
     1+2=3
@@ -339,7 +345,7 @@ class Experiment():
     ):
     """ Perform a cleaning of a data sink (directory or h5 file).
 
-    This method is essentially a wrapper to :meth:`explanes.factor.Factor.clean`
+    This method is essentially a wrapper to :meth:`explanes.factor.Factor.cleanDataSink`.
 
     Parameters
     ----------
@@ -365,7 +371,7 @@ class Experiment():
       string specifying the end of the wildcard used to select the entries to remove or to keep (default: '*').
 
     idFormat : dict (optional)
-      Dictionary specifying the format of the id describing the :term:`setting`. Please see :method:explanes.factor.Factor.getId for further information.
+      Dictionary specifying the format of the id describing the :term:`setting`. Please see the documention of  :meth:`explanes.factor.Factor.getId` for further information.
 
     archivePath : str
       If None, the archivePath is set to explanes.experiment.Experiment._archivePath.
@@ -392,19 +398,15 @@ class Experiment():
     >>>   np.save(experiment.path.output+'/'+setting.getId()+'_sum.npy', e.factor.factor1+e.factor.factor2)
     >>>   np.save(experiment.path.output+'/'+setting.getId()+'_mult.npy', e.factor.factor1*e.factor.factor2)
     >>> e.do([], myFunction, tqdmDisplay=False)
-    >>> print(os.listdir(e.path.output))
+    >>> os.listdir(e.path.output)
     ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_2_mult.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_1_factor2_2_sum.npy', 'factor1_1_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy', 'factor1_1_factor2_2_mult.npy', 'factor1_1_factor2_4_sum.npy']
 
-    In this example, we store the result of the sum and the multiplication.
-
-    >>> e.cleanDataSink('output', mask = [0], force=True)
-    >>> print(os.listdir(e.path.output))
+    >>> e.cleanDataSink('output', [0], force=True)
+    >>> os.listdir(e.path.output)
     ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_2_mult.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy']
 
-    Here, we remove all the files in the directory /tmp/test that correspond to the settings that have the first factor set to the first modality.
-
-    >>> e.cleanDataSink('output', mask = [1, 1], force=True, reverse=True, selector='*mult*')
-    >>> print(os.listdir(e.path.output))
+    >>> e.cleanDataSink('output', [1, 1], force=True, reverse=True, selector='*mult*')
+    >>> os.listdir(e.path.output)
     ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy']
 
     Here, we remove all the files that match the wildcard *mult* in the directory /tmp/test that do not correspond to the settings that have the first factor set to the second modality and the second factor set to the second modality.
@@ -482,29 +484,37 @@ class Experiment():
 
   def cleanExperiment(
     self,
-    mask,
+    mask=[],
     reverse=False,
     force=False,
     selector='*',
-    idFormat={}
+    idFormat={},
+    archivePath = None
     ):
-    """one liner
+    """Clean all relevant directories specified in the NameSpace explanes.Experiment.experiment.path.
 
-    Desc
-
-    Parameters
-    ----------
-
-    Returns
-    -------
+    Apply :meth:`explanes.experiment.Experiment.cleanDataSink` on each relevant directories specified in the NameSpace explanes.experiment.Experiment.path.
 
     See Also
     --------
 
+    explanes.experiment.Experiment.cleanDataSink
+
     Examples
     --------
+
+    >>> import explanes as el
+    >>> e=el.experiment.Experiment()
+    >>> e.path.output = '/tmp/test'
+    >>> e.makePaths()
+    >>> e.cleanExperiment()
+    checking input path
+    checking processing path
+    checking storage path
+    checking output path
 
     """
     for sns in self.__getattribute__('path').__dict__.keys():
       print('checking '+sns+' path')
-      self.cleanDataSink(sns, mask, reverse, force, selector, idFormat)
+      self.cleanDataSink(sns, mask, reverse, force, selector, idFormat,
+      archivePath)
