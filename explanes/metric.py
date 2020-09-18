@@ -34,9 +34,9 @@ class Metric():
 
   In this case, the first value will be removed before reduction.
 
-  >>> m.metric2 = ['median-2', 'min-2', 'max-2', '0']
+  >>> m.metric2 = ['median-2', 'min-2', 'max-2', '0%']
 
-  In this case, the odd values will be removed before reduction and the last reduction will select the first value of the metric vector.
+  In this case, the odd values will be removed before reduction and the last reduction will select the first value of the metric vector which will be expressed in percents by multiplying the result by 100.
   """
 
   _unit = types.SimpleNamespace()
@@ -62,7 +62,7 @@ class Metric():
 
     The method handles the reduction of the metrics when considering numpy storage. For each metric, a .npy file is assumed to be available which the following naming convention: <id_of_setting>_<metricName>.npy.
 
-    The method :meth:`explanes.metric.Metric.reduce` wraps this method and should be considered as the user interface, see its documentation for usage.
+    The method :meth:`explanes.metric.Metric.reduce` wraps this method and should be considered as the main user interface, please see its documentation for usage.
 
     See Also
     --------
@@ -71,16 +71,16 @@ class Metric():
 
     """
     table = []
-    metricHasData = np.zeros((len(self.getMetricsNames())))
+    metricHasData = np.zeros((len(self.getMetricNames())))
     for sIndex, setting in enumerate(settings):
       row = []
-      for mIndex, metric in enumerate(self.getMetricsNames()):
+      for mIndex, metric in enumerate(self.getMetricNames()):
         fileName = dataPath+setting.getId(**idFormat)+'_'+metric+'.npy'
         if os.path.exists(fileName):
             metricHasData[mIndex] = 1
             data = np.load(fileName)
             for reductionType in self.__getattribute__(metric):
-              row.append(self.reduceMetric(reductionType, data))
+              row.append(self.reduceMetric(data, reductionType))
       if len(row):
         for factorName in reversed(settings.getFactorNames()):
           row.insert(0, setting.__getattribute__(factorName))
@@ -93,30 +93,34 @@ class Metric():
     dataPath,
     idFormat={}
     ):
-    """one liner
+    """Handle reduction of the metrics when considering numpy storage.
 
-    Desc
+    The method handles the reduction of the metrics when considering h5 storage.
 
-    Examples
+    The method :meth:`explanes.metric.Metric.reduce` wraps this method and should be considered as the main user interface, please see its documentation for usage.
+
+    See Also
     --------
+
+    explanes.metric.Metric.reduce
 
     """
     table = []
     h5 = tb.open_file(dataPath, mode='r')
-    metricHasData = np.zeros((len(self.getMetricsNames())))
+    metricHasData = np.zeros((len(self.getMetricNames())))
     for sIndex, setting in enumerate(settings):
       row = []
       if h5.root.__contains__(setting.getId(**idFormat)):
         sg = h5.root._f_get_child(setting.getId(**idFormat))
         # print(sg._v_name)
         # print(setting.getId(**idFormat))
-        for mIndex, metric in enumerate(self.getMetricsNames()):
+        for mIndex, metric in enumerate(self.getMetricNames()):
           for reductionType in self.__getattribute__(metric):
             value = np.nan
             if sg.__contains__(metric):
               metricHasData[mIndex] = 1
               data = sg._f_get_child(metric)
-            row.append(self.reduceMetric(reductionType, data))
+            row.append(self.reduceMetric(data, reductionType))
         if len(row):
           for factorName in reversed(settings.getFactorNames()):
             row.insert(0, setting.__getattribute__(factorName))
@@ -126,15 +130,29 @@ class Metric():
 
   def reduceMetric(
     self,
-    reductionType,
-    data
+    data,
+    reductionType
     ):
-    """one liner
+    """Apply reduction directive to a metric vector after potentially remove non wanted items from the vector.
 
-    Desc
+    The data vector is reduced by considering the reduction directive after potentially remove non wanted items from the vector.
 
     Examples
     --------
+
+    >>> import explanes as el
+    >>> import numpy as np
+    >>> m  =el.metric.Metric()
+    >>> m.reduceMetric(np.linspace(0, 10, num=11), 'sum%')
+    5500.0
+    >>> m.reduceMetric(np.linspace(0, 10, num=11), 'sum-0')
+    55.0
+    >>> m.reduceMetric(np.linspace(0, 10, num=11), 'sum-2')
+    30.0
+    >>> m.reduceMetric(np.linspace(0, 10, num=11), 0)
+    0.0
+    >>> m.reduceMetric(np.linspace(0, 10, num=11), 10)
+    10.0
 
     """
     indexPercent=-1
@@ -175,13 +193,35 @@ class Metric():
     self,
     settings,
     data,
-    aggregationStyle = 'capitalize',
-    factorDisplayStyle='long',
+    reducedMetricDisplay = 'capitalize',
+    factorDisplay='long',
     idFormat={}
     ):
-    """one liner
+    """Apply the reduction directives described in each members of explanes.metric.Metric objects for the settings given as paramters.
 
     Desc
+
+    Parameters
+    ----------
+
+    settings: explanes.factor.Factor
+
+    data: str
+
+    reducedMetricDisplay : str
+
+    factorDisplay : str
+
+    idFormat : dict
+
+    Returns
+    -------
+
+    table : list of lists of literals
+
+    columnHeader : list of str
+
+    constantColumnDescription : str
 
     Examples
     --------
@@ -193,26 +233,26 @@ class Metric():
       else:
         (table, metricHasData) = self.reduceFromNpy(settings, data, idFormat)
 
-    columns = self.getColumns(settings, metricHasData, aggregationStyle, factorDisplayStyle)
-    header = ''
+    columnHeader = self.getColumnHeader(settings, factorDisplay, metricHasData, reducedMetricDisplay)
+    constantColumnDescription = ''
     if len(table)>1:
       (ccIndex, ccValue) = eu.constantColumn(table)
 
       ccIndex = [i for i, x in enumerate(ccIndex) if x and i<len(settings.getFactorNames())]
       for s in ccIndex:
-        header += eu.compressDescription(columns[s], factorDisplayStyle)+': '+str(ccValue[s])+' '
+        constantColumnDescription += eu.compressDescription(columnHeader[s], factorDisplay)+': '+str(ccValue[s])+' '
       for s in sorted(ccIndex, reverse=True):
-        columns.pop(s)
+        columnHeader.pop(s)
         for r in table:
           r.pop(s)
-    return (table, columns, header)
+    return (table, columnHeader, constantColumnDescription)
 
   def get(
     self,
     metric,
     settings,
     data,
-    aggregationStyle = 'capitalize',
+    reducedMetricDisplay = 'capitalize',
     idFormat={}
     ):
     """one liner
@@ -229,7 +269,7 @@ class Metric():
       else:
         (array, description) = self.getFromNpy(metric, settings, data, idFormat)
 
-    header = ''
+    constantColumnDescription = ''
     if description:
       (ccIndex, ccValue) = eu.constantColumn(description)
       for si, s in enumerate(ccIndex):
@@ -237,11 +277,11 @@ class Metric():
           ccIndex[si-1] = False
       ccIndex = [i for i, x in enumerate(same) if x]
       for s in ccIndex:
-        header += description[0][s]+' '
+        constantColumnDescription += description[0][s]+' '
       for s in sorted(ccIndex, reverse=True):
         for r in description:
           r.pop(s)
-    return (array, description, header)
+    return (array, description, constantColumnDescription)
 
   def getFromH5(
     self,
@@ -324,7 +364,7 @@ class Metric():
       sg = h5.create_group('/', groupName, setting.getId(format='long', sep=' '))
     else:
       sg = h5.root._f_get_child(groupName)
-    for mIndex, metric in enumerate(self.getMetricsNames()):
+    for mIndex, metric in enumerate(self.getMetricNames()):
       if hasattr(self._description, metric):
         description = getattr(self._description, metric)
       else:
@@ -342,69 +382,100 @@ class Metric():
           h5.create_array(sg, metric, np.zeros(( metricDimensions[mIndex])), description)
     return sg
 
-  def getColumns(
+  def getColumnHeader(
     self,
-    settings,
-    metricHasData,
-    aggregationStyle,
-    factorDisplayStyle
+    factor,
+    factorDisplay='long',
+    metricHasData=[],
+    reducedMetricDisplay = 'capitalize',
     ):
-    """one liner
+    """Builds the column header of the reduction table.
 
-    Desc
+    This method builds the column header of the reduction table by formating the Factor names from the explanes.factor.Factor class and by describing the reduced metrics.
+
+    Parameters
+    ----------
+
+    factor : explanes.factor.Factor
+    factorDisplay : str (optional)
+    metricHasData : list
+    reducedMetricDisplay : str (optional)
 
     Examples
     --------
 
     """
-    columns = []
+    columnHeader = []
     for factorName in settings.getFactorNames():
-      columns.append(eu.compressDescription(factorName, factorDisplayStyle))
-    for mIndex, metric in enumerate(self.getMetricsNames()):
+      columnHeader.append(eu.compressDescription(factorName, factorDisplay))
+    for mIndex, metric in enumerate(self.getMetricNames()):
       if metricHasData[mIndex]:
         for reductionType in self.__getattribute__(metric):
-          if aggregationStyle == 'capitalize':
+          if reducedMetricDisplay == 'capitalize':
             name = metric+str(reductionType).capitalize()
           else :
             name = metric+'_'+reductionType
-          columns.append(name)
-    return columns
+          columnHeader.append(name)
+    return columnHeader
 
-  def getMetricsNames(
+  def getMetricNames(
     self
     ):
-    """one liner
+    """Returns a list of str with the names of the metrics.
 
-    Desc
+    Returns a list of str with the names of the metricsdefined as members of the explanes.metric.Metric object.
 
     Examples
     --------
 
+    >>> import explanes as el
+    >>> m = el.metric.Metric()
+    >>> m.duration = ['mean']
+    >>> m.mse = ['mean']
+    >>> m.getMetricNames()
+    ['duration', 'mse']
     """
     return self._metrics
 
   def __len__(
     self
     ):
-    """one liner
+    """Returns the number of metrics.
 
-    Desc
+    Returns the number of metrics defined as members of the explanes.metric.Metric object.
 
     Examples
     --------
 
+    >>> import explanes as el
+    >>> m = el.metric.Metric()
+    >>> m.duration = ['mean']
+    >>> m.mse = ['mean']
+    >>> len(m)
+    2
     """
-    return len(self.getMetricsNames())
+    return len(self.getMetricNames())
 
   def __str__(
     self
     ):
-    """one liner
+    """Returns a str describing the explanes.metric.Metric.
 
-    Desc
+    Returns a str describing the explanes.metric.Metric by listing each member of the object.
 
     Examples
     --------
+
+    >>> import explanes as el
+    >>> import numpy as np
+    >>> m = el.metric.Metric()
+    >>> m.duration = ['mean']
+    >>> m._unit.duration = 'seconds'
+    >>> m._description.duration = 'duration of the trial'
+    >>> m.mse = ['mean']
+    >>> m._unit.mse = ''
+    >>> m._description.mse = 'Mean Square Error'
+    >>> print(m)
 
     """
     cString = ''
@@ -414,5 +485,10 @@ class Metric():
 
     for atr in atrs:
       if type(inspect.getattr_static(self, atr)) != types.FunctionType:
-        cString+='  '+atr+': '+str(self.__getattribute__(atr))+'\r\n'
+        cString+='  '+atr+': '+str(self.__getattribute__(atr))
+        if hasattr(self._description, atr):
+          cString+=', the '+str(self._description.__getattribute__(atr))+''
+        if hasattr(self._unit, atr) and self._unit.__getattribute__(atr):
+          cString+=' in '+str(self._unit.__getattribute__(atr))
+        cString += '.\r\n'
     return cString
