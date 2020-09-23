@@ -8,5 +8,5 @@ def myFunction(setting, experiment):
     print('{}+{}={}'.format(setting.factor1, setting.factor2, setting.factor1+setting.factor2))
 
 e.do([], myFunction, nbJobs=1, tqdmDisplay=False)
-
+print('')
 e.do([], myFunction, nbJobs=3, tqdmDisplay=False)
