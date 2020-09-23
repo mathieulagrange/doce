@@ -13,6 +13,66 @@ import importlib
 import os
 
 def run():
+  """This method shall be called from the main script of the experiment.
+
+  This method provides a front-end for running an explanes experiment. It should be called from the main script of the experiment. The main script must define a set function that will be called before processing and a step function that will be processed for each setting. It may also define a display function.
+
+  Examples
+
+  Assuming that the file experiment_run.py contains:
+
+  >>> import explanes as el
+  >>> if __name__ == "__main__":
+  >>>   el.experiment.run()
+  >>> def set(experiment, args):
+  >>>   experiment.factor.factor1=[1, 3]
+  >>>   experiment.factor.factor2=[2, 4]
+  >>>   return experiment
+  >>> def step(setting, experiment):
+  >>>   print(setting.getId())
+
+  Executing python experiment_run.py -r, gives:
+
+  factor1_1_factor2_2
+  factor1_1_factor2_4
+  factor1_3_factor2_2
+  factor1_3_factor2_4
+
+  Executing python experiment_run.py -h, gives:
+
+  usage: experiment_run.py [-h] [-i] [-l] [-m MASK] [-M] [-S] [-s SERVER] [-d] [-r [RUN]] [-D] [-v] [-P] [-R [REMOVE]] [-K [KEEP]]
+
+  optional arguments:
+    -h, --help            show this help message and exit
+    -i, --information     show information about the the experiment
+    -l, --list            list settings
+    -m MASK, --mask MASK  mask of the experiment to run
+    -M, --mail            send email at the beginning and end of the computation
+    -S, --sync            sync to server defined
+    -s SERVER, --server SERVER
+                          running server side. Integer defines the index in the
+                          host array of config. -2 (default) runs attached on
+                          the local host, -1 runs detached on the local host, -3
+                          is a flag meaning that the experiment runs serverside
+    -d, --display         display metrics
+    -r [RUN], --run [RUN]
+                          perform computation. Integer parameter sets the number
+                          of jobs computed in parallel (default to one core).
+    -D, --debug           debug mode
+    -v, --version         print version
+    -P, --progress        display progress bar
+    -R [REMOVE], --remove [REMOVE]
+                          remove the selected settings from a given path (all
+                          paths of the experiment by default, if the argument
+                          does not have / or \, the argument is interpreted as a
+                          member of the experiments path)
+    -K [KEEP], --keep [KEEP]
+                          keep only the selected settings from a given path (all
+                          paths of the experiment by default, if the argument
+                          does not have / or \, the argument is interpreted as a
+                          member of the experiments path)
+  """
+
   parser = argparse.ArgumentParser()
   parser.add_argument('-i', '--information', help='show information about the the experiment', action='store_true')
   parser.add_argument('-l', '--list', help='list settings', action='store_true')

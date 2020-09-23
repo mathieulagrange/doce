@@ -9,4 +9,4 @@ def set(experiment, args):
   return experiment
 
 def step(setting, experiment):
-  print(setting)
+  print(setting.getId())
