@@ -331,7 +331,7 @@ class Metric():
     """
     data = []
     description = []
-    descriptionFormat = copy.deepcopy(kwargs)
+    descriptionFormat = copy.deepcopy(idFormat)
     descriptionFormat['format'] = 'list'
     descriptionFormat['noneAndZero2void'] = False
     descriptionFormat['default2void'] = False

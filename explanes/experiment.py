@@ -102,8 +102,7 @@ def run():
   except:
    print('Please provide a valid project name')
    raise ValueError
-  experiment = el.Experiment()
-  experiment = config.set(experiment, args)
+  experiment = config.set(args)
   if args.information:
       print(experiment)
   if args.list:
