@@ -35,7 +35,11 @@ class Factor():
   _factors = []
   _default = types.SimpleNamespace()
 
-  def __setattr__(self, name, value):
+  def __setattr__(
+    self,
+    name,
+    value
+    ):
     if not name == '_settings':
       _settings = []
     if not hasattr(self, name) and name[0] != '_':
@@ -48,8 +52,27 @@ class Factor():
       self._nonSingleton.append(name)
     return object.__setattr__(self, name, value)
 
-  def __getattribute__(self, name):
+  def __getattribute__(
+    self,
+    name
+    ):
+    """one liner
 
+  	Desc
+
+  	Parameters
+  	----------
+
+  	Returns
+  	-------
+
+  	See Also
+  	--------
+
+  	Examples
+  	--------
+
+    """
     value = object.__getattribute__(self, name)
     if name[0] != '_' and self._setting and type(inspect.getattr_static(self, name)) != types.FunctionType:
       idx = self.getFactorNames().index(name)
@@ -65,12 +88,26 @@ class Factor():
             raise
     return value
 
-  def __iter__(self):
+  def __iter__(
+    self
+    ):
+    """one liner
+
+  	Desc
+
+    """
     self.__setSettings__()
     self._currentSetting = 0
     return self
 
-  def __next__(self):
+  def __next__(
+    self
+    ):
+    """one liner
+
+  	Desc
+
+    """
     if self._currentSetting == len(self._settings):
       raise StopIteration
     else:
@@ -85,7 +122,12 @@ class Factor():
     # print(self._mask)
     return  self
 
-  def setDefault(self, name, value, force=False):
+  def setDefault(
+    self,
+    name,
+    value,
+    force=False
+    ):
     """one liner
 
   	Desc
@@ -114,7 +156,13 @@ class Factor():
       print('Please set the factor '+name+' before choosing its default modality.')
       raise ValueError
 
-  def doSetting(self, setting, function, logFileName, *parameters):
+  def doSetting(
+    self,
+    setting,
+    function,
+    logFileName,
+    *parameters
+    ):
     failed = 0
     try:
       function(setting, *parameters)
@@ -170,7 +218,15 @@ class Factor():
             t.update(1)
     return nbFailed
 
-  def settings(self, mask=None):
+  def settings(
+    self,
+    mask=None
+    ):
+    """one liner
+
+  	Desc
+
+    """
     mask = copy.deepcopy(mask)
     nbFactors = len(self.getFactorNames())
     if mask is None or len(mask)==0 or (len(mask)==1 and len(mask)==0) :
@@ -188,40 +244,51 @@ class Factor():
     self._mask = mask
     return self
 
-  def __len__(self):
-      self.__setSettings__()
-      return len(self._settings)
+  def __len__(
+    self
+    ):
+    """one liner
 
-  def __setSettings__(self):
-      if self._changed:
-        settings = []
-        mask = copy.deepcopy(self._mask)
-        self._setting = None
+  	Desc
 
-        # print('start get settings')
-        # print(self._mask)
-        for m in mask:
-          # handle -1 in mask
-          for mfi, mf in enumerate(m):
-            if isinstance(mf, int) and mf == -1 and mfi<len(self.getFactorNames()):
-              attr = self.__getattribute__(self.getFactorNames()
-              [mfi])
-              # print(attr)
-              # print(isinstance(attr, int))
-              if isinstance(attr, list) or isinstance(attr, np.ndarray):
-                m[mfi] = list(range(len(attr)))
-              else:
-                m[mfi] = [0]
+    """
+    self.__setSettings__()
+    return len(self._settings)
 
-          # print('submask')
-          s = self.__setSettingsMask__(m, 0)
-          if all(isinstance(ss, list) for ss in s):
-            for ss in s:
-              settings.append(ss)
-          else:
-            settings.append(s)
-        self._changed = False
-        self._settings = settings
+  def __setSettings__(
+    self
+    ):
+    """one liner
+
+  	Desc
+
+    """
+    if self._changed:
+      settings = []
+      mask = copy.deepcopy(self._mask)
+      self._setting = None
+
+      for m in mask:
+        # handle -1 in mask
+        for mfi, mf in enumerate(m):
+          if isinstance(mf, int) and mf == -1 and mfi<len(self.getFactorNames()):
+            attr = self.__getattribute__(self.getFactorNames()
+            [mfi])
+            # print(attr)
+            # print(isinstance(attr, int))
+            if isinstance(attr, list) or isinstance(attr, np.ndarray):
+              m[mfi] = list(range(len(attr)))
+            else:
+              m[mfi] = [0]
+
+        s = self.__setSettingsMask__(m, 0)
+        if all(isinstance(ss, list) for ss in s):
+          for ss in s:
+            settings.append(ss)
+        else:
+          settings.append(s)
+      self._changed = False
+      self._settings = settings
 
   def __setSettingsMask__(self, mask, done):
     if done == len(mask):
@@ -252,16 +319,28 @@ class Factor():
         settings.insert(0, mask[done])
     return settings
 
-  def getFactorNames(self):
+  def getFactorNames(
+    self
+    ):
+    """Returns the list of factors defined in the Class.
+
+  	Returns a list of str with the names of the factors defined in the Class.
+
+    """
     return self._factors
 
-  def clone(self):
-    return copy.deepcopy(self)
+  def nbModalities(
+    self,
+    factor
+    ):
+    """Returns the number of :term:`modalities<modality> for a given :term:`factor`.
 
-  def nbModalities(self, factor):
-      if isinstance(factor, int):
-          name = self.getFactorNames()[factor]
-      return len(object.__getattribute__(self, name))
+  	Returns the number of :term:`modalities<modality> for a given :term:`factor`.
+
+    """
+    if isinstance(factor, int):
+      name = self.getFactorNames()[factor]
+    return len(object.__getattribute__(self, name))
 
   def cleanH5(self, path, reverse=False, force=False, idFormat={}):
     h5 = tb.open_file(path, mode='a')
@@ -288,7 +367,20 @@ class Factor():
       os.rename(outfilename, path)
 
 
-  def cleanDataSink(self, path, reverse=False, force=False, selector='*', idFormat={}, archivePath=''):
+  def cleanDataSink(
+    self,
+    path,
+    reverse=False,
+    force=False,
+    selector='*',
+    idFormat={},
+    archivePath=''
+    ):
+    """Clean a data sink by considering the settings set.
+
+  	Returns the number of :term:`modalities<modality> for a given :term:`factor`. This method is more conveniently used by considering the method explanes.experiment.Experiment.cleanDataSink, please see its documentation for usage.
+
+    """
     path = os.path.expanduser(path)
     if path.endswith('.h5'):
       self.cleanH5(path, reverse, force, idFormat)
@@ -331,7 +423,7 @@ class Factor():
           modality = modalities.index(modality)
           self._setting = set
 
-      f = self.clone()
+      f = copy.deepcopy(self)
       if relative:
           f._setting[factor] += modality
       else:
