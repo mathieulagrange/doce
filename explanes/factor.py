@@ -184,7 +184,7 @@ class Factor():
     function=None,
     *parameters,
     nbJobs=1,
-    tqdmDisplay=True,
+    progress=True,
     logFileName=''):
     """Iterate over the setting set and operate the function with the given parameters.
 
@@ -202,7 +202,7 @@ class Factor():
                 level=logging.DEBUG,
                 format='%(levelname)s: %(asctime)s %(message)s',
                 datefmt='%m/%d/%Y %I:%M:%S')
-    if tqdmDisplay:
+    if progress:
       print('Number of settings: '+str(len(self)))
     if nbJobs>1 or nbJobs<0:
       # print(nbJobs)
@@ -210,7 +210,7 @@ class Factor():
       result = Parallel(n_jobs=nbJobs, require='sharedmem')(delayed(self.doSetting)(setting, function, logFileName, *parameters) for setting in self)
       self._parallel = False
     else:
-      with tqdm(total=len(self), disable= not tqdmDisplay) as t:
+      with tqdm(total=len(self), disable= not progress) as t:
         for setting in self:
             description = ''
             if nbFailed:

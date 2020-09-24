@@ -17,7 +17,7 @@ def myFunction(setting, experiment):
   sg.mult[0] = e.factor.factor1*e.factor.factor2
   h5.close()
 
-e.do([], myFunction, tqdmDisplay=False)
+e.do([], myFunction, progress=False)
 h5 = tb.open_file(e.path.output, mode='r')
 print(h5)
 h5.close()
