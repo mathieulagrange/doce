@@ -412,7 +412,7 @@ class Metric():
 
     """
     columnHeader = []
-    for factorName in settings.getFactorNames():
+    for factorName in factor.getFactorNames():
       columnHeader.append(eu.compressDescription(factorName, factorDisplay))
     for mIndex, metric in enumerate(self.getMetricNames()):
       if metricHasData[mIndex]:
