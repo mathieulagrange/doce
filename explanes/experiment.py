@@ -156,7 +156,7 @@ def run():
     if hasattr(config, 'display'):
       config.display(experiment, experiment.factor.settings(mask))
     else:
-      (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, factorDisplayStyle=experiment._factorFormatInReduce, idFormat = experiment._idFormat)
+      (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, idFormat = experiment._idFormat)
       df = pd.DataFrame(table, columns=columns).round(decimals=2)
       print(header)
       print(df)

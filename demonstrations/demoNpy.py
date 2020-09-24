@@ -1,16 +1,20 @@
-import explanes as exp
+import explanes as el
 from time import sleep
 from pandas import DataFrame
 import time
 import numpy as np
 from pathlib import Path
 
+if __name__ == "__main__":
+  el.experiment.run()
+
 # use case where:
 #   - the results are stored on disk using npy files
 #   - one factor affects the size of the results vectors
 #   - the metrics does not operate on the same data, resulting on result vectors with different sizes per metric
 
-def set(experiment, args):
+def set(args):
+  experiment = el.experiment.Experiment()
   experiment.project.name = 'demoNpy'
   experiment.project.description = 'demonstration of npy storage of metrics'
   experiment.project.author = 'mathieu Lagrange'
@@ -32,7 +36,7 @@ def set(experiment, args):
   experiment.factor.nbRuns = [2000, 4000]
 
   experiment.metric.mae = ['mean-0', 'std-0']
-  experiment.metric.mse = ['mean-1%', 'std-1']
+  experiment.metric.mse = ['mean-2%', 'std-2']
   experiment.metric.duration = ['mean']
   return experiment
 
@@ -63,7 +67,7 @@ def step(setting, experiment):
   duration = time.time()-tic
   np.save(experiment.path.output+baseFileName+'_duration.npy', duration)
 
-# uncomment this to fine tune display of metrics
+# uncomment this method to fine tune display of metrics
 # def display(experiment, settings):
 #     (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output, **experiment._idFormat)
 #

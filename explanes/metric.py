@@ -142,17 +142,21 @@ class Metric():
 
     >>> import explanes as el
     >>> import numpy as np
+    >>> data = np.linspace(1, 10, num=10)
+    [ 1.  2.  3.  4.  5.  6.  7.  8.  9. 10.]
     >>> m  =el.metric.Metric()
-    >>> m.reduceMetric(np.linspace(0, 10, num=11), 'sum%')
+    >>> m.reduceMetric(data, 0)
+    1.0
+    >>> m.reduceMetric(data, 8)
+    9.0
+    >>> m.reduceMetric(data, 'sum%')
     5500.0
-    >>> m.reduceMetric(np.linspace(0, 10, num=11), 'sum-0')
-    55.0
-    >>> m.reduceMetric(np.linspace(0, 10, num=11), 'sum-2')
+    >>> m.reduceMetric(data, 'sum-0')
+    54.0
+    >>> m.reduceMetric(data, 'sum-1')
+    25.0
+    >>> m.reduceMetric(data, 'sum-2')
     30.0
-    >>> m.reduceMetric(np.linspace(0, 10, num=11), 0)
-    0.0
-    >>> m.reduceMetric(np.linspace(0, 10, num=11), 10)
-    10.0
 
     """
     indexPercent=-1
@@ -172,8 +176,10 @@ class Metric():
           ignore = int(ags[1])
           if ignore == 0:
             value = getattr(np, reductionType)(data[1:])
-          elif ignore == 2:
+          elif ignore == 1:
             value = getattr(np, reductionType)(data[::2])
+          elif ignore == 2:
+            value = getattr(np, reductionType)(data[1::2])
           else:
             print('Unrecognized pruning directive')
             raise ValueError
