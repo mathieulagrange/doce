@@ -4,6 +4,166 @@ import inspect
 import os
 import time
 import explanes as el
+import sys
+import pandas as pd
+import argparse
+import argunparse
+import ast
+import importlib
+import os
+
+def run():
+  """This method shall be called from the main script of the experiment.
+
+  This method provides a front-end for running an explanes experiment. It should be called from the main script of the experiment. The main script must define a set function that will be called before processing and a step function that will be processed for each setting. It may also define a display function.
+
+  Examples
+
+  Assuming that the file experiment_run.py contains:
+
+  >>> import explanes as el
+  >>> if __name__ == "__main__":
+  >>>   el.experiment.run()
+  >>> def set(experiment, args):
+  >>>   experiment.factor.factor1=[1, 3]
+  >>>   experiment.factor.factor2=[2, 4]
+  >>>   return experiment
+  >>> def step(setting, experiment):
+  >>>   print(setting.getId())
+
+  Executing python experiment_run.py -r, gives:
+
+  factor1_1_factor2_2
+  factor1_1_factor2_4
+  factor1_3_factor2_2
+  factor1_3_factor2_4
+
+  Executing python experiment_run.py -h, gives:
+
+  usage: experiment_run.py [-h] [-i] [-l] [-m MASK] [-M] [-S] [-s SERVER] [-d] [-r [RUN]] [-D] [-v] [-P] [-R [REMOVE]] [-K [KEEP]]
+
+  optional arguments:
+    -h, --help            show this help message and exit
+    -i, --information     show information about the the experiment
+    -l, --list            list settings
+    -m MASK, --mask MASK  mask of the experiment to run
+    -M, --mail            send email at the beginning and end of the computation
+    -S, --sync            sync to server defined
+    -s SERVER, --server SERVER
+                          running server side. Integer defines the index in the
+                          host array of config. -2 (default) runs attached on
+                          the local host, -1 runs detached on the local host, -3
+                          is a flag meaning that the experiment runs serverside
+    -d, --display         display metrics
+    -r [RUN], --run [RUN]
+                          perform computation. Integer parameter sets the number
+                          of jobs computed in parallel (default to one core).
+    -D, --debug           debug mode
+    -v, --version         print version
+    -P, --progress        display progress bar
+    -R [REMOVE], --remove [REMOVE]
+                          remove the selected settings from a given path (all
+                          paths of the experiment by default, if the argument
+                          does not have / or \, the argument is interpreted as a
+                          member of the experiments path)
+    -K [KEEP], --keep [KEEP]
+                          keep only the selected settings from a given path (all
+                          paths of the experiment by default, if the argument
+                          does not have / or \, the argument is interpreted as a
+                          member of the experiments path)
+  """
+
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-i', '--information', help='show information about the the experiment', action='store_true')
+  parser.add_argument('-l', '--list', help='list settings', action='store_true')
+  parser.add_argument('-m', '--mask', type=str, help='mask of the experiment to run', default='[]')
+  parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation', action='store_true')
+  parser.add_argument('-S', '--sync', help='sync to server defined', action='store_true')
+  parser.add_argument('-s', '--server', type=int, help='running server side. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside', default=-2)
+  parser.add_argument('-d', '--display', help='display metrics', action='store_true')
+  parser.add_argument('-r', '--run', type=int, help='perform computation. Integer parameter sets the number of jobs computed in parallel (default to one core).', nargs='?', const=1)
+  parser.add_argument('-D', '--debug', help='debug mode', action='store_true')
+  parser.add_argument('-v', '--version', help='print version', action='store_true')
+  parser.add_argument('-P', '--progress', help='display progress bar', action='store_true')
+  parser.add_argument('-R', '--remove', type=str, help='remove the selected  settings from a given path (all paths of the experiment by default, if the argument does not have / or \, the argument is interpreted as a member of the experiments path)', nargs='?', const='all')
+  parser.add_argument('-K', '--keep', type=str, help='keep only the selected settings from a given path (all paths of the experiment by default, if the argument does not have / or \, the argument is interpreted as a member of the experiments path)', nargs='?', const='all')
+
+  args = parser.parse_args()
+
+  if args.version:
+    print("Experiment version "+experiment.project.version)
+    exit(1)
+
+  mask = ast.literal_eval(args.mask)
+
+  module = sys.argv[0][:-3]
+  try:
+    config = importlib.import_module(module)
+  except:
+   print('Please provide a valid project name')
+   raise ValueError
+  experiment = config.set(args)
+  if args.information:
+      print(experiment)
+  if args.list:
+    experiment.do(mask, tqdmDisplay=False)
+
+  if args.remove:
+    path2clean = args.remove
+    if path2clean == 'all':
+      experiment.cleanExperiment(mask, idFormat=experiment._idFormat)
+    else:
+      experiment.cleanDataSink(path2clean, mask, idFormat=experiment._idFormat)
+
+  if args.keep:
+    path2clean = args.keep
+    if path2clean == 'all':
+      experiment.cleanExperiment(mask, reverse=True, idFormat=experiment._idFormat)
+    else:
+      experiment.cleanDataSink(path2clean, mask, reverse=True, idFormat=experiment._idFormat)
+
+  logFileName = ''
+  if args.server>-2:
+    unparser = argunparse.ArgumentUnparser()
+    kwargs = vars(parser.parse_args())
+    kwargs['server'] = -3
+    command = unparser.unparse(**kwargs).replace('\'', '\"').replace('\"', '\\\"')
+    if args.debug:
+      command += '; bash '
+    command = 'screen -dm bash -c \'python3 run.py '+command+'\''
+    message = 'experiment launched on local host'
+    if args.server>-1:
+      if args.sync:
+        syncCommand = 'rsync -r '+experiment.path.code+'/* '+experiment.host[args.server]+':'+experiment.path.code
+        print(syncCommand)
+        os.system(syncCommand)
+      command = 'ssh '+experiment.host[args.server]+' "cd '+experiment.path.code+'; '+command+'"'
+      message = 'experiment launched on host: '+experiment.host[args.server]
+    print(command)
+    os.system(command)
+    print(message)
+    exit()
+
+  if args.server == -3:
+    logFileName = '/tmp/test'
+  if args.mail:
+    experiment.sendMail('has started.', '<div> Mask = '+args.mask+'</div>')
+  if args.run and hasattr(config, 'step'):
+    experiment.do(mask, config.step, nbJobs=args.run, logFileName=logFileName, tqdmDisplay=args.progress)
+
+  body = '<div> Mask = '+args.mask+'</div>'
+  if args.display:
+    if hasattr(config, 'display'):
+      config.display(experiment, experiment.factor.settings(mask))
+    else:
+      (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, idFormat = experiment._idFormat)
+      df = pd.DataFrame(table, columns=columns).round(decimals=2)
+      print(header)
+      print(df)
+      body += '<div> '+header+' </div><br>'+df.to_html()
+  if args.mail:
+    experiment.sendMail('is over.', body) #
+
 
 class Experiment():
   """Stores high level information about the experiment and tools to control the processing and storage of data.
