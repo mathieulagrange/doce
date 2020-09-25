@@ -36,7 +36,11 @@ class Factor():
   _default = types.SimpleNamespace()
   _parallel = False
 
-  def __setattr__(self, name, value):
+  def __setattr__(
+    self,
+    name,
+    value
+    ):
     if not name == '_settings':
       _settings = []
     if not hasattr(self, name) and name[0] != '_':
@@ -49,8 +53,27 @@ class Factor():
       self._nonSingleton.append(name)
     return object.__setattr__(self, name, value)
 
-  def __getattribute__(self, name):
+  def __getattribute__(
+    self,
+    name
+    ):
+    """one liner
 
+  	Desc
+
+  	Parameters
+  	----------
+
+  	Returns
+  	-------
+
+  	See Also
+  	--------
+
+  	Examples
+  	--------
+
+    """
     value = object.__getattribute__(self, name)
     if name[0] != '_' and self._setting and type(inspect.getattr_static(self, name)) != types.FunctionType:
       idx = self.getFactorNames().index(name)
@@ -66,12 +89,26 @@ class Factor():
             raise
     return value
 
-  def __iter__(self):
+  def __iter__(
+    self
+    ):
+    """one liner
+
+  	Desc
+
+    """
     self.__setSettings__()
     self._currentSetting = 0
     return self
 
-  def __next__(self):
+  def __next__(
+    self
+    ):
+    """one liner
+
+  	Desc
+
+    """
     if self._currentSetting == len(self._settings):
       raise StopIteration
     else:
@@ -89,7 +126,12 @@ class Factor():
     # print(self._mask)
     return  self
 
-  def setDefault(self, name, value, force=False):
+  def setDefault(
+    self,
+    name,
+    value,
+    force=False
+    ):
     """one liner
 
   	Desc
@@ -109,7 +151,7 @@ class Factor():
     """
     if hasattr(self, name):
       if not force and any(item in getattr(self, name) for item in [0, 'none']):
-        print('Setting an explicit default modality to factor '+name+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <noneAndZero2void> set to False when using getId. You can remove this warning by setting the flag <force> to True.')
+        print('Setting an explicit default modality to factor '+name+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <noneAndZero2void> set to False when using method id(). You can remove this warning by setting the flag <force> to True.')
         if value not in getattr(self, name):
           print('The default modality of factor '+name+' should be available in the set of modalities.')
           raise ValueError
@@ -118,14 +160,20 @@ class Factor():
       print('Please set the factor '+name+' before choosing its default modality.')
       raise ValueError
 
-  def doSetting(self, setting, function, logFileName, *parameters):
+  def doSetting(
+    self,
+    setting,
+    function,
+    logFileName,
+    *parameters
+    ):
     failed = 0
     try:
       function(setting, *parameters)
     except Exception as e:
       if logFileName:
         failed = 1
-        #print('setting '+setting.getId()+' failed')
+        #print('setting '+setting.id()+' failed')
         logging.info(traceback.format_exc())
       else:
         raise e
@@ -136,7 +184,7 @@ class Factor():
     function=None,
     *parameters,
     nbJobs=1,
-    tqdmDisplay=True,
+    progress=True,
     logFileName=''):
     """Iterate over the setting set and operate the function with the given parameters.
 
@@ -154,7 +202,7 @@ class Factor():
                 level=logging.DEBUG,
                 format='%(levelname)s: %(asctime)s %(message)s',
                 datefmt='%m/%d/%Y %I:%M:%S')
-    if tqdmDisplay:
+    if progress:
       print('Number of settings: '+str(len(self)))
     if nbJobs>1 or nbJobs<0:
       # print(nbJobs)
@@ -162,7 +210,7 @@ class Factor():
       result = Parallel(n_jobs=nbJobs, require='sharedmem')(delayed(self.doSetting)(setting, function, logFileName, *parameters) for setting in self)
       self._parallel = False
     else:
-      with tqdm(total=len(self), disable= not tqdmDisplay) as t:
+      with tqdm(total=len(self), disable= not progress) as t:
         for setting in self:
             description = ''
             if nbFailed:
@@ -176,7 +224,15 @@ class Factor():
             t.update(1)
     return nbFailed
 
-  def settings(self, mask=None):
+  def settings(
+    self,
+    mask=None
+    ):
+    """one liner
+
+  	Desc
+
+    """
     mask = copy.deepcopy(mask)
     nbFactors = len(self.getFactorNames())
     if mask is None or len(mask)==0 or (len(mask)==1 and len(mask)==0) :
@@ -194,40 +250,51 @@ class Factor():
     self._mask = mask
     return self
 
-  def __len__(self):
-      self.__setSettings__()
-      return len(self._settings)
+  def __len__(
+    self
+    ):
+    """one liner
 
-  def __setSettings__(self):
-      if self._changed:
-        settings = []
-        mask = copy.deepcopy(self._mask)
-        self._setting = None
+  	Desc
 
-        # print('start get settings')
-        # print(self._mask)
-        for m in mask:
-          # handle -1 in mask
-          for mfi, mf in enumerate(m):
-            if isinstance(mf, int) and mf == -1 and mfi<len(self.getFactorNames()):
-              attr = self.__getattribute__(self.getFactorNames()
-              [mfi])
-              # print(attr)
-              # print(isinstance(attr, int))
-              if isinstance(attr, list) or isinstance(attr, np.ndarray):
-                m[mfi] = list(range(len(attr)))
-              else:
-                m[mfi] = [0]
+    """
+    self.__setSettings__()
+    return len(self._settings)
 
-          # print('submask')
-          s = self.__setSettingsMask__(m, 0)
-          if all(isinstance(ss, list) for ss in s):
-            for ss in s:
-              settings.append(ss)
-          else:
-            settings.append(s)
-        self._changed = False
-        self._settings = settings
+  def __setSettings__(
+    self
+    ):
+    """one liner
+
+  	Desc
+
+    """
+    if self._changed:
+      settings = []
+      mask = copy.deepcopy(self._mask)
+      self._setting = None
+
+      for m in mask:
+        # handle -1 in mask
+        for mfi, mf in enumerate(m):
+          if isinstance(mf, int) and mf == -1 and mfi<len(self.getFactorNames()):
+            attr = self.__getattribute__(self.getFactorNames()
+            [mfi])
+            # print(attr)
+            # print(isinstance(attr, int))
+            if isinstance(attr, list) or isinstance(attr, np.ndarray):
+              m[mfi] = list(range(len(attr)))
+            else:
+              m[mfi] = [0]
+
+        s = self.__setSettingsMask__(m, 0)
+        if all(isinstance(ss, list) for ss in s):
+          for ss in s:
+            settings.append(ss)
+        else:
+          settings.append(s)
+      self._changed = False
+      self._settings = settings
 
   def __setSettingsMask__(self, mask, done):
     if done == len(mask):
@@ -258,27 +325,39 @@ class Factor():
         settings.insert(0, mask[done])
     return settings
 
-  def getFactorNames(self):
+  def getFactorNames(
+    self
+    ):
+    """Returns the list of factors defined in the Class.
+
+  	Returns a list of str with the names of the factors defined in the Class.
+
+    """
     return self._factors
 
-  def clone(self):
-    return copy.deepcopy(self)
+  def nbModalities(
+    self,
+    factor
+    ):
+    """Returns the number of :term:`modalities<modality> for a given :term:`factor`.
 
-  def nbModalities(self, factor):
-      if isinstance(factor, int):
-          name = self.getFactorNames()[factor]
-      return len(object.__getattribute__(self, name))
+  	Returns the number of :term:`modalities<modality> for a given :term:`factor`.
+
+    """
+    if isinstance(factor, int):
+      name = self.getFactorNames()[factor]
+    return len(object.__getattribute__(self, name))
 
   def cleanH5(self, path, reverse=False, force=False, idFormat={}):
     h5 = tb.open_file(path, mode='a')
     if reverse:
-      ids = [setting.getId(**idFormat) for setting in self]
+      ids = [setting.id(**idFormat) for setting in self]
       for g in h5.iter_nodes('/'):
         if g._v_name not in ids:
           h5.remove_node(h5.root, g._v_name, recursive=True)
     else:
       for setting in self:
-        groupName = setting.getId(**idFormat)
+        groupName = setting.id(**idFormat)
         if h5.root.__contains__(groupName):
           h5.remove_node(h5.root, groupName, recursive=True)
     h5.close()
@@ -294,15 +373,28 @@ class Factor():
       os.rename(outfilename, path)
 
 
-  def cleanDataSink(self, path, reverse=False, force=False, selector='*', idFormat={}, archivePath=''):
+  def cleanDataSink(
+    self,
+    path,
+    reverse=False,
+    force=False,
+    selector='*',
+    idFormat={},
+    archivePath=''
+    ):
+    """Clean a data sink by considering the settings set.
+
+  	Returns the number of :term:`modalities<modality> for a given :term:`factor`. This method is more conveniently used by considering the method explanes.experiment.Experiment.cleanDataSink, please see its documentation for usage.
+
+    """
     path = os.path.expanduser(path)
     if path.endswith('.h5'):
       self.cleanH5(path, reverse, force, idFormat)
     else:
       fileNames = []
       for setting in self:
-          # print(path+'/'+setting.getId(**idFormat)+selector)
-          for f in glob.glob(path+'/'+setting.getId(**idFormat)+selector):
+          # print(path+'/'+setting.id(**idFormat)+selector)
+          for f in glob.glob(path+'/'+setting.id(**idFormat)+selector):
               fileNames.append(f)
       if reverse:
         complete = []
@@ -337,7 +429,7 @@ class Factor():
           modality = modalities.index(modality)
           self._setting = set
 
-      f = self.clone()
+      f = copy.deepcopy(self)
       if relative:
           f._setting[factor] += modality
       else:
@@ -348,9 +440,9 @@ class Factor():
           return f
 
   def describe(self):
-    return self.getId(singleton=False, sort=False, sep=' ')
+    return self.id(singleton=False, sort=False, sep=' ', noneAndZero2void=False)
 
-  def getId(self, format='long', sort=True, singleton=True, noneAndZero2void=True, default2void=True, sep='_', omit=[]):
+  def id(self, format='long', sort=True, singleton=True, noneAndZero2void=True, default2void=True, sep='_', omit=[]):
     id = []
     fNames = self.getFactorNames()
     if isinstance(omit, str):
@@ -375,11 +467,6 @@ class Factor():
 
   def __str__(self):
     cString = ''
-    atrs = dict(vars(type(self)))
-    atrs.update(vars(self))
-    atrs = [a for a in atrs if a[0] != '_']
-
-    for atr in atrs:
-      if type(inspect.getattr_static(self, atr)) != types.FunctionType:
-        cString+='  '+atr+': '+str(self.__getattribute__(atr))+'\r\n'
+    for ai, atr in enumerate(self._factors):
+      cString+='  '+str(ai)+'  '+atr+': '+str(self.__getattribute__(atr))+'\r\n'
     return cString

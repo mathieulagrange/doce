@@ -8,6 +8,6 @@ e.factor.factor2=[2, 4]
 def myFunction(setting, experiment):
     print('{}+{}={}'.format(setting.factor1, setting.factor2, setting.factor1+setting.factor2))
 
-e.do([], myFunction, nbJobs=1, tqdmDisplay=False)
+e.do([], myFunction, nbJobs=1, progress=False)
 print('')
-e.do([], myFunction, nbJobs=3, tqdmDisplay=False)
+e.do([], myFunction, nbJobs=3, progress=False)

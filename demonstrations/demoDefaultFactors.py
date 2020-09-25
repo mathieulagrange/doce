@@ -30,8 +30,8 @@ def set(experiment, args):
 
 def step(setting, experiment):
 
-  print(setting.getId(**experiment._idFormat))
-  np.save(experiment.path.output+setting.getId(**experiment._idFormat)+'_m.npy',  np.random.rand(1, 3))
+  print(setting.id(**experiment._idFormat))
+  np.save(experiment.path.output+setting.id(**experiment._idFormat)+'_m.npy',  np.random.rand(1, 3))
 
 def display(experiment, settings):
     (data, desc, header)  = experiment.metric.get('m', settings, experiment.path.output, **experiment._idFormat)

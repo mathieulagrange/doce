@@ -29,7 +29,7 @@ def run():
   >>>   experiment.factor.factor2=[2, 4]
   >>>   return experiment
   >>> def step(setting, experiment):
-  >>>   print(setting.getId())
+  >>>   print(setting.id())
 
   Executing python experiment_run.py -r, gives:
 
@@ -74,7 +74,8 @@ def run():
   """
 
   parser = argparse.ArgumentParser()
-  parser.add_argument('-i', '--information', help='show information about the the experiment', action='store_true')
+  parser.add_argument('-i', '--information', help='show information about the experiment', action='store_true')
+  parser.add_argument('-f', '--factor', help='show the factors of the experiment', action='store_true')
   parser.add_argument('-l', '--list', help='list settings', action='store_true')
   parser.add_argument('-m', '--mask', type=str, help='mask of the experiment to run', default='[]')
   parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation', action='store_true')
@@ -105,8 +106,10 @@ def run():
   experiment = config.set(args)
   if args.information:
       print(experiment)
+  if args.factor:
+      print(experiment.factor)
   if args.list:
-    experiment.do(mask, tqdmDisplay=False)
+    experiment.do(mask, progress=False)
 
   if args.remove:
     path2clean = args.remove
@@ -149,7 +152,7 @@ def run():
   if args.mail:
     experiment.sendMail('has started.', '<div> Mask = '+args.mask+'</div>')
   if args.run and hasattr(config, 'step'):
-    experiment.do(mask, config.step, nbJobs=args.run, logFileName=logFileName, tqdmDisplay=args.progress)
+    experiment.do(mask, config.step, nbJobs=args.run, logFileName=logFileName, progress=args.progress)
 
   body = '<div> Mask = '+args.mask+'</div>'
   if args.display:
@@ -413,12 +416,12 @@ class Experiment():
     function=None,
     *parameters,
     nbJobs=1,
-    tqdmDisplay=True,
+    progress=True,
     logFileName=''
     ):
     """Operate the function with parameters on the setting set generated using mask.
 
-    Operate a given function on the setting set generated using mask. The setting set can be browsed in parallel by setting nbJobs>1. If logFileName is not empty, a faulty setting do not stop the execution, the error is stored and another setting is executed. If tqdmDisplay is set to True, a graphical display of the progress through the setting set is displayed.
+    Operate a given function on the setting set generated using mask. The setting set can be browsed in parallel by setting nbJobs>1. If logFileName is not empty, a faulty setting do not stop the execution, the error is stored and another setting is executed. If progress is set to True, a graphical display of the progress through the setting set is displayed.
 
     This function is essentially a wrapper to the function :meth:`explanes.factor.Factor.do`.
 
@@ -441,7 +444,7 @@ class Experiment():
 
       If nbJobs > 1, the settings set is browsed randomly, and settings are distributed over the different processes.
 
-    tqdmDisplay : bool (optional)
+    progress : bool (optional)
       display progress of scheduling the setting set.
 
       If True, use tqdm to display progress
@@ -473,7 +476,7 @@ class Experiment():
     >>> def myFunction(setting, experiment):
     >>>   print('{}+{}={}'.format(setting.factor1, setting.factor2, setting.factor1+setting.factor2))
 
-    >>> e.do([], myFunction, nbJobs=1, tqdmDisplay=False)
+    >>> e.do([], myFunction, nbJobs=1, progress=False)
     1+2=3
     1+4=5
     3+2=5
@@ -481,7 +484,7 @@ class Experiment():
 
     In this example, since nbJobs<2, the scheduling of the setting set is deterministic and implemented as depth first.
 
-    e.do([], myFunction, nbJobs=3, tqdmDisplay=False)
+    e.do([], myFunction, nbJobs=3, progress=False)
     1+2=3
     1+4=5
     3+4=7
@@ -491,7 +494,7 @@ class Experiment():
 
     """
 
-    return self.factor.settings(mask).do(function, self, *parameters, nbJobs=nbJobs, tqdmDisplay=tqdmDisplay, logFileName=logFileName)
+    return self.factor.settings(mask).do(function, self, *parameters, nbJobs=nbJobs, progress=progress, logFileName=logFileName)
 
   def cleanDataSink(
     self,
@@ -531,7 +534,7 @@ class Experiment():
       string specifying the end of the wildcard used to select the entries to remove or to keep (default: '*').
 
     idFormat : dict (optional)
-      Dictionary specifying the format of the id describing the :term:`setting`. Please see the documention of  :meth:`explanes.factor.Factor.getId` for further information.
+      Dictionary specifying the format of the id describing the :term:`setting`. Please see the documention of  :meth:`explanes.factor.Factor.id` for further information.
 
     archivePath : str
       If None, the archivePath is set to explanes.experiment.Experiment._archivePath.
@@ -541,7 +544,7 @@ class Experiment():
     See Also
     --------
 
-    explanes.factor.Factor.cleanDataSink, explanes.factor.Factor.getId
+    explanes.factor.Factor.cleanDataSink, explanes.factor.Factor.id
 
     Examples
     --------
@@ -555,9 +558,9 @@ class Experiment():
     >>> e.factor.factor1=[1, 3]
     >>> e.factor.factor2=[2, 4]
     >>> def myFunction(setting, experiment):
-    >>>   np.save(experiment.path.output+'/'+setting.getId()+'_sum.npy', e.factor.factor1+e.factor.factor2)
-    >>>   np.save(experiment.path.output+'/'+setting.getId()+'_mult.npy', e.factor.factor1*e.factor.factor2)
-    >>> e.do([], myFunction, tqdmDisplay=False)
+    >>>   np.save(experiment.path.output+'/'+setting.id()+'_sum.npy', e.factor.factor1+e.factor.factor2)
+    >>>   np.save(experiment.path.output+'/'+setting.id()+'_mult.npy', e.factor.factor1*e.factor.factor2)
+    >>> e.do([], myFunction, progress=False)
     >>> os.listdir(e.path.output)
     ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_2_mult.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_1_factor2_2_sum.npy', 'factor1_1_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy', 'factor1_1_factor2_2_mult.npy', 'factor1_1_factor2_4_sum.npy']
 
@@ -585,7 +588,7 @@ class Experiment():
     >>>   sg.sum[0] = e.factor.factor1+e.factor.factor2
     >>>   sg.mult[0] = e.factor.factor1*e.factor.factor2
     >>>   h5.close()
-    >>> e.do([], myFunction, tqdmDisplay=False)
+    >>> e.do([], myFunction, progress=False)
     >>> h5 = tb.open_file(e.path.output, mode='r')
     >>> print(h5)
     /tmp/test.h5 (File) ''
