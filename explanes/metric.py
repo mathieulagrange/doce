@@ -259,7 +259,8 @@ class Metric():
     settings,
     data,
     reducedMetricDisplay = 'capitalize',
-    idFormat={}
+    idFormat={},
+    verbose=False
     ):
     """one liner
 
@@ -271,9 +272,9 @@ class Metric():
     """
     if isinstance(data, str):
       if data.endswith('.h5'):
-        (array, description) = self.getFromH5(metric, settings, data) # todo
+        (array, description) = self.getFromH5(metric, settings, data, verbose) # todo
       else:
-        (array, description) = self.getFromNpy(metric, settings, data, idFormat)
+        (array, description) = self.getFromNpy(metric, settings, data, idFormat, verbose)
 
     constantColumnDescription = ''
     if description:
@@ -281,7 +282,7 @@ class Metric():
       for si, s in enumerate(ccIndex):
         if si>1 and not s:
           ccIndex[si-1] = False
-      ccIndex = [i for i, x in enumerate(same) if x]
+      ccIndex = [i for i, x in enumerate(ccValue) if x]
       for s in ccIndex:
         constantColumnDescription += description[0][s]+' '
       for s in sorted(ccIndex, reverse=True):
@@ -294,7 +295,8 @@ class Metric():
     metric,
     settings,
     dataPath,
-    idFormat={}
+    idFormat={},
+    verbose=False
     ):
     """one liner
 
@@ -325,7 +327,8 @@ class Metric():
     metric,
     settings,
     dataPath,
-    idFormat={}
+    idFormat={},
+    verbose=False
     ):
     """one liner
 
@@ -342,7 +345,9 @@ class Metric():
     descriptionFormat['noneAndZero2void'] = False
     descriptionFormat['default2void'] = False
     for setting in settings:
-      fileName = dataPath+setting.getId(idFormat)+'_'+metric+'.npy'
+      fileName = dataPath+setting.getId(**idFormat)+'_'+metric+'.npy'
+      if verbose:
+        print('seeking '+fileName)
       if os.path.exists(fileName):
         data.append(np.load(fileName))
         description.append(setting.getId(**descriptionFormat))
