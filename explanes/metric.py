@@ -76,7 +76,7 @@ class Metric():
     for sIndex, setting in enumerate(settings):
       row = []
       for mIndex, metric in enumerate(self.getMetricNames()):
-        fileName = dataPath+setting.getId(**idFormat)+'_'+metric+'.npy'
+        fileName = dataPath+setting.id(**idFormat)+'_'+metric+'.npy'
         if verbose:
           print('Seeking '+fileName)
         if os.path.exists(fileName):
@@ -115,11 +115,11 @@ class Metric():
     for sIndex, setting in enumerate(settings):
       row = []
       if verbose:
-        print('Seeking Group '+setting.getId(**idFormat))
-      if h5.root.__contains__(setting.getId(**idFormat)):
-        sg = h5.root._f_get_child(setting.getId(**idFormat))
+        print('Seeking Group '+setting.id(**idFormat))
+      if h5.root.__contains__(setting.id(**idFormat)):
+        sg = h5.root._f_get_child(setting.id(**idFormat))
         # print(sg._v_name)
-        # print(setting.getId(**idFormat))
+        # print(setting.id(**idFormat))
         for mIndex, metric in enumerate(self.getMetricNames()):
           for reductionType in self.__getattribute__(metric):
             value = np.nan
@@ -256,8 +256,8 @@ class Metric():
     >>> def process(setting, experiment):
     >>>   metric1 = setting.f1+setting.f2+np.random.randn(100)
     >>>   metric2 = setting.f1*setting.f2*np.random.randn(100)
-    >>>   np.save(experiment.path.output+setting.getId()+'_m1.npy', metric1)
-    >>>   np.save(experiment.path.output+setting.getId()+'_m2.npy', metric2)
+    >>>   np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
+    >>>   np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
     >>> experiment.makePaths()
     >>> experiment.do([], process, progress=False)
     >>> (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(), experiment.path.output)
@@ -411,12 +411,12 @@ class Metric():
     descriptionFormat['default2void'] = False
     for setting in settings:
       if verbose:
-        print('Seeking Group '+setting.getId(**idFormat))
-      if h5.root.__contains__(setting.getId(**idFormat)):
-        sg = h5.root._f_get_child(setting.getId(**idFormat))
+        print('Seeking Group '+setting.id(**idFormat))
+      if h5.root.__contains__(setting.id(**idFormat)):
+        sg = h5.root._f_get_child(setting.id(**idFormat))
         if sg.__contains__(metric):
           data.append(sg._f_get_child(metric))
-          description.append(setting.getId(**descriptionFormat))
+          description.append(setting.id(**descriptionFormat))
     h5.close()
     return (data, description)
 
@@ -442,10 +442,10 @@ class Metric():
     descriptionFormat['noneAndZero2void'] = False
     descriptionFormat['default2void'] = False
     for setting in settings:
-      fileName = dataPath+setting.getId(idFormat)+'_'+metric+'.npy'
+      fileName = dataPath+setting.id(idFormat)+'_'+metric+'.npy'
       if os.path.exists(fileName):
         data.append(np.load(fileName))
-        description.append(setting.getId(**descriptionFormat))
+        description.append(setting.id(**descriptionFormat))
 
     return (data, description)
 
@@ -464,10 +464,10 @@ class Metric():
     --------
 
     """
-    groupName = setting.getId(**idFormat)
+    groupName = setting.id(**idFormat)
     # print(groupName)
     if not h5.__contains__('/'+groupName):
-      sg = h5.create_group('/', groupName, setting.getId(format='long', sep=' '))
+      sg = h5.create_group('/', groupName, setting.id(format='long', sep=' '))
     else:
       sg = h5.root._f_get_child(groupName)
     for mIndex, metric in enumerate(self.getMetricNames()):

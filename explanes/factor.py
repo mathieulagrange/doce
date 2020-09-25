@@ -151,7 +151,7 @@ class Factor():
     """
     if hasattr(self, name):
       if not force and any(item in getattr(self, name) for item in [0, 'none']):
-        print('Setting an explicit default modality to factor '+name+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <noneAndZero2void> set to False when using getId. You can remove this warning by setting the flag <force> to True.')
+        print('Setting an explicit default modality to factor '+name+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <noneAndZero2void> set to False when using method id(). You can remove this warning by setting the flag <force> to True.')
         if value not in getattr(self, name):
           print('The default modality of factor '+name+' should be available in the set of modalities.')
           raise ValueError
@@ -173,7 +173,7 @@ class Factor():
     except Exception as e:
       if logFileName:
         failed = 1
-        #print('setting '+setting.getId()+' failed')
+        #print('setting '+setting.id()+' failed')
         logging.info(traceback.format_exc())
       else:
         raise e
@@ -351,13 +351,13 @@ class Factor():
   def cleanH5(self, path, reverse=False, force=False, idFormat={}):
     h5 = tb.open_file(path, mode='a')
     if reverse:
-      ids = [setting.getId(**idFormat) for setting in self]
+      ids = [setting.id(**idFormat) for setting in self]
       for g in h5.iter_nodes('/'):
         if g._v_name not in ids:
           h5.remove_node(h5.root, g._v_name, recursive=True)
     else:
       for setting in self:
-        groupName = setting.getId(**idFormat)
+        groupName = setting.id(**idFormat)
         if h5.root.__contains__(groupName):
           h5.remove_node(h5.root, groupName, recursive=True)
     h5.close()
@@ -393,8 +393,8 @@ class Factor():
     else:
       fileNames = []
       for setting in self:
-          # print(path+'/'+setting.getId(**idFormat)+selector)
-          for f in glob.glob(path+'/'+setting.getId(**idFormat)+selector):
+          # print(path+'/'+setting.id(**idFormat)+selector)
+          for f in glob.glob(path+'/'+setting.id(**idFormat)+selector):
               fileNames.append(f)
       if reverse:
         complete = []
@@ -440,9 +440,9 @@ class Factor():
           return f
 
   def describe(self):
-    return self.getId(singleton=False, sort=False, sep=' ')
+    return self.id(singleton=False, sort=False, sep=' ', noneAndZero2void=False)
 
-  def getId(self, format='long', sort=True, singleton=True, noneAndZero2void=True, default2void=True, sep='_', omit=[]):
+  def id(self, format='long', sort=True, singleton=True, noneAndZero2void=True, default2void=True, sep='_', omit=[]):
     id = []
     fNames = self.getFactorNames()
     if isinstance(omit, str):

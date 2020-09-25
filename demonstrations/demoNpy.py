@@ -61,7 +61,7 @@ def step(setting, experiment):
     settingMse[r] = abs(reference - estimate)
     settingMae[r] = np.square(reference - estimate)
 
-  baseFileName = setting.getId(**experiment._idFormat)
+  baseFileName = setting.id(**experiment._idFormat)
   np.save(experiment.path.output+baseFileName+'_mae.npy', settingMae)
   np.save(experiment.path.output+baseFileName+'_mse.npy', settingMse)
   duration = time.time()-tic

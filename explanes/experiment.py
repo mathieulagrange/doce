@@ -29,7 +29,7 @@ def run():
   >>>   experiment.factor.factor2=[2, 4]
   >>>   return experiment
   >>> def step(setting, experiment):
-  >>>   print(setting.getId())
+  >>>   print(setting.id())
 
   Executing python experiment_run.py -r, gives:
 
@@ -534,7 +534,7 @@ class Experiment():
       string specifying the end of the wildcard used to select the entries to remove or to keep (default: '*').
 
     idFormat : dict (optional)
-      Dictionary specifying the format of the id describing the :term:`setting`. Please see the documention of  :meth:`explanes.factor.Factor.getId` for further information.
+      Dictionary specifying the format of the id describing the :term:`setting`. Please see the documention of  :meth:`explanes.factor.Factor.id` for further information.
 
     archivePath : str
       If None, the archivePath is set to explanes.experiment.Experiment._archivePath.
@@ -544,7 +544,7 @@ class Experiment():
     See Also
     --------
 
-    explanes.factor.Factor.cleanDataSink, explanes.factor.Factor.getId
+    explanes.factor.Factor.cleanDataSink, explanes.factor.Factor.id
 
     Examples
     --------
@@ -558,8 +558,8 @@ class Experiment():
     >>> e.factor.factor1=[1, 3]
     >>> e.factor.factor2=[2, 4]
     >>> def myFunction(setting, experiment):
-    >>>   np.save(experiment.path.output+'/'+setting.getId()+'_sum.npy', e.factor.factor1+e.factor.factor2)
-    >>>   np.save(experiment.path.output+'/'+setting.getId()+'_mult.npy', e.factor.factor1*e.factor.factor2)
+    >>>   np.save(experiment.path.output+'/'+setting.id()+'_sum.npy', e.factor.factor1+e.factor.factor2)
+    >>>   np.save(experiment.path.output+'/'+setting.id()+'_mult.npy', e.factor.factor1*e.factor.factor2)
     >>> e.do([], myFunction, progress=False)
     >>> os.listdir(e.path.output)
     ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_2_mult.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_1_factor2_2_sum.npy', 'factor1_1_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy', 'factor1_1_factor2_2_mult.npy', 'factor1_1_factor2_4_sum.npy']

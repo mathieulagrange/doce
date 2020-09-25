@@ -13,8 +13,8 @@ experiment.metric.m2 = ['min', 'argmin']
 def process(setting, experiment):
   metric1 = setting.f1+setting.f2+np.random.randn(100)
   metric2 = setting.f1*setting.f2*np.random.randn(100)
-  np.save(experiment.path.output+setting.getId()+'_m1.npy', metric1)
-  np.save(experiment.path.output+setting.getId()+'_m2.npy', metric2)
+  np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
+  np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
 
 experiment.makePaths()
 experiment.do([], process, progress=False)
