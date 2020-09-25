@@ -72,10 +72,10 @@ class Metric():
 
     """
     table = []
-    metricHasData = np.zeros((len(self.getMetricNames())))
+    metricHasData = np.zeros((len(self.name())))
     for sIndex, setting in enumerate(settings):
       row = []
-      for mIndex, metric in enumerate(self.getMetricNames()):
+      for mIndex, metric in enumerate(self.name()):
         fileName = dataPath+setting.id(**idFormat)+'_'+metric+'.npy'
         if verbose:
           print('Seeking '+fileName)
@@ -111,7 +111,7 @@ class Metric():
     """
     table = []
     h5 = tb.open_file(dataPath, mode='r')
-    metricHasData = np.zeros((len(self.getMetricNames())))
+    metricHasData = np.zeros((len(self.name())))
     for sIndex, setting in enumerate(settings):
       row = []
       if verbose:
@@ -120,7 +120,7 @@ class Metric():
         sg = h5.root._f_get_child(setting.id(**idFormat))
         # print(sg._v_name)
         # print(setting.id(**idFormat))
-        for mIndex, metric in enumerate(self.getMetricNames()):
+        for mIndex, metric in enumerate(self.name()):
           for reductionType in self.__getattribute__(metric):
             value = np.nan
             if sg.__contains__(metric):
@@ -473,7 +473,7 @@ class Metric():
       sg = h5.create_group('/', groupName, setting.id(format='long', sep=' '))
     else:
       sg = h5.root._f_get_child(groupName)
-    for mIndex, metric in enumerate(self.getMetricNames()):
+    for mIndex, metric in enumerate(self.name()):
       if hasattr(self._description, metric):
         description = getattr(self._description, metric)
       else:
@@ -514,10 +514,11 @@ class Metric():
     --------
 
     """
+    print(factorDisplay)
     columnHeader = []
     for factorName in factor.getFactorNames():
       columnHeader.append(eu.compressDescription(factorName, factorDisplay))
-    for mIndex, metric in enumerate(self.getMetricNames()):
+    for mIndex, metric in enumerate(self.name()):
       if metricHasData[mIndex]:
         for reductionType in self.__getattribute__(metric):
           if reducedMetricDisplay == 'capitalize':
@@ -527,7 +528,7 @@ class Metric():
           columnHeader.append(name)
     return columnHeader
 
-  def getMetricNames(
+  def name(
     self
     ):
     """Returns a list of str with the names of the metrics.
@@ -541,7 +542,7 @@ class Metric():
     >>> m = el.metric.Metric()
     >>> m.duration = ['mean']
     >>> m.mse = ['mean']
-    >>> m.getMetricNames()
+    >>> m.name()
     ['duration', 'mse']
     """
     return self._metrics
@@ -563,7 +564,7 @@ class Metric():
     >>> len(m)
     2
     """
-    return len(self.getMetricNames())
+    return len(self.name())
 
   def __str__(
     self

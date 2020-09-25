@@ -8,5 +8,5 @@ m.mse = ['mean']
 m._unit.mse = ''
 m._description.mse = 'Mean Square Error'
 print(len(m))
-print(m.getMetricNames())
+print(m.name())
 print(m)
