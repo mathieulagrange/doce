@@ -467,11 +467,6 @@ class Factor():
 
   def __str__(self):
     cString = ''
-    atrs = dict(vars(type(self)))
-    atrs.update(vars(self))
-    atrs = [a for a in atrs if a[0] != '_']
-
-    for atr in atrs:
-      if type(inspect.getattr_static(self, atr)) != types.FunctionType:
-        cString+='  '+atr+': '+str(self.__getattribute__(atr))+'\r\n'
+    for ai, atr in enumerate(self._factors):
+      cString+='  '+str(ai)+'  '+atr+': '+str(self.__getattribute__(atr))+'\r\n'
     return cString

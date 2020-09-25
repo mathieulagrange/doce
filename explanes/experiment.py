@@ -74,7 +74,8 @@ def run():
   """
 
   parser = argparse.ArgumentParser()
-  parser.add_argument('-i', '--information', help='show information about the the experiment', action='store_true')
+  parser.add_argument('-i', '--information', help='show information about the experiment', action='store_true')
+  parser.add_argument('-f', '--factor', help='show the factors of the experiment', action='store_true')
   parser.add_argument('-l', '--list', help='list settings', action='store_true')
   parser.add_argument('-m', '--mask', type=str, help='mask of the experiment to run', default='[]')
   parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation', action='store_true')
@@ -105,6 +106,8 @@ def run():
   experiment = config.set(args)
   if args.information:
       print(experiment)
+  if args.factor:
+      print(experiment.factor)
   if args.list:
     experiment.do(mask, progress=False)
 
