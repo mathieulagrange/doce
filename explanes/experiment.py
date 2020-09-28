@@ -81,7 +81,7 @@ def run():
   parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation', action='store_true')
   parser.add_argument('-S', '--sync', help='sync to server defined', action='store_true')
   parser.add_argument('-s', '--server', type=int, help='running server side. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside', default=-2)
-  parser.add_argument('-d', '--display', type=str, help='display metrics. Str parameter (optional) should contains a list of integers specifiying the columns to keep for display.', nargs='?', default='[]')
+  parser.add_argument('-d', '--display', type=str, help='display metrics. Str parameter (optional) should contains a list of integers specifiying the columns to keep for display.', nargs='?', default='-1')
   parser.add_argument('-r', '--run', type=int, help='perform computation. Integer parameter sets the number of jobs computed in parallel (default to one core).', nargs='?', const=1)
   parser.add_argument('-D', '--debug', help='debug mode', action='store_true')
   parser.add_argument('-v', '--version', help='print version', action='store_true')
@@ -97,12 +97,12 @@ def run():
 
   mask = ast.literal_eval(args.mask)
   if args.display is None:
+    args.display = True
     display = []
   elif args.display == -1:
     display = None
   else:
     display = ast.literal_eval(args.display)
-
 
   module = sys.argv[0][:-3]
   try:
@@ -168,7 +168,8 @@ def run():
     else:
       (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, idFormat = experiment._idFormat)
       df = pd.DataFrame(table, columns=columns).round(decimals=2)
-      if display:
+      if display is not None:
+        print(display)
         if len(display):
           selector = [columns[i] for i in display]
           df = df[selector]
