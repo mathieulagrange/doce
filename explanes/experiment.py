@@ -102,7 +102,7 @@ def run():
     display = False
   elif args.display is None:
     args.display = '-2'
-  elif args.display != '-2':
+  elif args.display == '-2':
     selectDisplay = ast.literal_eval(args.display)
 
   module = sys.argv[0][:-3]
@@ -136,8 +136,8 @@ def run():
   logFileName = ''
   if args.server>-2:
     unparser = argunparse.ArgumentUnparser()
-    args.server = -3
-    kwargs = vars(args)
+    kwargs = vars(parser.parse_args())
+    kwargs['server'] = -3
     command = unparser.unparse(**kwargs).replace('\'', '\"').replace('\"', '\\\"')
     print(command)
     if args.debug:
