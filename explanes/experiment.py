@@ -141,7 +141,7 @@ def run():
     command = unparser.unparse(**kwargs).replace('\'', '\"').replace('\"', '\\\"')
     if args.debug:
       command += '; bash '
-    command = 'screen -dm bash -c \'python3 run.py '+command+'\''
+    command = 'screen -dm bash -c \'python3 '+experiment.config.name+'.py '+command+'\''
     message = 'experiment launched on local host'
     if args.server>-1:
       if args.sync:
