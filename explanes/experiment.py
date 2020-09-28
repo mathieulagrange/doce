@@ -11,6 +11,7 @@ import argunparse
 import ast
 import importlib
 import os
+import copy
 
 def run():
   """This method shall be called from the main script of the experiment.
@@ -136,7 +137,7 @@ def run():
   logFileName = ''
   if args.server>-2:
     unparser = argunparse.ArgumentUnparser()
-    kwargs = vars(args)
+    kwargs = copy.deepcopy(vars(args))
     kwargs['server'] = -3
     command = unparser.unparse(**kwargs).replace('\'', '\"').replace('\"', '\\\"')
     if args.debug:
