@@ -514,7 +514,7 @@ class Metric():
     --------
 
     """
-    print(factorDisplay)
+    # print(factorDisplay)
     columnHeader = []
     for factorName in factor.getFactorNames():
       columnHeader.append(eu.compressDescription(factorName, factorDisplay))
