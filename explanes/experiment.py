@@ -169,7 +169,6 @@ def run():
       (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, idFormat = experiment._idFormat)
       df = pd.DataFrame(table, columns=columns).round(decimals=2)
       if display is not None:
-        print(display)
         if isinstance(display, list) and len(display):
           selector = [columns[i] for i in display]
           df = df[selector]
