@@ -96,13 +96,14 @@ def run():
     exit(1)
 
   mask = ast.literal_eval(args.mask)
+  selectDisplay = []
   if args.display is None:
-    args.display = True
-    display = []
-  elif args.display == -1:
-    display = None
+    display = True
+  elif args.display == '-1':
+    display = False
   else:
-    display = ast.literal_eval(args.display)
+    display = True
+    selectDisplay = ast.literal_eval(args.display)
 
   module = sys.argv[0][:-3]
   try:
@@ -162,18 +163,17 @@ def run():
     experiment.do(mask, config.step, nbJobs=args.run, logFileName=logFileName, progress=args.progress)
 
   body = '<div> Mask = '+args.mask+'</div>'
-  if args.display:
+  if display:
     if hasattr(config, 'display'):
       config.display(experiment, experiment.factor.settings(mask))
     else:
       (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, idFormat = experiment._idFormat)
       df = pd.DataFrame(table, columns=columns).round(decimals=2)
-      if display is not None:
-        if isinstance(display, list) and len(display):
-          selector = [columns[i] for i in display]
-          df = df[selector]
-        print(header)
-        print(df)
+      if selectDisplay:
+        selector = [columns[i] for i in selectDisplay]
+        df = df[selector]
+      print(header)
+      print(df)
       body += '<div> '+header+' </div><br>'+df.to_html()
   if args.mail:
     experiment.sendMail('is over.', body) #
