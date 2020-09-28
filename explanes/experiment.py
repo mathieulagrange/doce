@@ -136,10 +136,9 @@ def run():
   logFileName = ''
   if args.server>-2:
     unparser = argunparse.ArgumentUnparser()
-    kwargs = vars(parser.parse_args())
+    kwargs = vars(args)
     kwargs['server'] = -3
     command = unparser.unparse(**kwargs).replace('\'', '\"').replace('\"', '\\\"')
-    print(command)
     if args.debug:
       command += '; bash '
     command = 'screen -dm bash -c \'python3 '+experiment.project.name+'.py '+command+'\''
