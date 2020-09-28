@@ -170,7 +170,7 @@ def run():
       df = pd.DataFrame(table, columns=columns).round(decimals=2)
       if display is not None:
         print(display)
-        if len(display):
+        if isinstance(display, list) and len(display):
           selector = [columns[i] for i in display]
           df = df[selector]
         print(header)
