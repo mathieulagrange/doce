@@ -4,6 +4,7 @@ import types
 import hashlib
 import numpy as np
 import tables as tb
+import pandas as pd
 import copy
 import glob
 import explanes.util as eu
@@ -395,7 +396,7 @@ class Factor():
     ):
     """Clean a data sink by considering the settings set.
 
-  	Returns the number of :term:`modalities<modality>, for a given :term:`factor`. This method is more conveniently used by considering the method explanes.experiment.Experiment.cleanDataSink, please see its documentation for usage.
+  	Returns the number of :term:`modalities<modality>`, for a given :term:`factor`. This method is more conveniently used by considering the method explanes.experiment.Experiment.cleanDataSink, please see its documentation for usage.
 
     """
     path = os.path.expanduser(path)
@@ -478,6 +479,35 @@ class Factor():
 
   def __str__(self):
     cString = ''
+    l = 1
     for ai, atr in enumerate(self._factors):
       cString+='  '+str(ai)+'  '+atr+': '+str(self.__getattribute__(atr))+'\r\n'
     return cString
+
+  def asPandaFrame(self):
+    l = 1
+    for ai, atr in enumerate(self._factors):
+      if isinstance(self.__getattribute__(atr), list):
+        l = max(l, len(self.__getattribute__(atr)))
+      elif isinstance(self.__getattribute__(atr), np.ndarray):
+        l = max(l, len(self.__getattribute__(atr)))
+
+    table = []
+    for atr in self._factors:
+      line = []
+      line.append(atr)
+      for il in range(l):
+        if isinstance(self.__getattribute__(atr), list) and len(self.__getattribute__(atr)) > il :
+          line.append(self.__getattribute__(atr)[il])
+        elif isinstance(self.__getattribute__(atr), np.ndarray) and len(self.__getattribute__(atr)) > il :
+          line.append(self.__getattribute__(atr)[il])
+        elif il<1:
+          line.append(self.__getattribute__(atr))
+        else:
+          line.append('')
+      table.append(line)
+    columns = []
+    columns.append('Factor')
+    for il in range(l):
+      columns.append(il)
+    return pd.DataFrame(table, columns=columns)

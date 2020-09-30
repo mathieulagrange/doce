@@ -82,7 +82,7 @@ def run():
   parser.add_argument('-f', '--factor', help='show the factors of the experiment', action='store_true')
   parser.add_argument('-l', '--list', help='list settings', action='store_true')
   parser.add_argument('-m', '--mask', type=str, help='mask of the experiment to run', default='[]')
-  parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation. If an integer value x is provided, additional emails are sent every x hours.', nargs='?', default='0')
+  parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation. If an integer value x is provided, additional emails are sent every x hours.', nargs='?', default='-1')
   parser.add_argument('-S', '--sync', help='sync to server defined', action='store_true')
   parser.add_argument('-s', '--server', type=int, help='running server side. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside', default=-2)
   parser.add_argument('-d', '--display', type=str, help='display metrics. Str parameter (optional) should contain a list of integers specifiying the columns to keep for display.', nargs='?', default='-1')
@@ -98,6 +98,10 @@ def run():
   if args.version:
     print("Experiment version "+experiment.project.version)
     exit(1)
+  if args.mail is None:
+    args.mail = 0
+  else:
+    args.mail = float(args.mail)
 
   mask = ast.literal_eval(args.mask)
   selectDisplay = []
@@ -120,7 +124,7 @@ def run():
   if args.information:
       print(experiment)
   if args.factor:
-      print(experiment.factor)
+      print(experiment.factor.asPandaFrame())
   if args.list:
     experiment.do(mask, progress=False)
 
@@ -162,7 +166,7 @@ def run():
 
   if args.server == -3:
     logFileName = '/tmp/test'
-  if args.mail:
+  if args.mail>-1:
     experiment.sendMail('has started.', '<div> Mask = '+args.mask+'</div>')
   if args.run and hasattr(config, 'step'):
     experiment.do(mask, config.step, nbJobs=args.run, logFileName=logFileName, progress=args.progress, mailInterval = float(args.mail))
@@ -180,7 +184,7 @@ def run():
       print(header)
       print(df)
       body += '<div> '+header+' </div><br>'+df.to_html()
-  if args.mail:
+  if args.mail>-1:
     experiment.sendMail('is over.', body) #
 
 
