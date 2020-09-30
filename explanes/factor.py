@@ -210,7 +210,7 @@ class Factor():
     if nbJobs>1 or nbJobs<0:
       # print(nbJobs)
       self._parallel = True
-      result = Parallel(n_jobs=nbJobs, require='sharedmem')(delayed(self.doSetting)(setting, function, logFileName, *parameters) for setting in self)
+      result = Parallel(n_jobs=nbJobs, require='sharedmem')(delayed(setting.doSetting)(function, experiment, logFileName, *parameters) for setting in self)
       self._parallel = False
     else:
       startTime = time.time()
@@ -223,14 +223,15 @@ class Factor():
             description += setting.describe()
             t.set_description(description)
             if function:
-                nbFailed += setting.doFunction(function, logFileName, *parameters)
+                nbFailed += setting.doFunction(function, experiment, logFileName, *parameters)
             else:
                 print(setting.describe())
-            if mailInterval>0 and (time.time()-startTime)/(60*60*0+1)> mailing :
+            delay = (time.time()-stepTime)
+            if mailInterval>0 and iSetting<len(self)-1  and delay > mailInterval/(60**2) :
               stepTime = time.time()
-              message = 'Settings done: %d over %d %d\% \n Time elapsed: %s'.format(iSetting, len(self), int(iSetting/len(self)*100), str(startTime-stepTime))
-              print(message)
-              experiment.sendMail()
+              percentage = int((iSetting+1)/len(self)*100)
+              message = '{}% of settings done: {} over {} <br>Time elapsed: {}'.format(percentage, iSetting, len(self), time.strftime('%Hh %Mm %Ss', time.gmtime(stepTime-startTime)))
+              experiment.sendMail('progress {}% '.format(percentage), message)
             t.update(1)
     return nbFailed
 

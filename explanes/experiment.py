@@ -82,7 +82,7 @@ def run():
   parser.add_argument('-f', '--factor', help='show the factors of the experiment', action='store_true')
   parser.add_argument('-l', '--list', help='list settings', action='store_true')
   parser.add_argument('-m', '--mask', type=str, help='mask of the experiment to run', default='[]')
-  parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation. If an integer value x is provided, additional emails are sent every x hours.', action='store_true')
+  parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation. If an integer value x is provided, additional emails are sent every x hours.', nargs='?', default='0')
   parser.add_argument('-S', '--sync', help='sync to server defined', action='store_true')
   parser.add_argument('-s', '--server', type=int, help='running server side. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside', default=-2)
   parser.add_argument('-d', '--display', type=str, help='display metrics. Str parameter (optional) should contain a list of integers specifiying the columns to keep for display.', nargs='?', default='-1')
@@ -116,6 +116,7 @@ def run():
    print('Please provide a valid project name')
    raise ValueError
   experiment = config.set(args)
+
   if args.information:
       print(experiment)
   if args.factor:
@@ -164,7 +165,7 @@ def run():
   if args.mail:
     experiment.sendMail('has started.', '<div> Mask = '+args.mask+'</div>')
   if args.run and hasattr(config, 'step'):
-    experiment.do(mask, config.step, nbJobs=args.run, logFileName=logFileName, progress=args.progress)
+    experiment.do(mask, config.step, nbJobs=args.run, logFileName=logFileName, progress=args.progress, mailInterval = float(args.mail))
 
   body = '<div> Mask = '+args.mask+'</div>'
   if display:
@@ -256,8 +257,8 @@ class Experiment():
     self.project = types.SimpleNamespace()
     self.project.name = ''
     self.project.description = ''
-    self.project.author = ''
-    self.project.address = ''
+    self.project.author = 'no name'
+    self.project.address = 'noname@noname.org'
     self.project.runId = str(int(time.time()))
     self.factor = el.Factor()
     self.parameter = types.SimpleNamespace()
@@ -517,7 +518,7 @@ class Experiment():
 
     """
 
-    return self.factor.settings(mask).do(function, self, *parameters, nbJobs=nbJobs, progress=progress, logFileName=logFileName, mailInterval=0)
+    return self.factor.settings(mask).do(function, self, *parameters, nbJobs=nbJobs, progress=progress, logFileName=logFileName, mailInterval=mailInterval)
 
   def cleanDataSink(
     self,
