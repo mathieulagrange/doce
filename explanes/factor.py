@@ -11,6 +11,7 @@ import traceback
 import logging
 from joblib import Parallel, delayed
 from subprocess import call
+import time
 
 if eu.inNotebook():
     from tqdm.notebook import tqdm as tqdm
@@ -160,16 +161,16 @@ class Factor():
       print('Please set the factor '+name+' before choosing its default modality.')
       raise ValueError
 
-  def doSetting(
+  def doFunction(
     self,
-    setting,
     function,
+    experiment,
     logFileName,
     *parameters
     ):
     failed = 0
     try:
-      function(setting, *parameters)
+      function(self, experiment, *parameters)
     except Exception as e:
       if logFileName:
         failed = 1
@@ -182,10 +183,12 @@ class Factor():
   def do(
     self,
     function=None,
+    experiment=None,
     *parameters,
     nbJobs=1,
     progress=True,
-    logFileName=''):
+    logFileName='',
+    mailInterval=0):
     """Iterate over the setting set and operate the function with the given parameters.
 
     This function is wrapped by :meth:`explanes.experiment.Experiment.do`, which should be more convenient to use. Please refer to this method for usage.
@@ -210,17 +213,24 @@ class Factor():
       result = Parallel(n_jobs=nbJobs, require='sharedmem')(delayed(self.doSetting)(setting, function, logFileName, *parameters) for setting in self)
       self._parallel = False
     else:
+      startTime = time.time()
+      stepTime = startTime
       with tqdm(total=len(self), disable= not progress) as t:
-        for setting in self:
+        for iSetting, setting in enumerate(self):
             description = ''
             if nbFailed:
                 description = '[failed: '+str(nbFailed)+']'
             description += setting.describe()
             t.set_description(description)
             if function:
-                nbFailed += self.doSetting(setting, function, logFileName, *parameters)
+                nbFailed += setting.doFunction(function, logFileName, *parameters)
             else:
                 print(setting.describe())
+            if mailInterval>0 and (time.time()-startTime)/(60*60*0+1)> mailing :
+              stepTime = time.time()
+              message = 'Settings done: %d over %d %d\% \n Time elapsed: %s'.format(iSetting, len(self), int(iSetting/len(self)*100), str(startTime-stepTime))
+              print(message)
+              experiment.sendMail()
             t.update(1)
     return nbFailed
 
@@ -339,9 +349,9 @@ class Factor():
     self,
     factor
     ):
-    """Returns the number of :term:`modalities<modality> for a given :term:`factor`.
+    """Returns the number of :term:`modalities<modality>` for a given :term:`factor`.
 
-  	Returns the number of :term:`modalities<modality> for a given :term:`factor`.
+  	Returns the number of :term:`modalities<modality>` for a given :term:`factor`.
 
     """
     if isinstance(factor, int):
@@ -384,7 +394,7 @@ class Factor():
     ):
     """Clean a data sink by considering the settings set.
 
-  	Returns the number of :term:`modalities<modality> for a given :term:`factor`. This method is more conveniently used by considering the method explanes.experiment.Experiment.cleanDataSink, please see its documentation for usage.
+  	Returns the number of :term:`modalities<modality>, for a given :term:`factor`. This method is more conveniently used by considering the method explanes.experiment.Experiment.cleanDataSink, please see its documentation for usage.
 
     """
     path = os.path.expanduser(path)

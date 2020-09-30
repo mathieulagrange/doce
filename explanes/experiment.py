@@ -35,8 +35,11 @@ def run():
   Executing python experiment_run.py -r, gives:
 
   factor1_1_factor2_2
+
   factor1_1_factor2_4
+
   factor1_3_factor2_2
+
   factor1_3_factor2_4
 
   Executing python experiment_run.py -h, gives:
@@ -79,7 +82,7 @@ def run():
   parser.add_argument('-f', '--factor', help='show the factors of the experiment', action='store_true')
   parser.add_argument('-l', '--list', help='list settings', action='store_true')
   parser.add_argument('-m', '--mask', type=str, help='mask of the experiment to run', default='[]')
-  parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation', action='store_true')
+  parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation. If an integer value x is provided, additional emails are sent every x hours.', action='store_true')
   parser.add_argument('-S', '--sync', help='sync to server defined', action='store_true')
   parser.add_argument('-s', '--server', type=int, help='running server side. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside', default=-2)
   parser.add_argument('-d', '--display', type=str, help='display metrics. Str parameter (optional) should contain a list of integers specifiying the columns to keep for display.', nargs='?', default='-1')
@@ -429,7 +432,8 @@ class Experiment():
     *parameters,
     nbJobs=1,
     progress=True,
-    logFileName=''
+    logFileName='',
+    mailInterval=0
     ):
     """Operate the function with parameters on the setting set generated using mask.
 
@@ -470,6 +474,13 @@ class Experiment():
 
       If not empty, the execution is not stopped on a faulty setting.
 
+    mailInterval : float (optional)
+      interval for sending email about the status of the run.
+
+      If 0 (default), no email is sent.
+
+      It >0, an email is sent as soon as an setting is done and the difference between the current time and the time the last mail was sent is larger than mailInterval.
+
 
     See Also
     --------
@@ -506,7 +517,7 @@ class Experiment():
 
     """
 
-    return self.factor.settings(mask).do(function, self, *parameters, nbJobs=nbJobs, progress=progress, logFileName=logFileName)
+    return self.factor.settings(mask).do(function, self, *parameters, nbJobs=nbJobs, progress=progress, logFileName=logFileName, mailInterval=0)
 
   def cleanDataSink(
     self,
