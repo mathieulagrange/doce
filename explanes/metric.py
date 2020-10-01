@@ -55,7 +55,7 @@ class Metric():
   def reduceFromNpy(
     self,
     settings,
-    dataPath,
+    dataLocation,
     idFormat={},
     verbose = False
     ):
@@ -72,15 +72,15 @@ class Metric():
 
     """
     table = []
-    metricHasData = np.zeros((len(self.name())))
+    metricHasData = [False] * len(self.name())
     for sIndex, setting in enumerate(settings):
       row = []
       for mIndex, metric in enumerate(self.name()):
-        fileName = dataPath+setting.id(**idFormat)+'_'+metric+'.npy'
+        fileName = dataLocation+setting.id(**idFormat)+'_'+metric+'.npy'
         if verbose:
           print('Seeking '+fileName)
         if os.path.exists(fileName):
-            metricHasData[mIndex] = 1
+            metricHasData[mIndex] = True
             data = np.load(fileName)
             for reductionType in self.__getattribute__(metric):
               row.append(self.reduceMetric(data, reductionType))
@@ -93,7 +93,7 @@ class Metric():
   def reduceFromH5(
     self,
     settings,
-    dataPath,
+    dataLocation,
     idFormat={},
     verbose = False
     ):
@@ -110,8 +110,8 @@ class Metric():
 
     """
     table = []
-    h5 = tb.open_file(dataPath, mode='r')
-    metricHasData = np.zeros((len(self.name())))
+    h5 = tb.open_file(dataLocation, mode='r')
+    metricHasData = [False] * len(self.name())
     for sIndex, setting in enumerate(settings):
       row = []
       if verbose:
@@ -124,7 +124,7 @@ class Metric():
           for reductionType in self.__getattribute__(metric):
             value = np.nan
             if sg.__contains__(metric):
-              metricHasData[mIndex] = 1
+              metricHasData[mIndex] = True
               data = sg._f_get_child(metric)
             row.append(self.reduceMetric(data, reductionType))
         if len(row):
@@ -142,6 +142,15 @@ class Metric():
     """Apply reduction directive to a metric vector after potentially remove non wanted items from the vector.
 
     The data vector is reduced by considering the reduction directive after potentially remove non wanted items from the vector.
+
+    Parameters
+    ----------
+
+    data : numpy array
+      1-D vector to be reduced.
+
+    reductionType : str
+      type of reduction to be applied to the data vector. Can be any numpy method that can applied to a vector and returns a value. Selectors and layout can also be specified.
 
     Examples
     --------
@@ -204,39 +213,65 @@ class Metric():
   def reduce(
     self,
     settings,
-    data,
-    reducedMetricDisplay = 'capitalize',
-    factorDisplay='long',
+    dataLocation,
     idFormat={},
+    factorDisplay='long',
+    factorDisplayLength=2,
+    reducedMetricDisplay = 'capitalize',
     verbose = False
     ):
-    """Apply the reduction directives described in each members of explanes.metric.Metric objects for the settings given as paramters.
+    """Apply the reduction directives described in each members of explanes.metric.Metric objects for the settings given as parameters.
 
-    Desc
+    For each setting in the iterable settings, available data corresponding to the metrics specified as members of the explanes.metric.Metric object are reduced using specified reduction methods.
 
     Parameters
     ----------
 
     settings: explanes.factor.Factor
+      iterable settings.
 
-    data: str
-
-    reducedMetricDisplay : str
-
-    factorDisplay : str
+    dataLocation: str
+      In the case of .npy storage, a valid path to the main directory. In the case of .h5 storage, a valid path to an .h5 file.
 
     idFormat : dict
 
+
+    reducedMetricDisplay : str (optional)
+      If set to 'capitalize' (default), the description of the reduced metric is done in a Camel case fashion: metricReduction.
+
+      If set to 'underscore', the description of the reduced metric is done in a Python case fashion: metric_reduction.
+
+    factor : explanes.factor.Factor
+      The explanes.factor.Factor describing the factors of the experiment.
+
+    factorDisplay : str (optional)
+      The expected format of the display of factors. 'long' (default) do not lead to any reduction. If factorDisplay contains 'short', a reduction of each word is performed. 'shortUnderscore' assumes pythonCase delimitation. 'shortCapital' assumes camelCase delimitation. 'short' attempts to perform reduction by guessing the type of delimitation.
+
+    factorDisplayLength : int (optional)
+      If factorDisplay has 'short', factorDisplayLength specifies the maximal length of each word of the description of the factor.
+
+    reducedMetricDisplay : str (optional)
+      If set to 'capitalize' (default), the description of the reduced metric is done in a Camel case fashion: metricReduction.
+
+      If set to 'underscore', the description of the reduced
+
     verbose : bool
+      In the case of .npy metric storage, if verbose is set to True, print the fileName seeked for each metric.
+
+      In the case of .h5 metric storage, if verbose is set to True, print the group seeked for each metric.
 
     Returns
     -------
 
     table : list of lists of literals
+      The
 
     columnHeader : list of str
 
     constantColumnDescription : str
+
+    nbFactorColumns : int
+      The number of factors in the column header
 
     Examples
     --------
@@ -328,34 +363,32 @@ class Metric():
     3   2   1    2.93   0.89  -4.91        18
     4   2   2    3.99   1.01 -13.51        70
     5   2   3    5.08   0.86 -13.36        87
-
-
     """
-    if isinstance(data, str):
-      if data.endswith('.h5'):
-        (table, metricHasData) = self.reduceFromH5(settings, data, idFormat, verbose)
-      else:
-        (table, metricHasData) = self.reduceFromNpy(settings, data, idFormat, verbose)
+    if dataLocation.endswith('.h5'):
+      (table, metricHasData) = self.reduceFromH5(settings, dataLocation, idFormat, verbose)
+    else:
+      (table, metricHasData) = self.reduceFromNpy(settings, dataLocation, idFormat, verbose)
 
-    columnHeader = self.getColumnHeader(settings, factorDisplay, metricHasData, reducedMetricDisplay)
+    columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricHasData, reducedMetricDisplay)
     constantColumnDescription = ''
     if len(table)>1:
       (ccIndex, ccValue) = eu.constantColumn(table)
-
-      ccIndex = [i for i, x in enumerate(ccIndex) if x and i<len(settings.getFactorNames())]
+      nbFactorColumns = len(settings.getFactorNames())
+      ccIndex = [i for i, x in enumerate(ccIndex) if x and i<nbFactorColumns]
+      nbFactorColumns -= len(ccIndex)
       for s in ccIndex:
         constantColumnDescription += eu.compressDescription(columnHeader[s], factorDisplay)+': '+str(ccValue[s])+' '
       for s in sorted(ccIndex, reverse=True):
         columnHeader.pop(s)
         for r in table:
           r.pop(s)
-    return (table, columnHeader, constantColumnDescription)
+    return (table, columnHeader, constantColumnDescription, nbFactorColumns)
 
   def get(
     self,
     metric,
     settings,
-    data,
+    dataLocation,
     reducedMetricDisplay = 'capitalize',
     idFormat={},
     verbose=False
@@ -368,11 +401,11 @@ class Metric():
     --------
 
     """
-    if isinstance(data, str):
-      if data.endswith('.h5'):
-        (array, description) = self.getFromH5(metric, settings, data, verbose) # todo
+    if isinstance(dataLocation, str):
+      if dataLocation.endswith('.h5'):
+        (array, description) = self.getFromH5(metric, settings, dataLocation, verbose) # todo
       else:
-        (array, description) = self.getFromNpy(metric, settings, data, idFormat, verbose)
+        (array, description) = self.getFromNpy(metric, settings, dataLocation, idFormat, verbose)
 
     constantColumnDescription = ''
     if description:
@@ -392,7 +425,7 @@ class Metric():
     self,
     metric,
     settings,
-    dataPath,
+    dataLocation,
     idFormat={},
     verbose=False
     ):
@@ -404,7 +437,7 @@ class Metric():
     --------
 
     """
-    h5 = tb.open_file(dataPath, mode='r')
+    h5 = tb.open_file(dataLocation, mode='r')
     data = []
     description = []
     descriptionFormat = copy.deepcopy(kwargs)
@@ -426,7 +459,7 @@ class Metric():
     self,
     metric,
     settings,
-    dataPath,
+    dataLocation,
     idFormat={},
     verbose=False
     ):
@@ -445,7 +478,7 @@ class Metric():
     descriptionFormat['noneAndZero2void'] = False
     descriptionFormat['default2void'] = False
     for setting in settings:
-      fileName = dataPath+setting.id(**idFormat)+'_'+metric+'.npy'
+      fileName = dataLocation+setting.id(**idFormat)+'_'+metric+'.npy'
       if os.path.exists(fileName):
         data.append(np.load(fileName))
         description.append(setting.id(**descriptionFormat))
@@ -495,6 +528,7 @@ class Metric():
     self,
     factor,
     factorDisplay='long',
+    factorDisplayLength=2,
     metricHasData=[],
     reducedMetricDisplay = 'capitalize',
     ):
@@ -506,25 +540,41 @@ class Metric():
     ----------
 
     factor : explanes.factor.Factor
-    factorDisplay : str (optional)
-    metricHasData : list
-    reducedMetricDisplay : str (optional)
+      The explanes.factor.Factor describing the factors of the experiment.
 
-    Examples
+    factorDisplay : str (optional)
+      The expected format of the display of factors. 'long' (default) do not lead to any reduction. If factorDisplay contains 'short', a reduction of each word is performed. 'shortUnderscore' assumes pythonCase delimitation. 'shortCapital' assumes camelCase delimitation. 'short' attempts to perform reduction by guessing the type of delimitation.
+
+    factorDisplayLength : int (optional)
+      If factorDisplay has 'short', factorDisplayLength specifies the maximal length of each word of the description of the factor.
+
+    metricHasData : list of bool
+      Specify for each metric described in the explanes.metric.Metric object, whether data has been loaded or not.
+
+    reducedMetricDisplay : str (optional)
+      If set to 'capitalize' (default), the description of the reduced metric is done in a Camel case fashion: metricReduction.
+
+      If set to 'underscore', the description of the reduced metric is done in a Python case fashion: metric_reduction.
+
+    See Also
     --------
 
+    explanes.util.compressDescription
     """
     # print(factorDisplay)
     columnHeader = []
     for factorName in factor.getFactorNames():
-      columnHeader.append(eu.compressDescription(factorName, factorDisplay))
+      columnHeader.append(eu.compressDescription(factorName, factorDisplay, factorDisplayLength))
     for mIndex, metric in enumerate(self.name()):
       if metricHasData[mIndex]:
         for reductionType in self.__getattribute__(metric):
           if reducedMetricDisplay == 'capitalize':
             name = metric+str(reductionType).capitalize()
-          else :
+          elif reducedMetricDisplay == 'underscore':
             name = metric+'_'+reductionType
+          else:
+            print('Unrecognized reducedMetricDisplay value. Should be \'capitalize\' or \'underscore\'. Got:'+reducedMetricDisplay)
+            raise ValueError
           columnHeader.append(name)
     return columnHeader
 

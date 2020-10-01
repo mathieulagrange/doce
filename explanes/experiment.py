@@ -176,8 +176,9 @@ def run():
     if hasattr(config, 'display'):
       config.display(experiment, experiment.factor.settings(mask))
     else:
-      (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, idFormat = experiment._idFormat)
-      df = pd.DataFrame(table, columns=columns).round(decimals=2)
+      (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, idFormat = experiment._idFormat)
+      df = pd.DataFrame(table, columns=columns)
+      df[columns[nbFactorColumns:]] = df[columns[nbFactorColumns:]].round(decimals=2)
       if selectDisplay:
         selector = [columns[i] for i in selectDisplay]
         df = df[selector]
@@ -303,11 +304,6 @@ class Experiment():
       If True, do not prompt the user before creating the missing directories.
 
       If False, prompt the user before creation of each missing directory.
-
-    Returns
-    -------
-
-    None
 
     Examples
     --------
