@@ -25,7 +25,7 @@ def set(args):
   experiment.path.code = '~/tools/explanes.py/'
   experiment.makePaths()
 
-  experiment._idFormat = {'format': 'hash'}
+  experiment._settingEncoding = {'format': 'hash'}
   experiment._archivePath = '/tmp'
 
   experiment.host = ['pc-lagrange.irccyn.ec-nantes.fr']
@@ -54,14 +54,14 @@ def step(setting, experiment):
 
     reference = ((data[0, 0]-0.55)**2 + (data[1, 0]-0.55)**2)/2
 
-    if setting.dataType is 'float':
+    if setting.dataType == 'float':
         estimate = np.var(data)
-    elif setting.dataType is 'double':
+    elif setting.dataType == 'double':
         estimate =  np.var(data, dtype=np.float64)
     settingMse[r] = abs(reference - estimate)
     settingMae[r] = np.square(reference - estimate)
 
-  baseFileName = setting.id(**experiment._idFormat)
+  baseFileName = setting.id(**experiment._settingEncoding)
   np.save(experiment.path.output+baseFileName+'_mae.npy', settingMae)
   np.save(experiment.path.output+baseFileName+'_mse.npy', settingMse)
   duration = time.time()-tic
@@ -69,7 +69,7 @@ def step(setting, experiment):
 
 # uncomment this method to fine tune display of metrics
 # def display(experiment, settings):
-#     (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output, **experiment._idFormat)
+#     (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output, **experiment._settingEncoding)
 #
 #     print(header)
 #     print(desc)

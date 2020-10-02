@@ -153,7 +153,7 @@ class Factor():
     """
     if hasattr(self, name):
       if not force and any(item in getattr(self, name) for item in [0, 'none']):
-        print('Setting an explicit default modality to factor '+name+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <noneAndZero2void> set to False when using method id(). You can remove this warning by setting the flag <force> to True.')
+        print('Setting an explicit default modality to factor '+name+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <hideNonAndZero> set to False when using method id(). You can remove this warning by setting the flag <force> to True.')
         if value not in getattr(self, name):
           print('The default modality of factor '+name+' should be available in the set of modalities.')
           raise ValueError
@@ -360,16 +360,16 @@ class Factor():
       name = self.getFactorNames()[factor]
     return len(object.__getattribute__(self, name))
 
-  def cleanH5(self, path, reverse=False, force=False, idFormat={}):
+  def cleanH5(self, path, reverse=False, force=False, settingEncoding={}):
     h5 = tb.open_file(path, mode='a')
     if reverse:
-      ids = [setting.id(**idFormat) for setting in self]
+      ids = [setting.id(**settingEncoding) for setting in self]
       for g in h5.iter_nodes('/'):
         if g._v_name not in ids:
           h5.remove_node(h5.root, g._v_name, recursive=True)
     else:
       for setting in self:
-        groupName = setting.id(**idFormat)
+        groupName = setting.id(**settingEncoding)
         if h5.root.__contains__(groupName):
           h5.remove_node(h5.root, groupName, recursive=True)
     h5.close()
@@ -391,7 +391,7 @@ class Factor():
     reverse=False,
     force=False,
     selector='*',
-    idFormat={},
+    settingEncoding={},
     archivePath=''
     ):
     """Clean a data sink by considering the settings set.
@@ -401,12 +401,12 @@ class Factor():
     """
     path = os.path.expanduser(path)
     if path.endswith('.h5'):
-      self.cleanH5(path, reverse, force, idFormat)
+      self.cleanH5(path, reverse, force, settingEncoding)
     else:
       fileNames = []
       for setting in self:
-          # print(path+'/'+setting.id(**idFormat)+selector)
-          for f in glob.glob(path+'/'+setting.id(**idFormat)+selector):
+          # print(path+'/'+setting.id(**settingEncoding)+selector)
+          for f in glob.glob(path+'/'+setting.id(**settingEncoding)+selector):
               fileNames.append(f)
       if reverse:
         complete = []
@@ -452,27 +452,27 @@ class Factor():
           return f
 
   def describe(self):
-    return self.id(singleton=False, sort=False, sep=' ', noneAndZero2void=False)
+    return self.id(singleton=False, sort=False, factorSeparator=' ', hideNonAndZero=False)
 
-  def id(self, format='long', sort=True, singleton=True, noneAndZero2void=True, default2void=True, sep='_', omit=[]):
+  def id(self, format='long', sort=True, singleton=True, hideNonAndZero=True, hideDefault=True, factorSeparator='_', hideFactor=[]):
     id = []
     fNames = self.getFactorNames()
-    if isinstance(omit, str):
-      omit=[omit]
-    elif isinstance(omit, int) :
-      omit=[fNames[omit]]
-    elif isinstance(omit, list) and len(omit) and isinstance(omit[0], int) :
-      for oi, o in enumerate(omit):
-        omit[oi]=fNames[o]
+    if isinstance(hideFactor, str):
+      hideFactor=[hideFactor]
+    elif isinstance(hideFactor, int) :
+      hideFactor=[fNames[hideFactor]]
+    elif isinstance(hideFactor, list) and len(hideFactor) and isinstance(hideFactor[0], int) :
+      for oi, o in enumerate(hideFactor):
+        hideFactor[oi]=fNames[o]
     if sort:
       fNames = sorted(fNames)
     for fIndex, f in enumerate(fNames):
-      if f[0] != '_' and getattr(self, f) is not None and f not in omit:
-          if (singleton or f in self._nonSingleton) and (not noneAndZero2void or (noneAndZero2void and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and (not default2void or not hasattr(self._default, f) or (default2void and hasattr(self._default, f) and getattr(self._default, f) != getattr(self, f))):
+      if f[0] != '_' and getattr(self, f) is not None and f not in hideFactor:
+          if (singleton or f in self._nonSingleton) and (not hideNonAndZero or (hideNonAndZero and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and (not hideDefault or not hasattr(self._default, f) or (hideDefault and hasattr(self._default, f) and getattr(self._default, f) != getattr(self, f))):
             id.append(eu.compressDescription(f, format))
             id.append(str(getattr(self, f)))
     if 'list' not in format:
-      id = sep.join(id)
+      id = factorSeparator.join(id)
       if format == 'hash':
         id  = hashlib.md5(id.encode("utf-8")).hexdigest()
     return id

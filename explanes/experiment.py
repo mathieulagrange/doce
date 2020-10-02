@@ -131,16 +131,16 @@ def run():
   if args.remove:
     path2clean = args.remove
     if path2clean == 'all':
-      experiment.cleanExperiment(mask, idFormat=experiment._idFormat)
+      experiment.cleanExperiment(mask, settingEncoding=experiment._settingEncoding)
     else:
-      experiment.cleanDataSink(path2clean, mask, idFormat=experiment._idFormat)
+      experiment.cleanDataSink(path2clean, mask, settingEncoding=experiment._settingEncoding)
 
   if args.keep:
     path2clean = args.keep
     if path2clean == 'all':
-      experiment.cleanExperiment(mask, reverse=True, idFormat=experiment._idFormat)
+      experiment.cleanExperiment(mask, reverse=True, settingEncoding=experiment._settingEncoding)
     else:
-      experiment.cleanDataSink(path2clean, mask, reverse=True, idFormat=experiment._idFormat)
+      experiment.cleanDataSink(path2clean, mask, reverse=True, settingEncoding=experiment._settingEncoding)
 
   logFileName = ''
   if args.server>-2:
@@ -176,7 +176,7 @@ def run():
     if hasattr(config, 'display'):
       config.display(experiment, experiment.factor.settings(mask))
     else:
-      (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, idFormat = experiment._idFormat, verbose=args.debug)
+      (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, settingEncoding = experiment._settingEncoding, verbose=args.debug)
       df = pd.DataFrame(table, columns=columns).fillna('')
       df[columns[nbFactorColumns:]] = df[columns[nbFactorColumns:]].round(decimals=2)
       if selectDisplay:
@@ -274,7 +274,7 @@ class Experiment():
     self.path.storage = ''
     self.path.output = ''
     self.host = []
-    self._idFormat = {}
+    self._settingEncoding = {}
     self._archivePath = ''
     self._factorFormatInReduce = 'long'
     self._gmailId = 'expcode.mailer'
@@ -327,7 +327,7 @@ class Experiment():
           if force or el.util.query_yes_no('The '+sns+' path: '+path+' does not exist. Do you want to create it ?'):
             os.makedirs(path)
             if not force:
-              print('Done.')
+              print('Path succesfully created.')
 
   def __str__(
     self,
@@ -527,7 +527,7 @@ class Experiment():
     reverse=False,
     force=False,
     selector='*',
-    idFormat={},
+    settingEncoding={},
     archivePath = None
     ):
     """ Perform a cleaning of a data sink (directory or h5 file).
@@ -557,7 +557,7 @@ class Experiment():
     selector : str (optional)
       string specifying the end of the wildcard used to select the entries to remove or to keep (default: '*').
 
-    idFormat : dict (optional)
+    settingEncoding : dict (optional)
       Dictionary specifying the format of the id describing the :term:`setting`. Please see the documention of  :meth:`explanes.factor.Factor.id` for further information.
 
     archivePath : str
@@ -667,7 +667,7 @@ class Experiment():
     if '/' not in path and '\\' not in path:
       path = self.__getattribute__('path').__getattribute__(path)
     if path:
-      self.factor.settings(mask).cleanDataSink(path, reverse, force, selector, idFormat, archivePath)
+      self.factor.settings(mask).cleanDataSink(path, reverse, force, selector, settingEncoding, archivePath)
 
   def cleanExperiment(
     self,
@@ -675,7 +675,7 @@ class Experiment():
     reverse=False,
     force=False,
     selector='*',
-    idFormat={},
+    settingEncoding={},
     archivePath = None
     ):
     """Clean all relevant directories specified in the NameSpace explanes.Experiment.experiment.path.
@@ -703,5 +703,5 @@ class Experiment():
     """
     for sns in self.__getattribute__('path').__dict__.keys():
       print('checking '+sns+' path')
-      self.cleanDataSink(sns, mask, reverse, force, selector, idFormat,
+      self.cleanDataSink(sns, mask, reverse, force, selector, settingEncoding,
       archivePath)

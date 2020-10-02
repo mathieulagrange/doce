@@ -57,7 +57,7 @@ class Metric():
     self,
     settings,
     dataLocation,
-    idFormat={},
+    settingEncoding={},
     verbose = False
     ):
     """Handle reduction of the metrics when considering numpy storage.
@@ -83,7 +83,7 @@ class Metric():
       row = []
       idx = 0
       for mIndex, metric in enumerate(self.name()):
-        fileName = dataLocation+setting.id(**idFormat)+'_'+metric+'.npy'
+        fileName = dataLocation+setting.id(**settingEncoding)+'_'+metric+'.npy'
         if os.path.exists(fileName):
           if verbose:
             print('Found '+fileName)
@@ -93,11 +93,12 @@ class Metric():
             reducedMetrics[idx] = True
             idx+=1
             row.append(self.reduceMetric(data, reductionType))
-        elif verbose:
+        else:
+          if verbose:
+            print('Unable to find'+fileName)
           for reductionType in self.__getattribute__(metric):
             row.append(np.nan)
-            idx+=1
-          print('Unable to find'+fileName)
+            idx+=1        
       if len(row):
         for factorName in reversed(settings.getFactorNames()):
           row.insert(0, setting.__getattribute__(factorName))
@@ -111,7 +112,7 @@ class Metric():
     self,
     settings,
     dataLocation,
-    idFormat={},
+    settingEncoding={},
     verbose = False
     ):
     """Handle reduction of the metrics when considering numpy storage.
@@ -132,11 +133,11 @@ class Metric():
     for sIndex, setting in enumerate(settings):
       row = []
       if verbose:
-        print('Seeking Group '+setting.id(**idFormat))
-      if h5.root.__contains__(setting.id(**idFormat)):
-        sg = h5.root._f_get_child(setting.id(**idFormat))
+        print('Seeking Group '+setting.id(**settingEncoding))
+      if h5.root.__contains__(setting.id(**settingEncoding)):
+        sg = h5.root._f_get_child(setting.id(**settingEncoding))
         # print(sg._v_name)
-        # print(setting.id(**idFormat))
+        # print(setting.id(**settingEncoding))
         for mIndex, metric in enumerate(self.name()):
           for reductionType in self.__getattribute__(metric):
             value = np.nan
@@ -231,7 +232,7 @@ class Metric():
     self,
     settings,
     dataLocation,
-    idFormat={},
+    settingEncoding={},
     factorDisplay='long',
     factorDisplayLength=2,
     reducedMetricDisplay = 'capitalize',
@@ -250,7 +251,7 @@ class Metric():
     dataLocation: str
       In the case of .npy storage, a valid path to the main directory. In the case of .h5 storage, a valid path to an .h5 file.
 
-    idFormat : dict
+    settingEncoding : dict
 
 
     reducedMetricDisplay : str (optional)
@@ -382,9 +383,9 @@ class Metric():
     5   2   3    5.08   0.86 -13.36        87
     """
     if dataLocation.endswith('.h5'):
-      (table, metricHasData) = self.reduceFromH5(settings, dataLocation, idFormat, verbose)
+      (table, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose)
     else:
-      (table, metricHasData) = self.reduceFromNpy(settings, dataLocation, idFormat, verbose)
+      (table, metricHasData) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose)
 
     columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricHasData, reducedMetricDisplay)
     constantColumnDescription = ''
@@ -407,7 +408,7 @@ class Metric():
     settings,
     dataLocation,
     reducedMetricDisplay = 'capitalize',
-    idFormat={},
+    settingEncoding={},
     verbose=False
     ):
     """one liner
@@ -422,7 +423,7 @@ class Metric():
       if dataLocation.endswith('.h5'):
         (array, description) = self.getFromH5(metric, settings, dataLocation, verbose) # todo
       else:
-        (array, description) = self.getFromNpy(metric, settings, dataLocation, idFormat, verbose)
+        (array, description) = self.getFromNpy(metric, settings, dataLocation, settingEncoding, verbose)
 
     constantColumnDescription = ''
     if description:
@@ -443,7 +444,7 @@ class Metric():
     metric,
     settings,
     dataLocation,
-    idFormat={},
+    settingEncoding={},
     verbose=False
     ):
     """one liner
@@ -459,13 +460,13 @@ class Metric():
     description = []
     descriptionFormat = copy.deepcopy(kwargs)
     descriptionFormat['format'] = 'list'
-    descriptionFormat['noneAndZero2void'] = False
-    descriptionFormat['default2void'] = False
+    descriptionFormat['hideNonAndZero'] = False
+    descriptionFormat['hideDefault'] = False
     for setting in settings:
       if verbose:
-        print('Seeking Group '+setting.id(**idFormat))
-      if h5.root.__contains__(setting.id(**idFormat)):
-        sg = h5.root._f_get_child(setting.id(**idFormat))
+        print('Seeking Group '+setting.id(**settingEncoding))
+      if h5.root.__contains__(setting.id(**settingEncoding)):
+        sg = h5.root._f_get_child(setting.id(**settingEncoding))
         if sg.__contains__(metric):
           data.append(sg._f_get_child(metric))
           description.append(setting.id(**descriptionFormat))
@@ -477,7 +478,7 @@ class Metric():
     metric,
     settings,
     dataLocation,
-    idFormat={},
+    settingEncoding={},
     verbose=False
     ):
     """one liner
@@ -490,12 +491,12 @@ class Metric():
     """
     data = []
     description = []
-    descriptionFormat = copy.deepcopy(idFormat)
+    descriptionFormat = copy.deepcopy(settingEncoding)
     descriptionFormat['format'] = 'list'
-    descriptionFormat['noneAndZero2void'] = False
-    descriptionFormat['default2void'] = False
+    descriptionFormat['hideNonAndZero'] = False
+    descriptionFormat['hideDefault'] = False
     for setting in settings:
-      fileName = dataLocation+setting.id(**idFormat)+'_'+metric+'.npy'
+      fileName = dataLocation+setting.id(**settingEncoding)+'_'+metric+'.npy'
       if os.path.exists(fileName):
         data.append(np.load(fileName))
         description.append(setting.id(**descriptionFormat))
@@ -507,7 +508,7 @@ class Metric():
     h5,
     setting,
     metricDimensions=[],
-    idFormat={}
+    settingEncoding={}
     ):
     """one liner
 
@@ -517,7 +518,7 @@ class Metric():
     --------
 
     """
-    groupName = setting.id(**idFormat)
+    groupName = setting.id(**settingEncoding)
     # print(groupName)
     if not h5.__contains__('/'+groupName):
       sg = h5.create_group('/', groupName, setting.id(format='long', sep=' '))

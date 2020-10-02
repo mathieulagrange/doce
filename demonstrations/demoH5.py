@@ -20,7 +20,7 @@ def set(args):
     experiment.project.address = 'mathieu.lagrange@ls2n.fr'
     experiment.path.output = '/tmp/results.h5'
 
-    experiment._idFormat = {'format': 'shortCapital'}
+    experiment._settingEncoding = {'format': 'shortCapital'}
 
     experiment.factor.dataType = ['float', 'double']
     experiment.factor.datasetSize = 1000*np.array([1, 2, 4, 8])
@@ -40,7 +40,7 @@ def set(args):
 def step(setting, experiment):
   h5 = tb.open_file(experiment.path.output, mode='a')
   sg = experiment.metric.h5addSetting(h5, setting,
-      metricDimensions = [setting.nbRuns, setting.nbRuns, 1], idFormat = experiment._idFormat)
+      metricDimensions = [setting.nbRuns, setting.nbRuns, 1], settingEncoding = experiment._settingEncoding)
 
   tic = time.time()
   for r in range(setting.nbRuns):
@@ -50,9 +50,9 @@ def step(setting, experiment):
     data[1, :] = 0.1-offset
 
     reference = ((data[0, 0]-0.55)**2 + (data[1, 0]-0.55)**2)/2
-    if setting.dataType is 'float':
+    if setting.dataType == 'float':
       estimate = np.var(data)
-    elif setting.dataType is 'double':
+    elif setting.dataType == 'double':
       estimate =  np.var(data, dtype=np.float64)
     # in case of dynamic allocation
     # sg.mae.append([abs(reference - estimate)])
@@ -68,7 +68,7 @@ def step(setting, experiment):
 
 ## uncomment this to fine tune display of metrics
 # def display(experiment, settings):
-#     (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output, **experiment._idFormat)
+#     (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output, **experiment._settingEncoding)
 #
 #     print(header)
 #     print(desc)
