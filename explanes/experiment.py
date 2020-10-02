@@ -176,7 +176,7 @@ def run():
     if hasattr(config, 'display'):
       config.display(experiment, experiment.factor.settings(mask))
     else:
-      (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, idFormat = experiment._idFormat)
+      (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, idFormat = experiment._idFormat, verbose=args.debug)
       df = pd.DataFrame(table, columns=columns).fillna('')
       df[columns[nbFactorColumns:]] = df[columns[nbFactorColumns:]].round(decimals=2)
       if selectDisplay:

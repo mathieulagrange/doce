@@ -7,6 +7,7 @@ import numpy as np
 import tables as tb
 import explanes.util as eu
 import copy
+from itertools import compress
 
 class Metric():
   """Stores information about the way evaluation metrics are stored and manipulated.
@@ -73,21 +74,37 @@ class Metric():
     """
     table = []
     metricHasData = [False] * len(self.name())
+    nbReducedMetrics = 0
+    for mIndex, metric in enumerate(self.name()):
+      for reductionType in self.__getattribute__(metric):
+        nbReducedMetrics += 1
+    reducedMetrics = [False] * nbReducedMetrics
     for sIndex, setting in enumerate(settings):
       row = []
+      idx = 0
       for mIndex, metric in enumerate(self.name()):
         fileName = dataLocation+setting.id(**idFormat)+'_'+metric+'.npy'
-        if verbose:
-          print('Seeking '+fileName)
         if os.path.exists(fileName):
-            metricHasData[mIndex] = True
-            data = np.load(fileName)
-            for reductionType in self.__getattribute__(metric):
-              row.append(self.reduceMetric(data, reductionType))
+          if verbose:
+            print('Found '+fileName)
+          metricHasData[mIndex] = True
+          data = np.load(fileName)
+          for reductionType in self.__getattribute__(metric):
+            reducedMetrics[idx] = True
+            idx+=1
+            row.append(self.reduceMetric(data, reductionType))
+        elif verbose:
+          for reductionType in self.__getattribute__(metric):
+            row.append(np.nan)
+            idx+=1
+          print('Unable to find'+fileName)
       if len(row):
         for factorName in reversed(settings.getFactorNames()):
           row.insert(0, setting.__getattribute__(factorName))
         table.append(row)
+    nbFactors = len(settings.getFactorNames())
+    for ir, row in enumerate(table):
+      table[ir] = row[:nbFactors]+list(compress(row[nbFactors:], reducedMetrics))
     return (table, metricHasData)
 
   def reduceFromH5(
