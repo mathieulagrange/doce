@@ -371,9 +371,9 @@ class Metric():
 
     columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricHasData, reducedMetricDisplay)
     constantColumnDescription = ''
+    nbFactorColumns = len(settings.getFactorNames())
     if len(table)>1:
       (ccIndex, ccValue) = eu.constantColumn(table)
-      nbFactorColumns = len(settings.getFactorNames())
       ccIndex = [i for i, x in enumerate(ccIndex) if x and i<nbFactorColumns]
       nbFactorColumns -= len(ccIndex)
       for s in ccIndex:

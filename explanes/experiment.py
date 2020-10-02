@@ -177,7 +177,7 @@ def run():
       config.display(experiment, experiment.factor.settings(mask))
     else:
       (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, idFormat = experiment._idFormat)
-      df = pd.DataFrame(table, columns=columns)
+      df = pd.DataFrame(table, columns=columns).fillna('')
       df[columns[nbFactorColumns:]] = df[columns[nbFactorColumns:]].round(decimals=2)
       if selectDisplay:
         selector = [columns[i] for i in selectDisplay]
