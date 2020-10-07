@@ -282,16 +282,16 @@ class Metric():
     Returns
     -------
 
-    table : list of lists of literals
-      A table, stored as a list of list of literals of the same size. The main list stores the rows of the table.
+    settingDescription : list of lists of literals
+      A settingDescription, stored as a list of list of literals of the same size. The main list stores the rows of the settingDescription.
 
     columnHeader : list of str
-      The column header of the table as a list of str, describing the factors (left side), and the reduced metrics (right side).
+      The column header of the settingDescription as a list of str, describing the factors (left side), and the reduced metrics (right side).
 
     constantSettingDescription : str
-      When a factor is equally valued for all the settings, the factor column is removed from the table and stored in constantSettingDescription along its value.
+      When a factor is equally valued for all the settings, the factor column is removed from the settingDescription and stored in constantSettingDescription along its value.
 
-    nbFactorColumns : int
+    nbColumnFactor : int
       The number of factors in the column header.
 
     Examples
@@ -316,9 +316,9 @@ class Metric():
     >>>   np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
     >>> experiment.makePaths()
     >>> experiment.do([], process, progress=False)
-    >>> (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(), experiment.path.output)
+    >>> (settingDescription, columns, header) = experiment.metric.reduce(experiment.factor.settings(), experiment.path.output)
 
-    >>> df = pd.DataFrame(table, columns=columns).round(decimals=2)
+    >>> df = pd.DataFrame(settingDescription, columns=columns).round(decimals=2)
     f1  f2  m1Mean  m1Std  m2Min  m2Argmin
     0   1   1    1.83   0.99  -2.38        83
     1   1   2    3.04   1.01  -5.01        57
@@ -373,9 +373,9 @@ class Metric():
     /f1_2_f2_3/m1 (Array(100,)) 'm1'
     /f1_2_f2_3/m2 (Array(100,)) 'm2'
     >>> h5.close()
-    >>> (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(), experiment.path.output)
+    >>> (settingDescription, columns, header) = experiment.metric.reduce(experiment.factor.settings(), experiment.path.output)
 
-    >>> df = pd.DataFrame(table, columns=columns).round(decimals=2)
+    >>> df = pd.DataFrame(settingDescription, columns=columns).round(decimals=2)
     >>> print(df)
     f1  f2  m1Mean  m1Std  m2Min  m2Argmin
     0   1   1    1.89   0.94  -2.42        11
@@ -386,27 +386,25 @@ class Metric():
     5   2   3    5.08   0.86 -13.36        87
     """
     if dataLocation.endswith('.h5'):
-      (table, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose)
+      (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose)
     else:
-      (table, metricHasData) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose)
+      (settingDescription, metricHasData) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose)
 
     columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricHasData, reducedMetricDisplay)
 
     # constantSettingDescription = ''
-    # nbFactorColumns = len(settings.getFactorNames())
-    # if len(table)>1:
-    #   (ccIndex, ccValue) = eu.constantColumn(table)
-    #   ccIndex = [i for i, x in enumerate(ccIndex) if x and i<nbFactorColumns]
-    #   nbFactorColumns -= len(ccIndex)
+    nbColumnFactor = len(settings.getFactorNames())
+    # if len(settingDescription)>1:
+    #   (ccIndex, ccValue) = eu.constantColumn(settingDescription)
+    #   ccIndex = [i for i, x in enumerate(ccIndex) if x and i<nbColumnFactor]
+    #   nbColumnFactor -= len(ccIndex)
     #   for s in ccIndex:
     #     constantSettingDescription += eu.compressDescription(columnHeader[s], factorDisplay)+': '+str(ccValue[s])+' '
     #   for s in sorted(ccIndex, reverse=True):
     #     columnHeader.pop(s)
-    #     for r in table:
+    #     for r in settingDescription:
     #       r.pop(s)
-    (settingDescription, constantSettingDescription) = pruneSettingDescription(settingDescription)
-
-    return (table, columnHeader, constantSettingDescription, nbFactorColumns)
+    return eu.pruneSettingDescription(settingDescription, columnHeader, nbColumnFactor, factorDisplay)
 
   def get(
     self,
@@ -480,24 +478,10 @@ class Metric():
           elif verbose:
             print('** Unable to find '+fileName)
 
-    (settingDescription, constantSettingDescription) = pruneSettingDescription(settingDescription)
+    (settingDescription, constantSettingDescription) = eu.pruneSettingDescription(settingDescription)
 
     return (settingMetric, settingDescription, constantSettingDescription)
 
-  def pruneSettingDescription(settingDescription):
-    constantSettingDescription = ''
-    if settingDescription:
-      (ccIndex, ccValue) = eu.constantColumn(settingDescription)
-      for si, s in enumerate(ccIndex):
-        if si>1 and not s:
-          ccIndex[si-1] = False
-      ccIndex = [i for i, x in enumerate(ccValue) if x]
-      for s in ccIndex:
-        constantSettingDescription += settingDescription[0][s]+' '
-      for s in sorted(ccIndex, reverse=True):
-        for r in settingDescription:
-          r.pop(s)
-      return (settingDescription, constantSettingDescription)
 
   # def getFromH5(
   #   self,
@@ -610,9 +594,9 @@ class Metric():
     metricHasData=[],
     reducedMetricDisplay = 'capitalize',
     ):
-    """Builds the column header of the reduction table.
+    """Builds the column header of the reduction settingDescription.
 
-    This method builds the column header of the reduction table by formating the Factor names from the explanes.factor.Factor class and by describing the reduced metrics.
+    This method builds the column header of the reduction settingDescription by formating the Factor names from the explanes.factor.Factor class and by describing the reduced metrics.
 
     Parameters
     ----------
