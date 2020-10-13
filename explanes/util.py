@@ -1,6 +1,7 @@
 import sys
 import re
 
+
 def constantColumn(
   table=None
 ):
@@ -44,6 +45,34 @@ def constantColumn(
           elif values[cIndex] != c:
               indexes[cIndex] = False
   return (indexes, values)
+
+def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFactor=0, factorDisplay='long'):
+  constantSettingDescription = ''
+  if nbColumnFactor == 0:
+    nbColumnFactor = len(settingDescription[0])
+  if settingDescription:
+    if len(settingDescription)>1:
+      (ccIndex, ccValue) = constantColumn(settingDescription)
+      for si, s in enumerate(ccIndex):
+        if si>1 and not s:
+          ccIndex[si-1] = False
+      ccIndex = [i for i, x in enumerate(ccValue) if x and i<nbColumnFactor]
+      nbColumnFactor -= len(ccIndex)
+      for s in ccIndex:
+        if columnHeader:
+          constantSettingDescription += compressDescription(columnHeader[s], factorDisplay)+': '+str(ccValue[s])+' '
+        else:
+          constantSettingDescription += settingDescription[0][s]+' '
+      for s in sorted(ccIndex, reverse=True):
+        if columnHeader:
+          columnHeader.pop(s)
+        for r in settingDescription:
+          r.pop(s)
+    else:
+      print(settingDescription)
+      constantSettingDescription = ' '.join(settingDescription[0])
+  return (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor)
+
 
 def compressDescription(
   description,

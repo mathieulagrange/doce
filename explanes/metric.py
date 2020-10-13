@@ -95,10 +95,10 @@ class Metric():
             row.append(self.reduceMetric(data, reductionType))
         else:
           if verbose:
-            print('Unable to find'+fileName)
+            print('** Unable to find '+fileName)
           for reductionType in self.__getattribute__(metric):
             row.append(np.nan)
-            idx+=1        
+            idx+=1
       if len(row):
         for factorName in reversed(settings.getFactorNames()):
           row.insert(0, setting.__getattribute__(factorName))
@@ -252,6 +252,7 @@ class Metric():
       In the case of .npy storage, a valid path to the main directory. In the case of .h5 storage, a valid path to an .h5 file.
 
     settingEncoding : dict
+      Encoding of the setting. See explanes.factor.Factor.id for references.
 
 
     reducedMetricDisplay : str (optional)
@@ -281,20 +282,22 @@ class Metric():
     Returns
     -------
 
-    table : list of lists of literals
-      The
+    settingDescription : list of lists of literals
+      A settingDescription, stored as a list of list of literals of the same size. The main list stores the rows of the settingDescription.
 
     columnHeader : list of str
+      The column header of the settingDescription as a list of str, describing the factors (left side), and the reduced metrics (right side).
 
-    constantColumnDescription : str
+    constantSettingDescription : str
+      When a factor is equally valued for all the settings, the factor column is removed from the settingDescription and stored in constantSettingDescription along its value.
 
-    nbFactorColumns : int
-      The number of factors in the column header
+    nbColumnFactor : int
+      The number of factors in the column header.
 
     Examples
     --------
 
-    explanes supports metrics storage using an npy file per metric per setting.
+    explanes supports metrics storage using an .npy file per metric per setting.
 
     >>> import explanes as el
     >>> import numpy as np
@@ -313,9 +316,9 @@ class Metric():
     >>>   np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
     >>> experiment.makePaths()
     >>> experiment.do([], process, progress=False)
-    >>> (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(), experiment.path.output)
+    >>> (settingDescription, columns, header) = experiment.metric.reduce(experiment.factor.settings(), experiment.path.output)
 
-    >>> df = pd.DataFrame(table, columns=columns).round(decimals=2)
+    >>> df = pd.DataFrame(settingDescription, columns=columns).round(decimals=2)
     f1  f2  m1Mean  m1Std  m2Min  m2Argmin
     0   1   1    1.83   0.99  -2.38        83
     1   1   2    3.04   1.01  -5.01        57
@@ -324,7 +327,7 @@ class Metric():
     4   2   2    3.84   1.03 -11.47        32
     5   2   3    4.88   1.02 -11.61        90
 
-    explanes also supports metrics storage using one h5 file sink structured with settings as groups et metrics as leaf nodes.
+    explanes also supports metrics storage using one .h5 file sink structured with settings as groups et metrics as leaf nodes.
 
     >>> import explanes as el
     >>> import numpy as np
@@ -370,9 +373,9 @@ class Metric():
     /f1_2_f2_3/m1 (Array(100,)) 'm1'
     /f1_2_f2_3/m2 (Array(100,)) 'm2'
     >>> h5.close()
-    >>> (table, columns, header) = experiment.metric.reduce(experiment.factor.settings(), experiment.path.output)
+    >>> (settingDescription, columns, header) = experiment.metric.reduce(experiment.factor.settings(), experiment.path.output)
 
-    >>> df = pd.DataFrame(table, columns=columns).round(decimals=2)
+    >>> df = pd.DataFrame(settingDescription, columns=columns).round(decimals=2)
     >>> print(df)
     f1  f2  m1Mean  m1Std  m2Min  m2Argmin
     0   1   1    1.89   0.94  -2.42        11
@@ -383,125 +386,166 @@ class Metric():
     5   2   3    5.08   0.86 -13.36        87
     """
     if dataLocation.endswith('.h5'):
-      (table, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose)
+      (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose)
     else:
-      (table, metricHasData) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose)
+      (settingDescription, metricHasData) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose)
 
     columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricHasData, reducedMetricDisplay)
-    constantColumnDescription = ''
-    nbFactorColumns = len(settings.getFactorNames())
-    if len(table)>1:
-      (ccIndex, ccValue) = eu.constantColumn(table)
-      ccIndex = [i for i, x in enumerate(ccIndex) if x and i<nbFactorColumns]
-      nbFactorColumns -= len(ccIndex)
-      for s in ccIndex:
-        constantColumnDescription += eu.compressDescription(columnHeader[s], factorDisplay)+': '+str(ccValue[s])+' '
-      for s in sorted(ccIndex, reverse=True):
-        columnHeader.pop(s)
-        for r in table:
-          r.pop(s)
-    return (table, columnHeader, constantColumnDescription, nbFactorColumns)
+
+    # constantSettingDescription = ''
+    nbColumnFactor = len(settings.getFactorNames())
+    # if len(settingDescription)>1:
+    #   (ccIndex, ccValue) = eu.constantColumn(settingDescription)
+    #   ccIndex = [i for i, x in enumerate(ccIndex) if x and i<nbColumnFactor]
+    #   nbColumnFactor -= len(ccIndex)
+    #   for s in ccIndex:
+    #     constantSettingDescription += eu.compressDescription(columnHeader[s], factorDisplay)+': '+str(ccValue[s])+' '
+    #   for s in sorted(ccIndex, reverse=True):
+    #     columnHeader.pop(s)
+    #     for r in settingDescription:
+    #       r.pop(s)
+    return eu.pruneSettingDescription(settingDescription, columnHeader, nbColumnFactor, factorDisplay)
 
   def get(
     self,
     metric,
     settings,
     dataLocation,
-    reducedMetricDisplay = 'capitalize',
     settingEncoding={},
     verbose=False
     ):
-    """one liner
+    """ Get the metric vector from an .npy or a group of a .h5 file.
 
-    Desc
+    Get the metric vector as a numpy array from an .npy or a group of a .h5 file.
+
+    Parameters
+    ----------
+
+    metric: str
+      The name of the metric. Must be a member of the explanes.metric.Metric object.
+
+    settings: explanes.factor.Factor
+      Iterable settings.
+
+    dataLocation: str
+      In the case of .npy storage, a valid path to the main directory. In the case of .h5 storage, a valid path to an .h5 file.
+
+    settingEncoding : dict
+      Encoding of the setting. See explanes.factor.Factor.id for references.
+
+    verbose : bool
+      In the case of .npy metric storage, if verbose is set to True, print the fileName seeked for the metric.
+
+      In the case of .h5 metric storage, if verbose is set to True, print the group seeked for the metric.
+
+    Returns
+    -------
 
     Examples
     --------
 
     """
+
+    settingMetric = []
+    settingDescription = []
+    settingDescriptionFormat = copy.deepcopy(settingEncoding)
+    settingDescriptionFormat['format'] = 'list'
+    settingDescriptionFormat['hideNonAndZero'] = False
+    settingDescriptionFormat['hideDefault'] = False
+
     if isinstance(dataLocation, str):
       if dataLocation.endswith('.h5'):
-        (array, description) = self.getFromH5(metric, settings, dataLocation, verbose) # todo
+        h5 = tb.open_file(dataLocation, mode='r')
+        for setting in settings:
+          if h5.root.__contains__(setting.id(**settingEncoding)):
+            if verbose:
+              print('Found group '+setting.id(**settingEncoding))
+            sg = h5.root._f_get_child(setting.id(**settingEncoding))
+            if sg.__contains__(metric):
+              settingMetric.append(sg._f_get_child(metric))
+              settingDescription.append(setting.id(**settingDescriptionFormat))
+          elif verbose:
+            print('** Unable to find group '+setting.id(**settingEncoding))
+        h5.close()
       else:
-        (array, description) = self.getFromNpy(metric, settings, dataLocation, settingEncoding, verbose)
+        for setting in settings:
+          fileName = dataLocation+setting.id(**settingEncoding)+'_'+metric+'.npy'
+          if os.path.exists(fileName):
+            if verbose:
+              print('Found '+fileName)
+            settingMetric.append(np.load(fileName))
+            settingDescription.append(setting.id(**settingDescriptionFormat))
+          elif verbose:
+            print('** Unable to find '+fileName)
 
-    constantColumnDescription = ''
-    if description:
-      (ccIndex, ccValue) = eu.constantColumn(description)
-      for si, s in enumerate(ccIndex):
-        if si>1 and not s:
-          ccIndex[si-1] = False
-      ccIndex = [i for i, x in enumerate(ccValue) if x]
-      for s in ccIndex:
-        constantColumnDescription += description[0][s]+' '
-      for s in sorted(ccIndex, reverse=True):
-        for r in description:
-          r.pop(s)
-    return (array, description, constantColumnDescription)
+    (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = eu.pruneSettingDescription(settingDescription)
 
-  def getFromH5(
-    self,
-    metric,
-    settings,
-    dataLocation,
-    settingEncoding={},
-    verbose=False
-    ):
-    """one liner
+    return (settingMetric, settingDescription, constantSettingDescription)
 
-    Desc
 
-    Examples
-    --------
-
-    """
-    h5 = tb.open_file(dataLocation, mode='r')
-    data = []
-    description = []
-    descriptionFormat = copy.deepcopy(kwargs)
-    descriptionFormat['format'] = 'list'
-    descriptionFormat['hideNonAndZero'] = False
-    descriptionFormat['hideDefault'] = False
-    for setting in settings:
-      if verbose:
-        print('Seeking Group '+setting.id(**settingEncoding))
-      if h5.root.__contains__(setting.id(**settingEncoding)):
-        sg = h5.root._f_get_child(setting.id(**settingEncoding))
-        if sg.__contains__(metric):
-          data.append(sg._f_get_child(metric))
-          description.append(setting.id(**descriptionFormat))
-    h5.close()
-    return (data, description)
-
-  def getFromNpy(
-    self,
-    metric,
-    settings,
-    dataLocation,
-    settingEncoding={},
-    verbose=False
-    ):
-    """one liner
-
-    Desc
-
-    Examples
-    --------
-
-    """
-    data = []
-    description = []
-    descriptionFormat = copy.deepcopy(settingEncoding)
-    descriptionFormat['format'] = 'list'
-    descriptionFormat['hideNonAndZero'] = False
-    descriptionFormat['hideDefault'] = False
-    for setting in settings:
-      fileName = dataLocation+setting.id(**settingEncoding)+'_'+metric+'.npy'
-      if os.path.exists(fileName):
-        data.append(np.load(fileName))
-        description.append(setting.id(**descriptionFormat))
-
-    return (data, description)
+  # def getFromH5(
+  #   self,
+  #   metric,
+  #   settings,
+  #   dataLocation,
+  #   settingEncoding={},
+  #   verbose=False
+  #   ):
+  #   """one liner
+  #
+  #   Desc
+  #
+  #   Examples
+  #   --------
+  #
+  #   """
+  #   h5 = tb.open_file(dataLocation, mode='r')
+  #   data = []
+  #   settingDescription = []
+  #   settingDescriptionFormat = copy.deepcopy(kwargs)
+  #   settingDescriptionFormat['format'] = 'list'
+  #   settingDescriptionFormat['hideNonAndZero'] = False
+  #   settingDescriptionFormat['hideDefault'] = False
+  #   for setting in settings:
+  #     if verbose:
+  #       print('Seeking Group '+setting.id(**settingEncoding))
+  #     if h5.root.__contains__(setting.id(**settingEncoding)):
+  #       sg = h5.root._f_get_child(setting.id(**settingEncoding))
+  #       if sg.__contains__(metric):
+  #         data.append(sg._f_get_child(metric))
+  #         settingDescription.append(setting.id(**settingDescriptionFormat))
+  #   h5.close()
+  #   return (data, settingDescription)
+  #
+  # def getFromNpy(
+  #   self,
+  #   metric,
+  #   settings,
+  #   dataLocation,
+  #   settingEncoding={},
+  #   verbose=False
+  #   ):
+  #   """one liner
+  #
+  #   Desc
+  #
+  #   Examples
+  #   --------
+  #
+  #   """
+  #   data = []
+  #   settingDescription = []
+  #   settingDescriptionFormat = copy.deepcopy(settingEncoding)
+  #   settingDescriptionFormat['format'] = 'list'
+  #   settingDescriptionFormat['hideNonAndZero'] = False
+  #   settingDescriptionFormat['hideDefault'] = False
+  #   for setting in settings:
+  #     fileName = dataLocation+setting.id(**settingEncoding)+'_'+metric+'.npy'
+  #     if os.path.exists(fileName):
+  #       data.append(np.load(fileName))
+  #       settingDescription.append(setting.id(**settingDescriptionFormat))
+  #
+  #   return (data, settingDescription)
 
   def h5addSetting(
     self,
@@ -550,9 +594,9 @@ class Metric():
     metricHasData=[],
     reducedMetricDisplay = 'capitalize',
     ):
-    """Builds the column header of the reduction table.
+    """Builds the column header of the reduction settingDescription.
 
-    This method builds the column header of the reduction table by formating the Factor names from the explanes.factor.Factor class and by describing the reduced metrics.
+    This method builds the column header of the reduction settingDescription by formating the Factor names from the explanes.factor.Factor class and by describing the reduced metrics.
 
     Parameters
     ----------
