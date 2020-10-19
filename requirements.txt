@@ -4,3 +4,4 @@ pandas
 argunparse
 numpy
 tqdm
+joblib
