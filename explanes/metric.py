@@ -446,6 +446,37 @@ class Metric():
     Examples
     --------
 
+    >>> import explanes as el
+    >>> import numpy as np
+    >>> import pandas as pd
+
+    >>> experiment = el.experiment.Experiment()
+    >>> experiment.project.name = 'example'
+    >>> experiment.path.output = '/tmp/'+experiment.project.name+'/'
+    >>> experiment.factor.f1 = [1, 2]
+    >>> experiment.factor.f2 = [1, 2, 3]
+    >>> experiment.metric.m1 = ['mean', 'std']
+    >>> experiment.metric.m2 = ['min', 'argmin']
+
+    >>> def process(setting, experiment):
+      metric1 = setting.f1+setting.f2+np.random.randn(100)
+      metric2 = setting.f1*setting.f2*np.random.randn(100)
+      np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
+      np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
+
+    >>> experiment.makePaths()
+    >>> experiment.do([], process, progress=False)
+
+    >>> (settingMetric, settingDescription, constantSettingDescription) = experiment.metric.get('m1', experiment.factor.settings([1]), experiment.path.output)
+
+    >>> print(constantSettingDescription)
+    f1 2
+    >>> print(settingDescription)
+    [['f2', '1'], ['f2', '2'], ['f2', '3']]
+    >>> print(len(settingMetric))
+    3
+    >>> print(settingMetric[0].shape)
+    (100,)
     """
 
     settingMetric = []
@@ -483,71 +514,6 @@ class Metric():
     (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = eu.pruneSettingDescription(settingDescription)
 
     return (settingMetric, settingDescription, constantSettingDescription)
-
-
-  # def getFromH5(
-  #   self,
-  #   metric,
-  #   settings,
-  #   dataLocation,
-  #   settingEncoding={},
-  #   verbose=False
-  #   ):
-  #   """one liner
-  #
-  #   Desc
-  #
-  #   Examples
-  #   --------
-  #
-  #   """
-  #   h5 = tb.open_file(dataLocation, mode='r')
-  #   data = []
-  #   settingDescription = []
-  #   settingDescriptionFormat = copy.deepcopy(kwargs)
-  #   settingDescriptionFormat['format'] = 'list'
-  #   settingDescriptionFormat['hideNonAndZero'] = False
-  #   settingDescriptionFormat['hideDefault'] = False
-  #   for setting in settings:
-  #     if verbose:
-  #       print('Seeking Group '+setting.id(**settingEncoding))
-  #     if h5.root.__contains__(setting.id(**settingEncoding)):
-  #       sg = h5.root._f_get_child(setting.id(**settingEncoding))
-  #       if sg.__contains__(metric):
-  #         data.append(sg._f_get_child(metric))
-  #         settingDescription.append(setting.id(**settingDescriptionFormat))
-  #   h5.close()
-  #   return (data, settingDescription)
-  #
-  # def getFromNpy(
-  #   self,
-  #   metric,
-  #   settings,
-  #   dataLocation,
-  #   settingEncoding={},
-  #   verbose=False
-  #   ):
-  #   """one liner
-  #
-  #   Desc
-  #
-  #   Examples
-  #   --------
-  #
-  #   """
-  #   data = []
-  #   settingDescription = []
-  #   settingDescriptionFormat = copy.deepcopy(settingEncoding)
-  #   settingDescriptionFormat['format'] = 'list'
-  #   settingDescriptionFormat['hideNonAndZero'] = False
-  #   settingDescriptionFormat['hideDefault'] = False
-  #   for setting in settings:
-  #     fileName = dataLocation+setting.id(**settingEncoding)+'_'+metric+'.npy'
-  #     if os.path.exists(fileName):
-  #       data.append(np.load(fileName))
-  #       settingDescription.append(setting.id(**settingDescriptionFormat))
-  #
-  #   return (data, settingDescription)
 
   def h5addSetting(
     self,
