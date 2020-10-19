@@ -32,7 +32,7 @@ def set(args):
 
   experiment.factor.dataType = ['float', 'double']
   experiment.factor.datasetSize = 1000*np.array([1, 2, 4, 8])
-  experiment.factor.meanOffset = 10**np.array([0, 1, 2, 3])
+  experiment.factor.meanOffset = 10**np.array([0, 1, 2, 3, 4])
   experiment.factor.nbRuns = [2000, 4000]
 
   experiment.metric.mae = ['mean-0', 'std-0']
@@ -68,9 +68,9 @@ def step(setting, experiment):
   np.save(experiment.path.output+baseFileName+'_duration.npy', duration)
 
 # uncomment this method to fine tune display of metrics
-# def display(experiment, settings):
-#     (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output, **experiment._settingEncoding)
-#
-#     print(header)
-#     print(desc)
-#     print(len(data))
+def display(experiment, settings):
+    (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output, settingEncoding = experiment._settingEncoding)
+
+    print(header)
+    print(desc)
+    print(len(data))

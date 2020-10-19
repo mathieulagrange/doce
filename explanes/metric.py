@@ -462,7 +462,7 @@ class Metric():
               print('Found group '+setting.id(**settingEncoding))
             sg = h5.root._f_get_child(setting.id(**settingEncoding))
             if sg.__contains__(metric):
-              settingMetric.append(sg._f_get_child(metric))
+              settingMetric.append(np.array(sg._f_get_child(metric)))
               settingDescription.append(setting.id(**settingDescriptionFormat))
           elif verbose:
             print('** Unable to find group '+setting.id(**settingEncoding))
@@ -549,7 +549,7 @@ class Metric():
 
   def h5addSetting(
     self,
-    h5,
+    h5fid,
     setting,
     metricDimensions=[],
     settingEncoding={}
@@ -558,16 +558,25 @@ class Metric():
 
     Desc
 
+    Parameters
+    ----------
+
+    h5fid,
+    setting,
+    metricDimensions=[],
+    settingEncoding={}
+
+
     Examples
     --------
 
     """
     groupName = setting.id(**settingEncoding)
     # print(groupName)
-    if not h5.__contains__('/'+groupName):
-      sg = h5.create_group('/', groupName, setting.id(format='long', sep=' '))
+    if not h5fid.__contains__('/'+groupName):
+      sg = h5fid.create_group('/', groupName, setting.id(settingEncoding))
     else:
-      sg = h5.root._f_get_child(groupName)
+      sg = h5fid.root._f_get_child(groupName)
     for mIndex, metric in enumerate(self.name()):
       if hasattr(self._description, metric):
         description = getattr(self._description, metric)
@@ -580,10 +589,10 @@ class Metric():
       if not metricDimensions:
         if sg.__contains__(metric):
           sg._f_get_child(metric)._f_remove()
-        h5.create_earray(sg, metric, tb.Float64Atom(), (0,), description)
+        h5fid.create_earray(sg, metric, tb.Float64Atom(), (0,), description)
       else:
         if not sg.__contains__(metric):
-          h5.create_array(sg, metric, np.zeros(( metricDimensions[mIndex])), description)
+          h5fid.create_array(sg, metric, np.zeros(( metricDimensions[mIndex])), description)
     return sg
 
   def getColumnHeader(

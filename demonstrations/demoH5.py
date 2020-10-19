@@ -67,9 +67,9 @@ def step(setting, experiment):
   h5.close()
 
 ## uncomment this to fine tune display of metrics
-# def display(experiment, settings):
-#     (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output, **experiment._settingEncoding)
-#
-#     print(header)
-#     print(desc)
-#     print(len(data))
+def display(experiment, settings):
+    (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output, settingEncoding = experiment._settingEncoding)
+
+    print(header)
+    print(desc)
+    print(len(data))

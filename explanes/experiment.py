@@ -177,8 +177,8 @@ def run():
       config.display(experiment, experiment.factor.settings(mask))
     else:
       (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, settingEncoding = experiment._settingEncoding, verbose=args.debug)
-      print(table)
-      print(columns)
+      # print(table)
+      # print(columns)
       df = pd.DataFrame(table, columns=columns).fillna('')
       df[columns[nbFactorColumns:]] = df[columns[nbFactorColumns:]].round(decimals=2)
       if selectDisplay:
