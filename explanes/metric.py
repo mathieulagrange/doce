@@ -316,16 +316,17 @@ class Metric():
     >>>   np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
     >>> experiment.makePaths()
     >>> experiment.do([], process, progress=False)
-    >>> (settingDescription, columns, header) = experiment.metric.reduce(experiment.factor.settings(), experiment.path.output)
+    >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = experiment.metric.reduce(experiment.factor.settings([1]), experiment.path.output)
 
-    >>> df = pd.DataFrame(settingDescription, columns=columns).round(decimals=2)
-    f1  f2  m1Mean  m1Std  m2Min  m2Argmin
-    0   1   1    1.83   0.99  -2.38        83
-    1   1   2    3.04   1.01  -5.01        57
-    2   1   3    3.94   0.92  -5.96        12
-    3   2   1    2.93   1.07  -6.47        71
-    4   2   2    3.84   1.03 -11.47        32
-    5   2   3    4.88   1.02 -11.61        90
+    >>> df = pd.DataFrame(settingDescription, columns=columnHeader)
+    >>> df[columnHeader[nbColumnFactor:]] = df[columnHeader[nbColumnFactor:]].round(decimals=2)
+    >>> print(constantSettingDescription)
+    f1: 2
+    >>> print(df)
+        f1  f2  m1Mean  m1Std  m2Min  m2Argmin
+    0   1   1    2.07   1.03  -1.94        33
+    1   1   2    3.04   0.88  -4.85        78
+    2   1   3    4.12   1.05  -7.70        36
 
     explanes also supports metrics storage using one .h5 file sink structured with settings as groups et metrics as leaf nodes.
 
@@ -373,17 +374,18 @@ class Metric():
     /f1_2_f2_3/m1 (Array(100,)) 'm1'
     /f1_2_f2_3/m2 (Array(100,)) 'm2'
     >>> h5.close()
-    >>> (settingDescription, columns, header) = experiment.metric.reduce(experiment.factor.settings(), experiment.path.output)
 
-    >>> df = pd.DataFrame(settingDescription, columns=columns).round(decimals=2)
+    >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = experiment.metric.reduce(experiment.factor.settings([0]), experiment.path.output)
+
+    >>> df = pd.DataFrame(settingDescription, columns=columnHeader)
+    >>> df[columnHeader[nbColumnFactor:]] = df[columnHeader[nbColumnFactor:]].round(decimals=2)
+    >>> print(constantSettingDescription)
+        f1: 1
     >>> print(df)
-    f1  f2  m1Mean  m1Std  m2Min  m2Argmin
-    0   1   1    1.89   0.94  -2.42        11
-    1   1   2    3.03   1.10  -5.08        29
-    2   1   3    3.84   0.94  -6.27        99
-    3   2   1    2.93   0.89  -4.91        18
-    4   2   2    3.99   1.01 -13.51        70
-    5   2   3    5.08   0.86 -13.36        87
+        f2  m1Mean  m1Std  m2Min  m2Argmin
+    0   1    2.02   0.86  -2.43         6
+    1   2    3.11   1.02  -4.41        85
+    2   3    4.13   1.03  -6.21        65
     """
     if dataLocation.endswith('.h5'):
       (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose)
@@ -391,20 +393,11 @@ class Metric():
       (settingDescription, metricHasData) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose)
 
     columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricHasData, reducedMetricDisplay)
-
-    # constantSettingDescription = ''
     nbColumnFactor = len(settings.getFactorNames())
-    # if len(settingDescription)>1:
-    #   (ccIndex, ccValue) = eu.constantColumn(settingDescription)
-    #   ccIndex = [i for i, x in enumerate(ccIndex) if x and i<nbColumnFactor]
-    #   nbColumnFactor -= len(ccIndex)
-    #   for s in ccIndex:
-    #     constantSettingDescription += eu.compressDescription(columnHeader[s], factorDisplay)+': '+str(ccValue[s])+' '
-    #   for s in sorted(ccIndex, reverse=True):
-    #     columnHeader.pop(s)
-    #     for r in settingDescription:
-    #       r.pop(s)
-    return eu.pruneSettingDescription(settingDescription, columnHeader, nbColumnFactor, factorDisplay)
+
+    (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = eu.pruneSettingDescription(settingDescription, columnHeader, nbColumnFactor, factorDisplay)
+
+    return (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor)
 
   def get(
     self,
@@ -440,6 +433,15 @@ class Metric():
 
     Returns
     -------
+
+    settingMetric: list of np.Array
+      stores for each valid setting an np.Array with the values of the metric selected.
+
+    settingDescription: list of list of str
+      stores for each valid setting, a compact description of the modalities of each factors. The factors with the same modality accross all the set of settings is stored in constantSettingDescription.
+
+    constantSettingDescription: str
+      compact description of the factors with the same modality accross all the set of settings.
 
     Examples
     --------

@@ -26,7 +26,9 @@ h5 = tb.open_file(experiment.path.output, mode='r')
 print(h5)
 h5.close()
 
-(table, columns, header) = experiment.metric.reduce(experiment.factor.settings(), experiment.path.output)
+(settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = experiment.metric.reduce(experiment.factor.settings([0]), experiment.path.output)
 
-df = pd.DataFrame(table, columns=columns).round(decimals=2)
+df = pd.DataFrame(settingDescription, columns=columnHeader)
+df[columnHeader[nbColumnFactor:]] = df[columnHeader[nbColumnFactor:]].round(decimals=2)
+print(constantSettingDescription)
 print(df)

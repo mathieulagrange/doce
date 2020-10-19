@@ -52,7 +52,7 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
     if len(settingDescription)>1:
       constantValue = constantColumn(settingDescription)
       for si, s in enumerate(constantValue):
-        if si>0 and s is None:
+        if not columnHeader and si>0 and s is None:
           constantValue[si-1] = None
       ccIndex = [i for i, x in enumerate(constantValue) if x and i<nbColumnFactor]
       nbColumnFactor -= len(ccIndex)

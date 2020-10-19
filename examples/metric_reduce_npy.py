@@ -19,7 +19,9 @@ def process(setting, experiment):
 experiment.makePaths()
 experiment.do([], process, progress=False)
 
-(table, columns, header) = experiment.metric.reduce(experiment.factor.settings(), experiment.path.output)
+(settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = experiment.metric.reduce(experiment.factor.settings([1]), experiment.path.output)
 
-df = pd.DataFrame(table, columns=columns).round(decimals=2)
+df = pd.DataFrame(settingDescription, columns=columnHeader)
+df[columnHeader[nbColumnFactor:]] = df[columnHeader[nbColumnFactor:]].round(decimals=2)
+print(constantSettingDescription)
 print(df)
