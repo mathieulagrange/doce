@@ -3,6 +3,7 @@ import types
 import inspect
 import os
 import time
+import datetime
 import explanes as el
 import sys
 import pandas as pd
@@ -167,7 +168,7 @@ def run():
   if args.server == -3:
     logFileName = '/tmp/test'
   if args.mail>-1:
-    experiment.sendMail('has started.', '<div> Mask = '+args.mask+'</div>')
+    experiment.sendMail(args.mask+' has started.', '<div> Mask = '+args.mask+'</div>')
   if args.run and hasattr(config, 'step'):
     experiment.do(mask, config.step, nbJobs=args.run, logFileName=logFileName, progress=args.progress, mailInterval = float(args.mail))
 
@@ -188,7 +189,7 @@ def run():
       print(df)
       body += '<div> '+header+' </div><br>'+df.to_html()
   if args.mail>-1:
-    experiment.sendMail('is over.', body) #
+    experiment.sendMail(args.mask+' is over.', body) #
 
 
 class Experiment():
@@ -266,7 +267,7 @@ class Experiment():
     self.project.description = ''
     self.project.author = 'no name'
     self.project.address = 'noname@noname.org'
-    self.project.runId = str(int(time.time()))
+    self.project.runId = str(int((time.time()-datetime.datetime(2020,1,1,0,0).timestamp())/60))
     self.factor = el.Factor()
     self.parameter = types.SimpleNamespace()
     self.metric = el.Metric()
@@ -426,7 +427,7 @@ class Experiment():
     server.login(self._gmailId+'@gmail.com', self._gmailAppPassword)
     server.sendmail(self._gmailId, self.project.address, header+body+'<h3> '+self.__str__(format = 'html')+'</h3>')
     server.quit
-    print('Sent message entitled: [explanes] '+self.project.name+' id '+self.project.runId+' '+title)
+    print(datetime.datetime.now().strftime("%b-%d-%Y, %Hh%Mm")+' Sent message entitled: [explanes] '+self.project.name+' id '+self.project.runId+' '+title)
 
   def do(
     self,
