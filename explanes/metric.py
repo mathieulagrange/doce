@@ -135,15 +135,15 @@ class Metric():
       if verbose:
         print('Seeking Group '+setting.id(**settingEncoding))
       if h5.root.__contains__(setting.id(**settingEncoding)):
-        sg = h5.root._f_get_child(setting.id(**settingEncoding))
-        # print(sg._v_name)
+        settingGroup = h5.root._f_get_child(setting.id(**settingEncoding))
+        # print(settingGroup._v_name)
         # print(setting.id(**settingEncoding))
         for mIndex, metric in enumerate(self.name()):
           for reductionType in self.__getattribute__(metric):
             value = np.nan
-            if sg.__contains__(metric):
+            if settingGroup.__contains__(metric):
               metricHasData[mIndex] = True
-              data = sg._f_get_child(metric)
+              data = settingGroup._f_get_child(metric)
             row.append(self.reduceMetric(data, reductionType))
         if len(row):
           for factorName in reversed(settings.getFactorNames()):
@@ -343,10 +343,10 @@ class Metric():
     >>> experiment.metric.m2 = ['min', 'argmin']
     >>> def process(setting, experiment):
     >>>   h5 = tb.open_file(experiment.path.output, mode='a')
-    >>>   sg = experiment.metric.h5addSetting(h5, setting,
-    >>>       metricDimensions = [100, 100])
-    >>>   sg.m1[:] = setting.f1+setting.f2+np.random.randn(100)
-    >>>   sg.m2[:] = setting.f1*setting.f2*np.random.randn(100)
+    >>>   settingGroup = experiment.metric.addSettingGroup(h5, setting,
+    >>>       metricDimension = [100, 100])
+    >>>   settingGroup.m1[:] = setting.f1+setting.f2+np.random.randn(100)
+    >>>   settingGroup.m2[:] = setting.f1*setting.f2*np.random.randn(100)
     >>>   h5.close()
     >>> experiment.makePaths()
     >>> experiment.do([], process, progress=False)
@@ -493,9 +493,9 @@ class Metric():
           if h5.root.__contains__(setting.id(**settingEncoding)):
             if verbose:
               print('Found group '+setting.id(**settingEncoding))
-            sg = h5.root._f_get_child(setting.id(**settingEncoding))
-            if sg.__contains__(metric):
-              settingMetric.append(np.array(sg._f_get_child(metric)))
+            settingGroup = h5.root._f_get_child(setting.id(**settingEncoding))
+            if settingGroup.__contains__(metric):
+              settingMetric.append(np.array(settingGroup._f_get_child(metric)))
               settingDescription.append(setting.id(**settingDescriptionFormat))
           elif verbose:
             print('** Unable to find group '+setting.id(**settingEncoding))
@@ -515,37 +515,97 @@ class Metric():
 
     return (settingMetric, settingDescription, constantSettingDescription)
 
-  def h5addSetting(
+  def addSettingGroup(
     self,
-    h5fid,
+    fileId,
     setting,
-    metricDimensions=[],
+    metricDimension={},
     settingEncoding={}
     ):
-    """one liner
+    """adds a group to the root of a valid PyTables Object in order to store the metrics corresponding to the specified setting.
 
-    Desc
+    adds a group to the root of a valid PyTables Object in order to store the metrics corresponding to the specified setting. The encoding of the setting is used to set the name of the group. For each metric, a Floating point Pytable Array is created. For any metric, ff no dimension is provided in the metricDimension dict, an expandable array is instantiated. If a dimension is available, a static size array is instantiated.
 
     Parameters
     ----------
 
-    h5fid,
-    setting,
-    metricDimensions=[],
-    settingEncoding={}
+    fileId: PyTables file Object
+    a valid PyTables file Object, leading to an .h5 file opened with writing permission.
 
+    setting: :class:`explanes.factor.Factor`
+    an instantiated Factor object describing a setting.
+
+    metricDimension: dict
+    for metrics for which the dimensionality of the storage vector is known, each key of the dict is a valid metric name and each conresponding value is the size of the storage vector.
+
+    settingEncoding : dict
+    Encoding of the setting. See explanes.factor.Factor.id for references.
+
+    Returns
+    -------
+
+    settingGroup: a Pytables Group
+    a Pytables Group where to store metrics corresponding to the specified setting.
 
     Examples
     --------
 
+    >>> import explanes as el
+    >>> import numpy as np
+    >>> import tables as tb
+
+    >>> experiment = el.experiment.Experiment()
+    >>> experiment.project.name = 'example'
+    >>> experiment.path.output = '/tmp/'+experiment.project.name+'.h5'
+    >>> experiment.factor.f1 = [1, 2]
+    >>> experiment.factor.f2 = [1, 2, 3]
+    >>> experiment.metric.m1 = ['mean', 'std']
+    >>> experiment.metric.m2 = ['min', 'argmin']
+
+    >>> def process(setting, experiment):
+      h5 = tb.open_file(experiment.path.output, mode='a')
+      sg = experiment.metric.addSettingGroup(h5, setting,
+          metricDimension = {'m1':100})
+      sg.m1[:] = setting.f1+setting.f2+np.random.randn(100)
+      sg.m2.append(setting.f1*setting.f2*np.random.randn(100))
+      h5.close()
+
+    >>> experiment.makePaths()
+    >>> experiment.do([], process, progress=False)
+
+    >>> h5 = tb.open_file(experiment.path.output, mode='r')
+    >>> print(h5)
+    /tmp/example.h5 (File) ''
+    Last modif.: 'Tue Oct 20 14:52:26 2020'
+    Object Tree:
+    / (RootGroup) ''
+    /f1_1_f2_1 (Group) 'f1_1_f2_1'
+    /f1_1_f2_1/m1 (Array(100,)) 'm1'
+    /f1_1_f2_1/m2 (EArray(100,)) 'm2'
+    /f1_1_f2_2 (Group) 'f1_1_f2_2'
+    /f1_1_f2_2/m1 (Array(100,)) 'm1'
+    /f1_1_f2_2/m2 (EArray(100,)) 'm2'
+    /f1_1_f2_3 (Group) 'f1_1_f2_3'
+    /f1_1_f2_3/m1 (Array(100,)) 'm1'
+    /f1_1_f2_3/m2 (EArray(100,)) 'm2'
+    /f1_2_f2_1 (Group) 'f1_2_f2_1'
+    /f1_2_f2_1/m1 (Array(100,)) 'm1'
+    /f1_2_f2_1/m2 (EArray(100,)) 'm2'
+    /f1_2_f2_2 (Group) 'f1_2_f2_2'
+    /f1_2_f2_2/m1 (Array(100,)) 'm1'
+    /f1_2_f2_2/m2 (EArray(100,)) 'm2'
+    /f1_2_f2_3 (Group) 'f1_2_f2_3'
+    /f1_2_f2_3/m1 (Array(100,)) 'm1'
+    /f1_2_f2_3/m2 (EArray(100,)) 'm2'
+    >>> h5.close()
     """
     groupName = setting.id(**settingEncoding)
     # print(groupName)
-    if not h5fid.__contains__('/'+groupName):
-      sg = h5fid.create_group('/', groupName, setting.id(settingEncoding))
+    if not fileId.__contains__('/'+groupName):
+      settingGroup = fileId.create_group('/', groupName, setting.id(settingEncoding))
     else:
-      sg = h5fid.root._f_get_child(groupName)
-    for mIndex, metric in enumerate(self.name()):
+      settingGroup = fileId.root._f_get_child(groupName)
+    for metric in self.name():
       if hasattr(self._description, metric):
         description = getattr(self._description, metric)
       else:
@@ -554,14 +614,15 @@ class Metric():
       if hasattr(self._unit, metric):
         description += ' in ' + getattr(self._unit, metric)
 
-      if not metricDimensions:
-        if sg.__contains__(metric):
-          sg._f_get_child(metric)._f_remove()
-        h5fid.create_earray(sg, metric, tb.Float64Atom(), (0,), description)
+      if metric in metricDimension:
+        if not settingGroup.__contains__(metric):
+          fileId.create_array(settingGroup, metric, np.zeros((metricDimension[metric])), description)
       else:
-        if not sg.__contains__(metric):
-          h5fid.create_array(sg, metric, np.zeros(( metricDimensions[mIndex])), description)
-    return sg
+        if settingGroup.__contains__(metric):
+          settingGroup._f_get_child(metric)._f_remove()
+        fileId.create_earray(settingGroup, metric, tb.Float64Atom(), (0,), description)
+
+    return settingGroup
 
   def getColumnHeader(
     self,

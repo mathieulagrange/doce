@@ -39,8 +39,7 @@ def set(args):
 
 def step(setting, experiment):
   h5 = tb.open_file(experiment.path.output, mode='a')
-  sg = experiment.metric.h5addSetting(h5, setting,
-      metricDimensions = [setting.nbRuns, setting.nbRuns, 1], settingEncoding = experiment._settingEncoding)
+  sg = experiment.metric.addSettingGroup(h5, setting, metricDimensions = {'mae':setting.nbRuns, 'duration':1}, settingEncoding = experiment._settingEncoding)
 
   tic = time.time()
   for r in range(setting.nbRuns):
@@ -54,15 +53,11 @@ def step(setting, experiment):
       estimate = np.var(data)
     elif setting.dataType == 'double':
       estimate =  np.var(data, dtype=np.float64)
-    # in case of dynamic allocation
-    # sg.mae.append([abs(reference - estimate)])
-    # sg.mse.append([np.square(reference - estimate)])
-    sg.mae[r] = abs(reference - estimate)
-    sg.mse[r] = np.square(reference - estimate)
+
+    sg.mae.append([abs(reference - estimate)])
+    sg.mse.append([np.square(reference - estimate)])
 
   duration = time.time()-tic
-  # in case of dynamic allocation
-  # sg.duration.append([duration])
   sg.duration[0] = duration
   h5.close()
 
