@@ -84,7 +84,8 @@ def run():
   parser.add_argument('-l', '--list', help='list settings', action='store_true')
   parser.add_argument('-m', '--mask', type=str, help='mask of the experiment to run', default='[]')
   parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation. If an integer value x is provided, additional emails are sent every x hours.', nargs='?', default='-1')
-  parser.add_argument('-S', '--sync', help='sync to server defined', action='store_true')
+  parser.add_argument('-C', '--copy', help='copy codebase to server defined by -s argument', action='store_true')
+  parser.add_argument('-S', '--serverDefault', help='augment the command line with the content of the dict experiment._defaultServerRunArgument', action='store_true')
   parser.add_argument('-s', '--server', type=int, help='running server side. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside', default=-2)
   parser.add_argument('-d', '--display', type=str, help='display metrics. Str parameter (optional) should contain a list of integers specifiying the columns to keep for display.', nargs='?', default='-1')
   parser.add_argument('-r', '--run', type=int, help='perform computation. Integer parameter sets the number of jobs computed in parallel (default to one core).', nargs='?', const=1)
@@ -121,6 +122,11 @@ def run():
    print('Please provide a valid project name')
    raise ValueError
   experiment = config.set(args)
+  if args.serverDefault:
+    args.serverDefault = False
+    for key in experiment._defaultServerRunArgument:
+      # args[key] =
+      args.__setattr__(key, experiment._defaultServerRunArgument[key])
 
   if args.information:
       print(experiment)
@@ -154,7 +160,7 @@ def run():
     command = 'screen -dm bash -c \'python3 '+experiment.project.name+'.py '+command+'\''
     message = 'experiment launched on local host'
     if args.server>-1:
-      if args.sync:
+      if args.copy:
         syncCommand = 'rsync -r '+experiment.path.code+'/* '+experiment.host[args.server]+':'+experiment.path.code
         print(syncCommand)
         os.system(syncCommand)
@@ -166,7 +172,7 @@ def run():
     exit()
 
   if args.server == -3:
-    logFileName = '/tmp/test'
+    logFileName = '/tmp/explanes_'+experiment.project.name+'_'+experiment.project.runId+'.txt'
   if args.mail>-1:
     experiment.sendMail(args.mask+' has started.', '<div> Mask = '+args.mask+'</div>')
   if args.run and hasattr(config, 'step'):
