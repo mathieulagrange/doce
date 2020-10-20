@@ -427,7 +427,7 @@ class Experiment():
     server.login(self._gmailId+'@gmail.com', self._gmailAppPassword)
     server.sendmail(self._gmailId, self.project.address, header+body+'<h3> '+self.__str__(format = 'html')+'</h3>')
     server.quit
-    print(datetime.datetime.now().strftime("%b-%d-%Y, %Hh%Mm")+' Sent message entitled: [explanes] '+self.project.name+' id '+self.project.runId+' '+title)
+    print(time.ctime(time.time())+' Sent message entitled: [explanes] '+self.project.name+' id '+self.project.runId+' '+title)
 
   def do(
     self,

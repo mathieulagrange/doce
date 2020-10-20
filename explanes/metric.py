@@ -8,6 +8,7 @@ import tables as tb
 import explanes.util as eu
 import copy
 from itertools import compress
+import time
 
 class Metric():
   """Stores information about the way evaluation metrics are stored and manipulated.
@@ -86,7 +87,7 @@ class Metric():
         fileName = dataLocation+setting.id(**settingEncoding)+'_'+metric+'.npy'
         if os.path.exists(fileName):
           if verbose:
-            print('Found '+fileName)
+            print('Found '+fileName+', last modified '+time.ctime(os.path.getmtime(fileName)))
           metricHasData[mIndex] = True
           data = np.load(fileName)
           for reductionType in self.__getattribute__(metric):
@@ -275,7 +276,7 @@ class Metric():
       If set to 'underscore', the description of the reduced
 
     verbose : bool
-      In the case of .npy metric storage, if verbose is set to True, print the fileName seeked for each metric.
+      In the case of .npy metric storage, if verbose is set to True, print the fileName seeked for each metric as well as its time of last modification.
 
       In the case of .h5 metric storage, if verbose is set to True, print the group seeked for each metric.
 
