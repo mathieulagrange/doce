@@ -194,6 +194,13 @@ def run():
       print(header)
       print(df)
       body += '<div> '+header+' </div><br>'+df.to_html()
+  if args.server == -3:
+    logFileName = '/tmp/explanes_'+experiment.project.name+'_'+experiment.project.runId+'.txt'
+    with open(logFileName, 'r') as file:
+      log = file.read()
+      if log:
+        body+= '<h2> Error log </h2>'+log.replace('\n', '<br>')
+
   if args.mail>-1:
     experiment.sendMail(args.mask+' is over.', body) #
 
