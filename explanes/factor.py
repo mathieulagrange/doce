@@ -228,7 +228,7 @@ class Factor():
             else:
                 print(setting.describe())
             delay = (time.time()-stepTime)
-            if mailInterval>0 and iSetting<len(self)-1  and delay > mailInterval/(60**2) :
+            if mailInterval>0 and iSetting<len(self)-1  and delay/(60**2) > mailInterval :
               stepTime = time.time()
               percentage = int((iSetting+1)/len(self)*100)
               message = '{}% of settings done: {} over {} <br>Time elapsed: {}'.format(percentage, iSetting+1, len(self), time.strftime('%dd %Hh %Mm %Ss', time.gmtime(stepTime-startTime)))

@@ -22,7 +22,7 @@ def set(args):
   experiment.project.version = '0.1'
 
   experiment.path.output = '/tmp/'+experiment.project.name+'/'
-  experiment.path.code = '~/tools/explanes.py/'
+  experiment.path.code = '~/tools/explanes.py/demonstrations/'
   experiment.makePaths()
 
   experiment._settingEncoding = {'format': 'hash'}
@@ -69,8 +69,8 @@ def step(setting, experiment):
 
 # uncomment this method to fine tune display of metrics
 def display(experiment, settings):
-    (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output, settingEncoding = experiment._settingEncoding)
+  (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output, settingEncoding = experiment._settingEncoding)
 
-    print(header)
-    print(desc)
-    print(len(data))
+  print(header)
+  print(desc)
+  print(len(data))

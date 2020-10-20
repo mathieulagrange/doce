@@ -282,6 +282,7 @@ class Experiment():
     self._factorFormatInReduce = 'long'
     self._gmailId = 'expcode.mailer'
     self._gmailAppPassword = 'tagsqtlirkznoxro'
+    self._defaultServerRunArgument =  {}
 
   def __setattr__(
     self,
