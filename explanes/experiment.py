@@ -95,6 +95,8 @@ def run():
 
   args = parser.parse_args()
 
+  
+
   if args.version:
     print("Experiment version "+experiment.project.version)
     exit(1)

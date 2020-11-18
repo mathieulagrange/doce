@@ -69,7 +69,6 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
         for r in settingDescription:
           r.pop(s)
     else:
-      print(settingDescription)
       constantSettingDescription = ' '.join(settingDescription[0])
   return (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor)
 
