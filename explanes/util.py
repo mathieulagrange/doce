@@ -5,24 +5,20 @@ import re
 def constantColumn(
   table=None
 ):
-  """Store which column(s) have the same value for all lines.
+  """detect which column(s) have the same value for all lines.
 
 
 	Parameters
 	----------
 
   table : list of equal size lists or None
-    table of literals
+    table of literals.
 
 	Returns
 	-------
 
   values : list of literals
-    values of the constant valued columns, None if the column is not constant
-
-	See Also
-	--------
-  explanes.metric.reduce, explanes.metric.get
+    values of the constant valued columns, None if the column is not constant.
 
 	Examples
 	--------
@@ -45,6 +41,56 @@ def constantColumn(
   return values
 
 def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFactor=0, factorDisplay='long'):
+  """remove the columns corresponding to factors with only one modality from the settingDescription and the columnHeader.
+
+  Remove the columns corresponding to factors with only one modality from the settingDescription and the columnHeader and describes the factors with only one modality in a separate string.
+
+	Parameters
+	----------
+
+  settingDescription: list of list of literals
+    the body of the table.
+    
+  columnHeader: list of string (optional)
+    the column header of the table.
+
+  nbColumnFactor: int (optional)
+    the number of columns corresponding to factors (default 0).
+
+  factorDisplay:
+    type of description of the factors (default 'long'), see :meth:`explanes.util.compressDescription` for reference.
+
+	Returns
+	-------
+
+  settingDescription: list of list of literals
+    settingDescription where the columns corresponding to factors with only one modality are removed.
+
+  columnHeader: list of str
+    columnHeader where the columns corresponding to factors with only one modality are removed.
+
+  constantSettingDescription: str
+    description of the settings with constant modality.
+
+  nbColumnFactor: int
+    number of factors in the new settingDescription.
+
+	Example
+	-------
+  >>> import explanes as el
+
+  >>> header = ['factor_1', 'factor_2', 'metric_1', 'metric_2']
+  (settingDescription, columnHeader, constantSettingDescription, >>> table = [['a', 'b', 1, 2], ['a', 'c', 2, 2], ['a', 'b', 2, 2]]
+  >>> nbColumnFactor) = el.util.pruneSettingDescription(table, header, 2)
+  >>> print(nbColumnFactor)
+  1
+  >>> print(constantSettingDescription)
+  factor_1: a
+  >>> print(columnHeader)
+  ['factor_2', 'metric_1', 'metric_2']
+  >>> print(settingDescription)
+  [['b', 1, 2], ['c', 2, 2], ['b', 2, 2]]
+  """
   constantSettingDescription = ''
   if nbColumnFactor == 0:
     nbColumnFactor = len(settingDescription[0])
@@ -76,21 +122,21 @@ def compressDescription(
   format='long',
   atomLength=2
   ):
-  """ reduce the number of letters for each word in a given description structured with underscores (pythonCase) or capital letters (camelCase).
+  """ reduces the number of letters for each word in a given description structured with underscores (pythonCase) or capital letters (camelCase).
 
 	Parameters
 	----------
   description : str
-    The structured description
+    the structured description.
 
   format : str, optional
-    The expected format. 'long' (default) do not lead to any reduction. 'shortUnderscore' assumes pythonCase delimitation. 'shortCapital' assumes camelCase delimitation. 'short' attempts to perform reduction by guessing the type of delimitation.
+    can be 'long' (default), do not lead to any reduction, 'shortUnderscore' assumes pythonCase delimitation, 'shortCapital' assumes camelCase delimitation, and 'short' attempts to perform reduction by guessing the type of delimitation.
 
 	Returns
 	-------
 
   compressedDescription : str
-    The compressed description
+    The compressed description.
 
 	Examples
 	--------
@@ -121,7 +167,7 @@ def query_yes_no(
   question,
   default="yes"
   ):
-  """Ask a yes/no question via input() and return their answer.
+  """ask a yes/no question via input() and return their answer.
 
   The 'answer' return value is True for 'yes' or False for 'no'.
 
@@ -130,8 +176,8 @@ def query_yes_no(
 
   question : str
     phrase presented to the user.
-  default : str or None, optional
-    presumed answer if the user just hits <Enter>. It must be 'yes', 'no' or None. The latter meaning an answer is required of the user (default is 'yes').
+  default : str or None (optional)
+    presumed answer if the user just hits <Enter>. It must be 'yes' (default), 'no' or None. The latter meaning an answer is required of the user.
 
 	Returns
 	-------
@@ -165,14 +211,7 @@ def query_yes_no(
 
 
 def inNotebook():
-  """detect if running from Ipython notebook
-
-	Returns
-	-------
-
-  answer : bool
-    True if running from Ipython notebook,
-    False otherwise
+  """detect if the experiment is running from Ipython notebook.
   """
   try:
     __IPYTHON__
