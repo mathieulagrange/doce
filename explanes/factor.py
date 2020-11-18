@@ -43,13 +43,10 @@ class Factor():
   >>>   print(setting)
   0  factor1: 1
   1  factor2: 2
-
   0  factor1: 1
   1  factor2: 4
-
   0  factor1: 3
   1  factor2: 2
-
   0  factor1: 3
   1  factor2: 4
   """
@@ -63,95 +60,6 @@ class Factor():
   _default = types.SimpleNamespace()
   _parallel = False
 
-  def __setattr__(
-    self,
-    name,
-    value
-    ):
-    if not name == '_settings':
-      _settings = []
-    if not hasattr(self, name) and name[0] != '_':
-      self._factors.append(name)
-    if hasattr(self, name) and type(inspect.getattr_static(self, name)) == types.FunctionType:
-      raise Exception('the attribute '+name+' is shadowing a builtin function')
-    if name == '_mask' or name[0] != '_':
-      self._changed = True
-    if name[0] != '_' and type(value) in {list, np.ndarray} and name not in self._nonSingleton:
-      self._nonSingleton.append(name)
-    return object.__setattr__(self, name, value)
-
-  def __getattribute__(
-    self,
-    name
-    ):
-    """one liner
-
-  	Desc
-
-  	Parameters
-  	----------
-
-  	Returns
-  	-------
-
-  	See Also
-  	--------
-
-  	Examples
-  	--------
-
-    """
-    value = object.__getattribute__(self, name)
-    if name[0] != '_' and self._setting and type(inspect.getattr_static(self, name)) != types.FunctionType:
-      idx = self.getFactorNames().index(name)
-      if self._setting[idx] == -2:
-        value = None
-      else:
-        if  type(inspect.getattr_static(self, name)) in {list, np.ndarray} :
-          try:
-            value = value[self._setting[idx]]
-          except IndexError:
-            value = 'null'
-            print('Error: factor '+name+' have modalities 0 to '+str(len(value)-1)+'. Requested '+str(self._setting[idx]))
-            raise
-    return value
-
-  def __iter__(
-    self
-    ):
-    """one liner
-
-  	Desc
-
-    """
-    self.__setSettings__()
-    self._currentSetting = 0
-    return self
-
-  def __next__(
-    self
-    ):
-    """one liner
-
-  	Desc
-
-    """
-    if self._currentSetting == len(self._settings):
-      raise StopIteration
-    else:
-      self._setting = self._settings[self._currentSetting]
-      # print(self._setting)
-      self._currentSetting += 1
-      if self._parallel:
-        return copy.deepcopy(self)
-      else:
-        return self #  copy.deepcopy(self)
-
-  def __getitem__(self, index):
-    # print('get item')
-    self.__setSettings__()
-    # print(self._mask)
-    return  self
 
   def setDefault(
     self,
@@ -194,6 +102,23 @@ class Factor():
     logFileName,
     *parameters
     ):
+    """one liner
+
+  	Desc
+
+  	Parameters
+  	----------
+
+  	Returns
+  	-------
+
+  	See Also
+  	--------
+
+  	Examples
+  	--------
+
+    """
     failed = 0
     try:
       function(self, experiment, *parameters)
@@ -249,7 +174,7 @@ class Factor():
             description += setting.describe()
             t.set_description(description)
             if function:
-                nbFailed += setting.doFunction(function, experiment, logFileName, *parameters)
+              nbFailed += setting.doFunction(function, experiment, logFileName, *parameters)
             else:
                 print(setting.describe())
             delay = (time.time()-stepTime)
@@ -269,31 +194,399 @@ class Factor():
 
   	Desc
 
+  	Parameters
+  	----------
+
+  	Returns
+  	-------
+
+  	See Also
+  	--------
+
+  	Examples
+  	--------
+
     """
 
     self._mask = mask
     print(mask)
     return self
 
-  def __len__(
+  def getFactorNames(
     self
     ):
     """one liner
 
   	Desc
 
+  	Parameters
+  	----------
+
+  	Returns
+  	-------
+
+  	See Also
+  	--------
+
+  	Examples
+  	--------
+
     """
+    return self._factors
+
+  def nbModalities(
+    self,
+    factor
+    ):
+    """Returns the number of :term:`modalities<modality>` for a given :term:`factor`.
+
+  	Desc
+
+  	Parameters
+  	----------
+
+  	Returns
+  	-------
+
+  	See Also
+  	--------
+
+  	Examples
+  	--------
+
+    """
+    if isinstance(factor, int):
+      name = self.getFactorNames()[factor]
+    return len(object.__getattribute__(self, name))
+
+  def cleanH5(self, path, reverse=False, force=False, settingEncoding={}):
+    """one liner
+
+  	Desc
+
+  	Parameters
+  	----------
+
+  	Returns
+  	-------
+
+  	See Also
+  	--------
+
+  	Examples
+  	--------
+
+    """
+    h5 = tb.open_file(path, mode='a')
+    if reverse:
+      ids = [setting.id(**settingEncoding) for setting in self]
+      for g in h5.iter_nodes('/'):
+        if g._v_name not in ids:
+          h5.remove_node(h5.root, g._v_name, recursive=True)
+    else:
+      for setting in self:
+        groupName = setting.id(**settingEncoding)
+        if h5.root.__contains__(groupName):
+          h5.remove_node(h5.root, groupName, recursive=True)
+    h5.close()
+
+    # repack
+    outfilename = path+'Tmp'
+    command = ["ptrepack", "-o", "--chunkshape=auto", "--propindexes", path, outfilename]
+    # print('Original size is %.2fMiB' % (float(os.stat(path).st_size)/1024**2))
+    if call(command) != 0:
+      print('Unable to repack. Is ptrepack installed ?')
+    else:
+      # print('Repacked size is %.2fMiB' % (float(os.stat(outfilename).st_size)/1024**2))
+      os.rename(outfilename, path)
+
+
+  def cleanDataSink(
+    self,
+    path,
+    reverse=False,
+    force=False,
+    selector='*',
+    settingEncoding={},
+    archivePath=''
+    ):
+    """Clean a data sink by considering the settings set.
+
+  	Returns the number of :term:`modalities<modality>`, for a given :term:`factor`. This method is more conveniently used by considering the method explanes.experiment.Experiment.cleanDataSink, please see its documentation for usage.
+
+  	Parameters
+  	----------
+
+  	Returns
+  	-------
+
+  	See Also
+  	--------
+
+  	Examples
+  	--------
+
+    """
+
+    path = os.path.expanduser(path)
+    if path.endswith('.h5'):
+      self.cleanH5(path, reverse, force, settingEncoding)
+    else:
+      fileNames = []
+      for setting in self:
+        # print(path+'/'+setting.id(**settingEncoding)+selector)
+        for f in glob.glob(path+'/'+setting.id(**settingEncoding)+selector):
+            fileNames.append(f)
+      if reverse:
+        complete = []
+        for f in glob.glob(path+'/'+selector):
+          complete.append(f)
+        # print(fileNames)
+        fileNames = [i for i in complete if i not in fileNames]
+      #   print(complete)
+      # print(fileNames)
+      # print(len(fileNames))
+      if archivePath:
+        destination = 'move to '+archivePath+' '
+      else:
+        destination = 'remove '
+      if len(fileNames) and (force or eu.query_yes_no('About to '+destination+str(len(fileNames))+' files from '+path+' \n Proceed ?')):
+        for f in fileNames:
+          if archivePath:
+            os.rename(f, archivePath+'/'+os.path.basename(f))
+          else:
+            os.remove(f)
+
+  def alternative(self, factor, modality, positional=False, relative=False):
+    """one liner
+
+  	Desc
+
+  	Parameters
+  	----------
+
+  	Returns
+  	-------
+
+  	See Also
+  	--------
+
+  	Examples
+  	--------
+
+    """
+
+    if isinstance(modality, int) and modality<0:
+      relative = True
+    if isinstance(factor, str):
+      factor = self.getFactorNames().index(factor)
+    if not positional and not relative:
+      factorName = self.getFactorNames()[factor]
+      set = self._setting
+      self._setting = None
+      modalities = self.__getattribute__(factorName)
+      modality = modalities.index(modality)
+      self._setting = set
+
+    f = copy.deepcopy(self)
+    if relative:
+      f._setting[factor] += modality
+    else:
+      f._setting[factor] = modality
+    if f._setting[factor]< 0 or f._setting[factor] >= self.nbModalities(factor):
+      return None
+    else:
+      return f
+
+  def describe(self):
+    """one liner
+
+  	Desc
+
+  	Parameters
+  	----------
+
+  	Returns
+  	-------
+
+  	See Also
+  	--------
+
+  	Examples
+  	--------
+
+    """
+    return self.id(singleton=False, sort=False, factorSeparator=' ', hideNonAndZero=False)
+
+  def id(self, format='long', sort=True, singleton=True, hideNonAndZero=True, hideDefault=True, factorSeparator='_', hideFactor=[]):
+    """one liner
+
+  	Desc
+
+  	Parameters
+  	----------
+
+  	Returns
+  	-------
+
+  	See Also
+  	--------
+
+  	Examples
+  	--------
+
+    """
+    id = []
+    fNames = self.getFactorNames()
+    if isinstance(hideFactor, str):
+      hideFactor=[hideFactor]
+    elif isinstance(hideFactor, int) :
+      hideFactor=[fNames[hideFactor]]
+    elif isinstance(hideFactor, list) and len(hideFactor) and isinstance(hideFactor[0], int) :
+      for oi, o in enumerate(hideFactor):
+        hideFactor[oi]=fNames[o]
+    if sort:
+      fNames = sorted(fNames)
+    for fIndex, f in enumerate(fNames):
+      if f[0] != '_' and getattr(self, f) is not None and f not in hideFactor:
+        if (singleton or f in self._nonSingleton) and (not hideNonAndZero or (hideNonAndZero and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and (not hideDefault or not hasattr(self._default, f) or (hideDefault and hasattr(self._default, f) and getattr(self._default, f) != getattr(self, f))):
+          id.append(eu.compressDescription(f, format))
+          id.append(str(getattr(self, f)))
+    if 'list' not in format:
+      id = factorSeparator.join(id)
+      if format == 'hash':
+        id  = hashlib.md5(id.encode("utf-8")).hexdigest()
+    return id
+
+  def asPandaFrame(self):
+    """one liner
+
+  	Desc
+
+  	Parameters
+  	----------
+
+  	Returns
+  	-------
+
+  	See Also
+  	--------
+
+  	Examples
+  	--------
+
+    """
+    l = 1
+    for ai, atr in enumerate(self._factors):
+      if isinstance(self.__getattribute__(atr), list):
+        l = max(l, len(self.__getattribute__(atr)))
+      elif isinstance(self.__getattribute__(atr), np.ndarray):
+        l = max(l, len(self.__getattribute__(atr)))
+
+    table = []
+    for atr in self._factors:
+      line = []
+      line.append(atr)
+      for il in range(l):
+        if isinstance(self.__getattribute__(atr), list) and len(self.__getattribute__(atr)) > il :
+          line.append(self.__getattribute__(atr)[il])
+        elif isinstance(self.__getattribute__(atr), np.ndarray) and len(self.__getattribute__(atr)) > il :
+          line.append(self.__getattribute__(atr)[il])
+        elif il<1:
+          line.append(self.__getattribute__(atr))
+        else:
+          line.append('')
+      table.append(line)
+    columns = []
+    columns.append('Factor')
+    for il in range(l):
+      columns.append(il)
+    return pd.DataFrame(table, columns=columns)
+
+  def __str__(self):
+    cString = ''
+    l = 1
+    for ai, atr in enumerate(self._factors):
+      cString+='  '+str(ai)+'  '+atr+': '+str(self.__getattribute__(atr))+'\r\n'
+    return cString
+
+
+  def __setattr__(
+    self,
+    name,
+    value
+    ):
+    if not name == '_settings':
+      _settings = []
+    if not hasattr(self, name) and name[0] != '_':
+      self._factors.append(name)
+    if hasattr(self, name) and type(inspect.getattr_static(self, name)) == types.FunctionType:
+      raise Exception('the attribute '+name+' is shadowing a builtin function')
+    if name == '_mask' or name[0] != '_':
+      self._changed = True
+    if name[0] != '_' and type(value) in {list, np.ndarray} and name not in self._nonSingleton:
+      self._nonSingleton.append(name)
+    return object.__setattr__(self, name, value)
+
+  def __getattribute__(
+    self,
+    name
+    ):
+
+    value = object.__getattribute__(self, name)
+    if name[0] != '_' and self._setting and type(inspect.getattr_static(self, name)) != types.FunctionType:
+      idx = self.getFactorNames().index(name)
+      if self._setting[idx] == -2:
+        value = None
+      else:
+        if  type(inspect.getattr_static(self, name)) in {list, np.ndarray} :
+          try:
+            value = value[self._setting[idx]]
+          except IndexError:
+            value = 'null'
+            print('Error: factor '+name+' have modalities 0 to '+str(len(value)-1)+'. Requested '+str(self._setting[idx]))
+            raise
+    return value
+
+  def __iter__(
+    self
+    ):
+
+    self.__setSettings__()
+    self._currentSetting = 0
+    return self
+
+  def __next__(
+    self
+    ):
+
+    if self._currentSetting == len(self._settings):
+      raise StopIteration
+    else:
+      self._setting = self._settings[self._currentSetting]
+      # print(self._setting)
+      self._currentSetting += 1
+      if self._parallel:
+        return copy.deepcopy(self)
+      else:
+        return self #  copy.deepcopy(self)
+
+  def __getitem__(self, index):
+    # print('get item')
+    self.__setSettings__()
+    # print(self._mask)
+    return  self
+
+
+  def __len__(
+    self
+    ):
     self.__setSettings__()
     return len(self._settings)
 
   def __setSettings__(
     self
     ):
-    """one liner
-
-  	Desc
-
-    """
     if self._changed:
       settings = []
       mask = copy.deepcopy(self._mask)
@@ -352,9 +645,9 @@ class Factor():
             mList.insert(0, mod)
             settings.append(mList)
         else:
-            mList = list(s)
-            mList.insert(0, mod)
-            settings.append(mList)
+          mList = list(s)
+          mList.insert(0, mod)
+          settings.append(mList)
     else:
       settings = s
       if len(settings) > 0 and all(isinstance(ss, list) for ss in settings):
@@ -363,178 +656,3 @@ class Factor():
       else:
         settings.insert(0, mask[done])
     return settings
-
-  def getFactorNames(
-    self
-    ):
-    """Returns the list of factors defined in the Class.
-
-  	Returns a list of str with the names of the factors defined in the Class.
-
-    """
-    return self._factors
-
-  def nbModalities(
-    self,
-    factor
-    ):
-    """Returns the number of :term:`modalities<modality>` for a given :term:`factor`.
-
-  	Returns the number of :term:`modalities<modality>` for a given :term:`factor`.
-
-    """
-    if isinstance(factor, int):
-      name = self.getFactorNames()[factor]
-    return len(object.__getattribute__(self, name))
-
-  def cleanH5(self, path, reverse=False, force=False, settingEncoding={}):
-    h5 = tb.open_file(path, mode='a')
-    if reverse:
-      ids = [setting.id(**settingEncoding) for setting in self]
-      for g in h5.iter_nodes('/'):
-        if g._v_name not in ids:
-          h5.remove_node(h5.root, g._v_name, recursive=True)
-    else:
-      for setting in self:
-        groupName = setting.id(**settingEncoding)
-        if h5.root.__contains__(groupName):
-          h5.remove_node(h5.root, groupName, recursive=True)
-    h5.close()
-
-    # repack
-    outfilename = path+'Tmp'
-    command = ["ptrepack", "-o", "--chunkshape=auto", "--propindexes", path, outfilename]
-    # print('Original size is %.2fMiB' % (float(os.stat(path).st_size)/1024**2))
-    if call(command) != 0:
-      print('Unable to repack. Is ptrepack installed ?')
-    else:
-      # print('Repacked size is %.2fMiB' % (float(os.stat(outfilename).st_size)/1024**2))
-      os.rename(outfilename, path)
-
-
-  def cleanDataSink(
-    self,
-    path,
-    reverse=False,
-    force=False,
-    selector='*',
-    settingEncoding={},
-    archivePath=''
-    ):
-    """Clean a data sink by considering the settings set.
-
-  	Returns the number of :term:`modalities<modality>`, for a given :term:`factor`. This method is more conveniently used by considering the method explanes.experiment.Experiment.cleanDataSink, please see its documentation for usage.
-
-    """
-    path = os.path.expanduser(path)
-    if path.endswith('.h5'):
-      self.cleanH5(path, reverse, force, settingEncoding)
-    else:
-      fileNames = []
-      for setting in self:
-          # print(path+'/'+setting.id(**settingEncoding)+selector)
-          for f in glob.glob(path+'/'+setting.id(**settingEncoding)+selector):
-              fileNames.append(f)
-      if reverse:
-        complete = []
-        for f in glob.glob(path+'/'+selector):
-            complete.append(f)
-        # print(fileNames)
-        fileNames = [i for i in complete if i not in fileNames]
-      #   print(complete)
-      # print(fileNames)
-      # print(len(fileNames))
-      if archivePath:
-        destination = 'move to '+archivePath+' '
-      else:
-        destination = 'remove '
-      if len(fileNames) and (force or eu.query_yes_no('About to '+destination+str(len(fileNames))+' files from '+path+' \n Proceed ?')):
-          for f in fileNames:
-              if archivePath:
-                os.rename(f, archivePath+'/'+os.path.basename(f))
-              else:
-                os.remove(f)
-
-  def alternative(self, factor, modality, positional=False, relative=False):
-      if isinstance(modality, int) and modality<0:
-          relative = True
-      if isinstance(factor, str):
-          factor = self.getFactorNames().index(factor)
-      if not positional and not relative:
-          factorName = self.getFactorNames()[factor]
-          set = self._setting
-          self._setting = None
-          modalities = self.__getattribute__(factorName)
-          modality = modalities.index(modality)
-          self._setting = set
-
-      f = copy.deepcopy(self)
-      if relative:
-          f._setting[factor] += modality
-      else:
-          f._setting[factor] = modality
-      if f._setting[factor]< 0 or f._setting[factor] >= self.nbModalities(factor):
-          return None
-      else:
-          return f
-
-  def describe(self):
-    return self.id(singleton=False, sort=False, factorSeparator=' ', hideNonAndZero=False)
-
-  def id(self, format='long', sort=True, singleton=True, hideNonAndZero=True, hideDefault=True, factorSeparator='_', hideFactor=[]):
-    id = []
-    fNames = self.getFactorNames()
-    if isinstance(hideFactor, str):
-      hideFactor=[hideFactor]
-    elif isinstance(hideFactor, int) :
-      hideFactor=[fNames[hideFactor]]
-    elif isinstance(hideFactor, list) and len(hideFactor) and isinstance(hideFactor[0], int) :
-      for oi, o in enumerate(hideFactor):
-        hideFactor[oi]=fNames[o]
-    if sort:
-      fNames = sorted(fNames)
-    for fIndex, f in enumerate(fNames):
-      if f[0] != '_' and getattr(self, f) is not None and f not in hideFactor:
-          if (singleton or f in self._nonSingleton) and (not hideNonAndZero or (hideNonAndZero and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and (not hideDefault or not hasattr(self._default, f) or (hideDefault and hasattr(self._default, f) and getattr(self._default, f) != getattr(self, f))):
-            id.append(eu.compressDescription(f, format))
-            id.append(str(getattr(self, f)))
-    if 'list' not in format:
-      id = factorSeparator.join(id)
-      if format == 'hash':
-        id  = hashlib.md5(id.encode("utf-8")).hexdigest()
-    return id
-
-  def __str__(self):
-    cString = ''
-    l = 1
-    for ai, atr in enumerate(self._factors):
-      cString+='  '+str(ai)+'  '+atr+': '+str(self.__getattribute__(atr))+'\r\n'
-    return cString
-
-  def asPandaFrame(self):
-    l = 1
-    for ai, atr in enumerate(self._factors):
-      if isinstance(self.__getattribute__(atr), list):
-        l = max(l, len(self.__getattribute__(atr)))
-      elif isinstance(self.__getattribute__(atr), np.ndarray):
-        l = max(l, len(self.__getattribute__(atr)))
-
-    table = []
-    for atr in self._factors:
-      line = []
-      line.append(atr)
-      for il in range(l):
-        if isinstance(self.__getattribute__(atr), list) and len(self.__getattribute__(atr)) > il :
-          line.append(self.__getattribute__(atr)[il])
-        elif isinstance(self.__getattribute__(atr), np.ndarray) and len(self.__getattribute__(atr)) > il :
-          line.append(self.__getattribute__(atr)[il])
-        elif il<1:
-          line.append(self.__getattribute__(atr))
-        else:
-          line.append('')
-      table.append(line)
-    columns = []
-    columns.append('Factor')
-    for il in range(l):
-      columns.append(il)
-    return pd.DataFrame(table, columns=columns)
