@@ -448,7 +448,7 @@ class Experiment():
   def do(
     self,
     mask,
-    function=None,
+    function,
     *parameters,
     nbJobs=1,
     progress=True,
@@ -467,7 +467,7 @@ class Experiment():
     mask : a list of literals or a list of lists of literals
       :term:`mask` used to specify the :term:`settings<setting>` set
 
-    function : function(explanes.factor.Factor, explanes.experiment.Experiment, \*parameters)
+    function : function(:class:`~explanes.factor.Factor`, :class:`~explanes.experiment.Experiment`, \*parameters)
       A function that operates on a given setting within the experiment environnment with optional parameters.
 
     *parameters : any type (optional)
@@ -476,28 +476,28 @@ class Experiment():
     nbJobs : int > 0 (optional)
       number of jobs.
 
-      If nbJobs = 1, the setting set is browsed sequentially in a depth first traversal of the settings tree.
+      If nbJobs = 1, the setting set is browsed sequentially in a depth first traversal of the settings tree (default).
 
       If nbJobs > 1, the settings set is browsed randomly, and settings are distributed over the different processes.
 
     progress : bool (optional)
       display progress of scheduling the setting set.
 
-      If True, use tqdm to display progress.
+      If True, use tqdm to display progress (default).
 
       If False, do not display progress.
 
     logFileName : str (optional)
       path to a file where potential errors will be logged.
 
-      If empty, the execution is stopped on the first faulty setting.
+      If empty, the execution is stopped on the first faulty setting (default).
 
       If not empty, the execution is not stopped on a faulty setting, and the error is logged in the logFileName file.
 
     mailInterval : float (optional)
       interval for sending email about the status of the run.
 
-      If 0 (default), no email is sent.
+      If 0, no email is sent (default).
 
       It >0, an email is sent as soon as an setting is done and the difference between the current time and the time the last mail was sent is larger than mailInterval.
 

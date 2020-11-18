@@ -102,21 +102,14 @@ class Factor():
     logFileName,
     *parameters
     ):
-    """one liner
+    """run the function given as parameter for the current setting.
 
-  	Desc
-
-  	Parameters
-  	----------
-
-  	Returns
-  	-------
+  	Helper function for the method :meth:`~explanes.factor.Factor.do`.
 
   	See Also
   	--------
 
-  	Examples
-  	--------
+    explanes.factor.Factor.do
 
     """
     failed = 0
@@ -133,16 +126,49 @@ class Factor():
 
   def do(
     self,
-    function=None,
-    experiment=None,
+    function,
+    experiment,
     *parameters,
     nbJobs=1,
     progress=True,
     logFileName='',
     mailInterval=0):
-    """Iterate over the setting set and operate the function with the given parameters.
+    """iterate over the setting set and run the function given as parameter.
 
     This function is wrapped by :meth:`explanes.experiment.Experiment.do`, which should be more convenient to use. Please refer to this method for usage.
+
+    Parameters
+    ----------
+
+    function : function(:class:`~explanes.factor.Factor`, :class:`~explanes.experiment.Experiment`, \*parameters)
+      operates on a given setting within the experiment environnment with optional parameters.
+
+    experiment:
+      an :class:`~explanes.experiment.Experiment` object
+
+    *parameters : any type (optional)
+      parameters to be given to the function.
+
+    nbJobs : int > 0 (optional)
+      number of jobs.
+
+      If nbJobs = 1, the setting set is browsed sequentially in a depth first traversal of the settings tree (default).
+
+      If nbJobs > 1, the settings set is browsed randomly, and settings are distributed over the different processes.
+
+    progress : bool (optional)
+      display progress of scheduling the setting set.
+
+      If True, use tqdm to display progress (default).
+
+      If False, do not display progress.
+
+    logFileName : str (optional)
+      path to a file where potential errors will be logged.
+
+      If empty, the execution is stopped on the first faulty setting (default).
+
+      If not empty, the execution is not stopped on a faulty setting, and the error is logged in the logFileName file.
 
     See Also
     --------
@@ -190,26 +216,56 @@ class Factor():
     self,
     mask=None
     ):
-    """one liner
+    """set the mask.
 
-  	Desc
+  	This method sets the internal mask to the mask given as parameter. Once set, iteration over the setting set is limited to the settings that can be reached according to the definition of the mask.
 
   	Parameters
   	----------
 
-  	Returns
-  	-------
-
-  	See Also
-  	--------
+    mask: list of list of int or list of int
+     a :term:`mask
 
   	Examples
   	--------
 
+    >>> import explanes as el
+
+    >>> f = el.factor.Factor()
+    >>> f.f1=['a', 'b', 'c']
+    >>> f.f2=[1, 2, 3]
+
+    >>> # select the settings with the second modality of the first factor, and with the first modality of the second factor
+    >>> for setting in f.mask([1, 0]):
+    >>>  print(setting.describe())
+    f1 b f2 1
+    >>> # select the settings with the second modality of the first factor, and all the modalities of the second factor
+    >>> for setting in f.mask([1, -1]):
+      print(setting.describe())
+    f1 b f2 1
+    f1 b f2 2
+    f1 b f2 3
+    >>> # the selection of all the modalities of the remaining factors can be conveniently expressed
+    >>> for setting in f.mask([1]):
+      print(setting.describe())
+    f1 b f2 1
+    f1 b f2 2
+    f1 b f2 3
+    >>> # select the settings using 2 mask, where the first selects the settings with the first modality of the first factor and with the second modality of the second factor, and the second mask selects the settings with the second modality of the first factor, and with the third modality of the second factor
+    >>> for setting in f.mask([[0, 1], [1, 2]]):
+      print(setting.describe())
+    f1 a f2 2
+    f1 b f2 3
+    >>> # the latter expression may be interpreted as the selection of the settings with the first and second modalities of the first factor and with second and third modalities of the second factor. In that case, one needs to add a -1 at the end the mask (even if by doing so the length of the mask is larger than the number of factors)
+    >>> for setting in f.mask([[0, 1], [1, 2], -1]):
+      print(setting.describe())
+    f1 a f2 2
+    f1 a f2 3
+    f1 b f2 2
+    f1 b f2 3
     """
 
     self._mask = mask
-    print(mask)
     return self
 
   def getFactorNames(
