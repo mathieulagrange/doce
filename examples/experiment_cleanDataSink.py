@@ -12,7 +12,7 @@ e.metric.mult = ['']
 
 def myFunction(setting, experiment):
   h5 = tb.open_file(experiment.path.output, mode='a')
-  sg = experiment.metric.h5addSetting(h5, setting, metricDimensions=[1, 1])
+  sg = experiment.metric.addSettingGroup(h5, setting, metricDimensions=[1, 1])
   sg.sum[0] = e.factor.factor1+e.factor.factor2
   sg.mult[0] = e.factor.factor1*e.factor.factor2
   h5.close()

@@ -1,0 +1,7 @@
+numpydoc
+tables
+pandas
+argunparse
+numpy
+tqdm
+joblib

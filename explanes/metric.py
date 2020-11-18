@@ -8,6 +8,7 @@ import tables as tb
 import explanes.util as eu
 import copy
 from itertools import compress
+import time
 
 class Metric():
   """Stores information about the way evaluation metrics are stored and manipulated.
@@ -86,7 +87,7 @@ class Metric():
         fileName = dataLocation+setting.id(**settingEncoding)+'_'+metric+'.npy'
         if os.path.exists(fileName):
           if verbose:
-            print('Found '+fileName)
+            print('Found '+fileName+', last modified '+time.ctime(os.path.getmtime(fileName)))
           metricHasData[mIndex] = True
           data = np.load(fileName)
           for reductionType in self.__getattribute__(metric):
@@ -135,15 +136,15 @@ class Metric():
       if verbose:
         print('Seeking Group '+setting.id(**settingEncoding))
       if h5.root.__contains__(setting.id(**settingEncoding)):
-        sg = h5.root._f_get_child(setting.id(**settingEncoding))
-        # print(sg._v_name)
+        settingGroup = h5.root._f_get_child(setting.id(**settingEncoding))
+        # print(settingGroup._v_name)
         # print(setting.id(**settingEncoding))
         for mIndex, metric in enumerate(self.name()):
           for reductionType in self.__getattribute__(metric):
             value = np.nan
-            if sg.__contains__(metric):
+            if settingGroup.__contains__(metric):
               metricHasData[mIndex] = True
-              data = sg._f_get_child(metric)
+              data = settingGroup._f_get_child(metric)
             row.append(self.reduceMetric(data, reductionType))
         if len(row):
           for factorName in reversed(settings.getFactorNames()):
@@ -275,7 +276,7 @@ class Metric():
       If set to 'underscore', the description of the reduced
 
     verbose : bool
-      In the case of .npy metric storage, if verbose is set to True, print the fileName seeked for each metric.
+      In the case of .npy metric storage, if verbose is set to True, print the fileName seeked for each metric as well as its time of last modification.
 
       In the case of .h5 metric storage, if verbose is set to True, print the group seeked for each metric.
 
@@ -316,16 +317,17 @@ class Metric():
     >>>   np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
     >>> experiment.makePaths()
     >>> experiment.do([], process, progress=False)
-    >>> (settingDescription, columns, header) = experiment.metric.reduce(experiment.factor.settings(), experiment.path.output)
+    >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = experiment.metric.reduce(experiment.factor.settings([1]), experiment.path.output)
 
-    >>> df = pd.DataFrame(settingDescription, columns=columns).round(decimals=2)
-    f1  f2  m1Mean  m1Std  m2Min  m2Argmin
-    0   1   1    1.83   0.99  -2.38        83
-    1   1   2    3.04   1.01  -5.01        57
-    2   1   3    3.94   0.92  -5.96        12
-    3   2   1    2.93   1.07  -6.47        71
-    4   2   2    3.84   1.03 -11.47        32
-    5   2   3    4.88   1.02 -11.61        90
+    >>> df = pd.DataFrame(settingDescription, columns=columnHeader)
+    >>> df[columnHeader[nbColumnFactor:]] = df[columnHeader[nbColumnFactor:]].round(decimals=2)
+    >>> print(constantSettingDescription)
+    f1: 2
+    >>> print(df)
+        f1  f2  m1Mean  m1Std  m2Min  m2Argmin
+    0   1   1    2.07   1.03  -1.94        33
+    1   1   2    3.04   0.88  -4.85        78
+    2   1   3    4.12   1.05  -7.70        36
 
     explanes also supports metrics storage using one .h5 file sink structured with settings as groups et metrics as leaf nodes.
 
@@ -342,10 +344,10 @@ class Metric():
     >>> experiment.metric.m2 = ['min', 'argmin']
     >>> def process(setting, experiment):
     >>>   h5 = tb.open_file(experiment.path.output, mode='a')
-    >>>   sg = experiment.metric.h5addSetting(h5, setting,
-    >>>       metricDimensions = [100, 100])
-    >>>   sg.m1[:] = setting.f1+setting.f2+np.random.randn(100)
-    >>>   sg.m2[:] = setting.f1*setting.f2*np.random.randn(100)
+    >>>   settingGroup = experiment.metric.addSettingGroup(h5, setting,
+    >>>       metricDimension = [100, 100])
+    >>>   settingGroup.m1[:] = setting.f1+setting.f2+np.random.randn(100)
+    >>>   settingGroup.m2[:] = setting.f1*setting.f2*np.random.randn(100)
     >>>   h5.close()
     >>> experiment.makePaths()
     >>> experiment.do([], process, progress=False)
@@ -373,17 +375,18 @@ class Metric():
     /f1_2_f2_3/m1 (Array(100,)) 'm1'
     /f1_2_f2_3/m2 (Array(100,)) 'm2'
     >>> h5.close()
-    >>> (settingDescription, columns, header) = experiment.metric.reduce(experiment.factor.settings(), experiment.path.output)
 
-    >>> df = pd.DataFrame(settingDescription, columns=columns).round(decimals=2)
+    >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = experiment.metric.reduce(experiment.factor.settings([0]), experiment.path.output)
+
+    >>> df = pd.DataFrame(settingDescription, columns=columnHeader)
+    >>> df[columnHeader[nbColumnFactor:]] = df[columnHeader[nbColumnFactor:]].round(decimals=2)
+    >>> print(constantSettingDescription)
+        f1: 1
     >>> print(df)
-    f1  f2  m1Mean  m1Std  m2Min  m2Argmin
-    0   1   1    1.89   0.94  -2.42        11
-    1   1   2    3.03   1.10  -5.08        29
-    2   1   3    3.84   0.94  -6.27        99
-    3   2   1    2.93   0.89  -4.91        18
-    4   2   2    3.99   1.01 -13.51        70
-    5   2   3    5.08   0.86 -13.36        87
+        f2  m1Mean  m1Std  m2Min  m2Argmin
+    0   1    2.02   0.86  -2.43         6
+    1   2    3.11   1.02  -4.41        85
+    2   3    4.13   1.03  -6.21        65
     """
     if dataLocation.endswith('.h5'):
       (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose)
@@ -391,20 +394,11 @@ class Metric():
       (settingDescription, metricHasData) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose)
 
     columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricHasData, reducedMetricDisplay)
-
-    # constantSettingDescription = ''
     nbColumnFactor = len(settings.getFactorNames())
-    # if len(settingDescription)>1:
-    #   (ccIndex, ccValue) = eu.constantColumn(settingDescription)
-    #   ccIndex = [i for i, x in enumerate(ccIndex) if x and i<nbColumnFactor]
-    #   nbColumnFactor -= len(ccIndex)
-    #   for s in ccIndex:
-    #     constantSettingDescription += eu.compressDescription(columnHeader[s], factorDisplay)+': '+str(ccValue[s])+' '
-    #   for s in sorted(ccIndex, reverse=True):
-    #     columnHeader.pop(s)
-    #     for r in settingDescription:
-    #       r.pop(s)
-    return eu.pruneSettingDescription(settingDescription, columnHeader, nbColumnFactor, factorDisplay)
+
+    (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = eu.pruneSettingDescription(settingDescription, columnHeader, nbColumnFactor, factorDisplay)
+
+    return (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor)
 
   def get(
     self,
@@ -441,9 +435,49 @@ class Metric():
     Returns
     -------
 
+    settingMetric: list of np.Array
+      stores for each valid setting an np.Array with the values of the metric selected.
+
+    settingDescription: list of list of str
+      stores for each valid setting, a compact description of the modalities of each factors. The factors with the same modality accross all the set of settings is stored in constantSettingDescription.
+
+    constantSettingDescription: str
+      compact description of the factors with the same modality accross all the set of settings.
+
     Examples
     --------
 
+    >>> import explanes as el
+    >>> import numpy as np
+    >>> import pandas as pd
+
+    >>> experiment = el.experiment.Experiment()
+    >>> experiment.project.name = 'example'
+    >>> experiment.path.output = '/tmp/'+experiment.project.name+'/'
+    >>> experiment.factor.f1 = [1, 2]
+    >>> experiment.factor.f2 = [1, 2, 3]
+    >>> experiment.metric.m1 = ['mean', 'std']
+    >>> experiment.metric.m2 = ['min', 'argmin']
+
+    >>> def process(setting, experiment):
+      metric1 = setting.f1+setting.f2+np.random.randn(100)
+      metric2 = setting.f1*setting.f2*np.random.randn(100)
+      np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
+      np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
+
+    >>> experiment.makePaths()
+    >>> experiment.do([], process, progress=False)
+
+    >>> (settingMetric, settingDescription, constantSettingDescription) = experiment.metric.get('m1', experiment.factor.settings([1]), experiment.path.output)
+
+    >>> print(constantSettingDescription)
+    f1 2
+    >>> print(settingDescription)
+    [['f2', '1'], ['f2', '2'], ['f2', '3']]
+    >>> print(len(settingMetric))
+    3
+    >>> print(settingMetric[0].shape)
+    (100,)
     """
 
     settingMetric = []
@@ -460,9 +494,9 @@ class Metric():
           if h5.root.__contains__(setting.id(**settingEncoding)):
             if verbose:
               print('Found group '+setting.id(**settingEncoding))
-            sg = h5.root._f_get_child(setting.id(**settingEncoding))
-            if sg.__contains__(metric):
-              settingMetric.append(sg._f_get_child(metric))
+            settingGroup = h5.root._f_get_child(setting.id(**settingEncoding))
+            if settingGroup.__contains__(metric):
+              settingMetric.append(np.array(settingGroup._f_get_child(metric)))
               settingDescription.append(setting.id(**settingDescriptionFormat))
           elif verbose:
             print('** Unable to find group '+setting.id(**settingEncoding))
@@ -482,93 +516,97 @@ class Metric():
 
     return (settingMetric, settingDescription, constantSettingDescription)
 
-
-  # def getFromH5(
-  #   self,
-  #   metric,
-  #   settings,
-  #   dataLocation,
-  #   settingEncoding={},
-  #   verbose=False
-  #   ):
-  #   """one liner
-  #
-  #   Desc
-  #
-  #   Examples
-  #   --------
-  #
-  #   """
-  #   h5 = tb.open_file(dataLocation, mode='r')
-  #   data = []
-  #   settingDescription = []
-  #   settingDescriptionFormat = copy.deepcopy(kwargs)
-  #   settingDescriptionFormat['format'] = 'list'
-  #   settingDescriptionFormat['hideNonAndZero'] = False
-  #   settingDescriptionFormat['hideDefault'] = False
-  #   for setting in settings:
-  #     if verbose:
-  #       print('Seeking Group '+setting.id(**settingEncoding))
-  #     if h5.root.__contains__(setting.id(**settingEncoding)):
-  #       sg = h5.root._f_get_child(setting.id(**settingEncoding))
-  #       if sg.__contains__(metric):
-  #         data.append(sg._f_get_child(metric))
-  #         settingDescription.append(setting.id(**settingDescriptionFormat))
-  #   h5.close()
-  #   return (data, settingDescription)
-  #
-  # def getFromNpy(
-  #   self,
-  #   metric,
-  #   settings,
-  #   dataLocation,
-  #   settingEncoding={},
-  #   verbose=False
-  #   ):
-  #   """one liner
-  #
-  #   Desc
-  #
-  #   Examples
-  #   --------
-  #
-  #   """
-  #   data = []
-  #   settingDescription = []
-  #   settingDescriptionFormat = copy.deepcopy(settingEncoding)
-  #   settingDescriptionFormat['format'] = 'list'
-  #   settingDescriptionFormat['hideNonAndZero'] = False
-  #   settingDescriptionFormat['hideDefault'] = False
-  #   for setting in settings:
-  #     fileName = dataLocation+setting.id(**settingEncoding)+'_'+metric+'.npy'
-  #     if os.path.exists(fileName):
-  #       data.append(np.load(fileName))
-  #       settingDescription.append(setting.id(**settingDescriptionFormat))
-  #
-  #   return (data, settingDescription)
-
-  def h5addSetting(
+  def addSettingGroup(
     self,
-    h5,
+    fileId,
     setting,
-    metricDimensions=[],
+    metricDimension={},
     settingEncoding={}
     ):
-    """one liner
+    """adds a group to the root of a valid PyTables Object in order to store the metrics corresponding to the specified setting.
 
-    Desc
+    adds a group to the root of a valid PyTables Object in order to store the metrics corresponding to the specified setting. The encoding of the setting is used to set the name of the group. For each metric, a Floating point Pytable Array is created. For any metric, ff no dimension is provided in the metricDimension dict, an expandable array is instantiated. If a dimension is available, a static size array is instantiated.
+
+    Parameters
+    ----------
+
+    fileId: PyTables file Object
+    a valid PyTables file Object, leading to an .h5 file opened with writing permission.
+
+    setting: :class:`explanes.factor.Factor`
+    an instantiated Factor object describing a setting.
+
+    metricDimension: dict
+    for metrics for which the dimensionality of the storage vector is known, each key of the dict is a valid metric name and each conresponding value is the size of the storage vector.
+
+    settingEncoding : dict
+    Encoding of the setting. See explanes.factor.Factor.id for references.
+
+    Returns
+    -------
+
+    settingGroup: a Pytables Group
+    a Pytables Group where to store metrics corresponding to the specified setting.
 
     Examples
     --------
 
+    >>> import explanes as el
+    >>> import numpy as np
+    >>> import tables as tb
+
+    >>> experiment = el.experiment.Experiment()
+    >>> experiment.project.name = 'example'
+    >>> experiment.path.output = '/tmp/'+experiment.project.name+'.h5'
+    >>> experiment.factor.f1 = [1, 2]
+    >>> experiment.factor.f2 = [1, 2, 3]
+    >>> experiment.metric.m1 = ['mean', 'std']
+    >>> experiment.metric.m2 = ['min', 'argmin']
+
+    >>> def process(setting, experiment):
+      h5 = tb.open_file(experiment.path.output, mode='a')
+      sg = experiment.metric.addSettingGroup(h5, setting,
+          metricDimension = {'m1':100})
+      sg.m1[:] = setting.f1+setting.f2+np.random.randn(100)
+      sg.m2.append(setting.f1*setting.f2*np.random.randn(100))
+      h5.close()
+
+    >>> experiment.makePaths()
+    >>> experiment.do([], process, progress=False)
+
+    >>> h5 = tb.open_file(experiment.path.output, mode='r')
+    >>> print(h5)
+    /tmp/example.h5 (File) ''
+    Last modif.: 'Tue Oct 20 14:52:26 2020'
+    Object Tree:
+    / (RootGroup) ''
+    /f1_1_f2_1 (Group) 'f1_1_f2_1'
+    /f1_1_f2_1/m1 (Array(100,)) 'm1'
+    /f1_1_f2_1/m2 (EArray(100,)) 'm2'
+    /f1_1_f2_2 (Group) 'f1_1_f2_2'
+    /f1_1_f2_2/m1 (Array(100,)) 'm1'
+    /f1_1_f2_2/m2 (EArray(100,)) 'm2'
+    /f1_1_f2_3 (Group) 'f1_1_f2_3'
+    /f1_1_f2_3/m1 (Array(100,)) 'm1'
+    /f1_1_f2_3/m2 (EArray(100,)) 'm2'
+    /f1_2_f2_1 (Group) 'f1_2_f2_1'
+    /f1_2_f2_1/m1 (Array(100,)) 'm1'
+    /f1_2_f2_1/m2 (EArray(100,)) 'm2'
+    /f1_2_f2_2 (Group) 'f1_2_f2_2'
+    /f1_2_f2_2/m1 (Array(100,)) 'm1'
+    /f1_2_f2_2/m2 (EArray(100,)) 'm2'
+    /f1_2_f2_3 (Group) 'f1_2_f2_3'
+    /f1_2_f2_3/m1 (Array(100,)) 'm1'
+    /f1_2_f2_3/m2 (EArray(100,)) 'm2'
+    >>> h5.close()
     """
     groupName = setting.id(**settingEncoding)
     # print(groupName)
-    if not h5.__contains__('/'+groupName):
-      sg = h5.create_group('/', groupName, setting.id(format='long', sep=' '))
+    if not fileId.__contains__('/'+groupName):
+      settingGroup = fileId.create_group('/', groupName, setting.id(settingEncoding))
     else:
-      sg = h5.root._f_get_child(groupName)
-    for mIndex, metric in enumerate(self.name()):
+      settingGroup = fileId.root._f_get_child(groupName)
+    for metric in self.name():
       if hasattr(self._description, metric):
         description = getattr(self._description, metric)
       else:
@@ -577,14 +615,15 @@ class Metric():
       if hasattr(self._unit, metric):
         description += ' in ' + getattr(self._unit, metric)
 
-      if not metricDimensions:
-        if sg.__contains__(metric):
-          sg._f_get_child(metric)._f_remove()
-        h5.create_earray(sg, metric, tb.Float64Atom(), (0,), description)
+      if metric in metricDimension:
+        if not settingGroup.__contains__(metric):
+          fileId.create_array(settingGroup, metric, np.zeros((metricDimension[metric])), description)
       else:
-        if not sg.__contains__(metric):
-          h5.create_array(sg, metric, np.zeros(( metricDimensions[mIndex])), description)
-    return sg
+        if settingGroup.__contains__(metric):
+          settingGroup._f_get_child(metric)._f_remove()
+        fileId.create_earray(settingGroup, metric, tb.Float64Atom(), (0,), description)
+
+    return settingGroup
 
   def getColumnHeader(
     self,

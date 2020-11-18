@@ -17,11 +17,8 @@ def constantColumn(
 	Returns
 	-------
 
-  indexes : list of bool
-    indexes of constant valued columns
-
   values : list of literals
-    values of the constant valued columns
+    values of the constant valued columns, None if the column is not constant
 
 	See Also
 	--------
@@ -32,7 +29,7 @@ def constantColumn(
   >>> import explanes as el
   >>> table = [['a', 'b', 1, 2], ['a', 'c', 2, 2], ['a', 'b', 2, 2]]
   >>> el.util.constantColumn(table)
-  ([True, False, False, True], ['a', 'b', 1, 2])
+  ['a', None, None, 2]
   """
 
   indexes = [True] * len(table[0])
@@ -40,11 +37,12 @@ def constantColumn(
 
   for r in table:
       for cIndex, c in enumerate(r):
-          if values[cIndex] == None:
+          if values[cIndex] is None and indexes[cIndex]:
               values[cIndex] = c
           elif values[cIndex] != c:
               indexes[cIndex] = False
-  return (indexes, values)
+              values[cIndex] = None
+  return values
 
 def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFactor=0, factorDisplay='long'):
   constantSettingDescription = ''
@@ -52,15 +50,15 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
     nbColumnFactor = len(settingDescription[0])
   if settingDescription:
     if len(settingDescription)>1:
-      (ccIndex, ccValue) = constantColumn(settingDescription)
-      for si, s in enumerate(ccIndex):
-        if si>1 and not s:
-          ccIndex[si-1] = False
-      ccIndex = [i for i, x in enumerate(ccValue) if x and i<nbColumnFactor]
+      constantValue = constantColumn(settingDescription)
+      for si, s in enumerate(constantValue):
+        if not columnHeader and si>0 and s is None:
+          constantValue[si-1] = None
+      ccIndex = [i for i, x in enumerate(constantValue) if x and i<nbColumnFactor]
       nbColumnFactor -= len(ccIndex)
       for s in ccIndex:
         if columnHeader:
-          constantSettingDescription += compressDescription(columnHeader[s], factorDisplay)+': '+str(ccValue[s])+' '
+          constantSettingDescription += compressDescription(columnHeader[s], factorDisplay)+': '+str(constantValue[s])+' '
         else:
           constantSettingDescription += settingDescription[0][s]+' '
       for s in sorted(ccIndex, reverse=True):
