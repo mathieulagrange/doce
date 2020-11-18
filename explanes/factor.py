@@ -20,13 +20,38 @@ else:
     from tqdm import tqdm as tqdm
 
 class Factor():
-  """one liner
+  """stores the different factors of the explanes experiment.
 
-  Desc
+  This class stores the different factors of the explanes experiments. For each factor, the set of different modalities can be expressed as a list or a numpy array.
+
+  To browse the setting set defined by the Factor object, one must iterate over the Factor object.
 
   Examples
   --------
 
+  >>> import explanes as el
+
+  >>> f = el.factor.Factor()
+  >>> f.factor1=[1, 3]
+  >>> f.factor2=[2, 4]
+
+  >>> print(f)
+  0  factor1: [1, 3]
+  1  factor2: [2, 4]
+
+  >>> for setting in f:
+  >>>   print(setting)
+  0  factor1: 1
+  1  factor2: 2
+
+  0  factor1: 1
+  1  factor2: 4
+
+  0  factor1: 3
+  1  factor2: 2
+
+  0  factor1: 3
+  1  factor2: 4
   """
   _setting = None
   _changed = False
@@ -236,7 +261,7 @@ class Factor():
             t.update(1)
     return nbFailed
 
-  def settings(
+  def mask(
     self,
     mask=None
     ):
@@ -245,21 +270,9 @@ class Factor():
   	Desc
 
     """
-    mask = copy.deepcopy(mask)
-    nbFactors = len(self.getFactorNames())
-    if mask is None or len(mask)==0 or (len(mask)==1 and len(mask)==0) :
-       mask = [[-1]*nbFactors]
-    if isinstance(mask, list) and not all(isinstance(x, list) for x in mask):
-        mask = [mask]
 
-
-    for im, m in enumerate(mask):
-      if len(m) < nbFactors:
-        mask[im] = m+[-1]*(nbFactors-len(m))
-      for il, l in enumerate(m):
-          if not isinstance(l, list) and l > -1:
-              mask[im][il] = [l]
     self._mask = mask
+    print(mask)
     return self
 
   def __len__(
@@ -285,6 +298,20 @@ class Factor():
       settings = []
       mask = copy.deepcopy(self._mask)
       self._setting = None
+
+      mask = copy.deepcopy(mask)
+      nbFactors = len(self.getFactorNames())
+      if mask is None or len(mask)==0 or (len(mask)==1 and len(mask)==0) :
+         mask = [[-1]*nbFactors]
+      if isinstance(mask, list) and not all(isinstance(x, list) for x in mask):
+          mask = [mask]
+
+      for im, m in enumerate(mask):
+        if len(m) < nbFactors:
+          mask[im] = m+[-1]*(nbFactors-len(m))
+        for il, l in enumerate(m):
+            if not isinstance(l, list) and l > -1:
+                mask[im][il] = [l]
 
       for m in mask:
         # handle -1 in mask

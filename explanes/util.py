@@ -50,7 +50,7 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
 
   settingDescription: list of list of literals
     the body of the table.
-    
+
   columnHeader: list of string (optional)
     the column header of the table.
 
@@ -75,8 +75,8 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
   nbColumnFactor: int
     number of factors in the new settingDescription.
 
-	Example
-	-------
+	Examples
+	--------
   >>> import explanes as el
 
   >>> header = ['factor_1', 'factor_2', 'metric_1', 'metric_2']

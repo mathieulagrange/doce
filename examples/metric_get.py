@@ -19,7 +19,7 @@ def process(setting, experiment):
 experiment.makePaths()
 experiment.do([], process, progress=False)
 
-(settingMetric, settingDescription, constantSettingDescription) = experiment.metric.get('m1', experiment.factor.settings([1]), experiment.path.output)
+(settingMetric, settingDescription, constantSettingDescription) = experiment.metric.get('m1', experiment.factor.mask([1]), experiment.path.output)
 
 print(constantSettingDescription)
 print(settingDescription)

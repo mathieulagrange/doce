@@ -183,9 +183,9 @@ def run():
   body = '<div> Mask = '+args.mask+'</div>'
   if display:
     if hasattr(config, 'display'):
-      config.display(experiment, experiment.factor.settings(mask))
+      config.display(experiment, experiment.factor.mask(mask))
     else:
-      (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.settings(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, settingEncoding = experiment._settingEncoding, verbose=args.debug)
+      (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.mask(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, settingEncoding = experiment._settingEncoding, verbose=args.debug)
       # print(table)
       # print(columns)
       df = pd.DataFrame(table, columns=columns).fillna('')
@@ -537,7 +537,7 @@ class Experiment():
 
     """
 
-    return self.factor.settings(mask).do(function, self, *parameters, nbJobs=nbJobs, progress=progress, logFileName=logFileName, mailInterval=mailInterval)
+    return self.factor.mask(mask).do(function, self, *parameters, nbJobs=nbJobs, progress=progress, logFileName=logFileName, mailInterval=mailInterval)
 
   def cleanDataSink(
     self,
@@ -687,7 +687,7 @@ class Experiment():
     if '/' not in path and '\\' not in path:
       path = self.__getattribute__('path').__getattribute__(path)
     if path:
-      self.factor.settings(mask).cleanDataSink(path, reverse, force, selector, settingEncoding, archivePath)
+      self.factor.mask(mask).cleanDataSink(path, reverse, force, selector, settingEncoding, archivePath)
 
   def cleanExperiment(
     self,

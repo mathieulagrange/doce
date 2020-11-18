@@ -317,7 +317,7 @@ class Metric():
     >>>   np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
     >>> experiment.makePaths()
     >>> experiment.do([], process, progress=False)
-    >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = experiment.metric.reduce(experiment.factor.settings([1]), experiment.path.output)
+    >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = experiment.metric.reduce(experiment.factor.mask([1]), experiment.path.output)
 
     >>> df = pd.DataFrame(settingDescription, columns=columnHeader)
     >>> df[columnHeader[nbColumnFactor:]] = df[columnHeader[nbColumnFactor:]].round(decimals=2)
@@ -376,7 +376,7 @@ class Metric():
     /f1_2_f2_3/m2 (Array(100,)) 'm2'
     >>> h5.close()
 
-    >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = experiment.metric.reduce(experiment.factor.settings([0]), experiment.path.output)
+    >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = experiment.metric.reduce(experiment.factor.mask([0]), experiment.path.output)
 
     >>> df = pd.DataFrame(settingDescription, columns=columnHeader)
     >>> df[columnHeader[nbColumnFactor:]] = df[columnHeader[nbColumnFactor:]].round(decimals=2)
@@ -468,7 +468,7 @@ class Metric():
     >>> experiment.makePaths()
     >>> experiment.do([], process, progress=False)
 
-    >>> (settingMetric, settingDescription, constantSettingDescription) = experiment.metric.get('m1', experiment.factor.settings([1]), experiment.path.output)
+    >>> (settingMetric, settingDescription, constantSettingDescription) = experiment.metric.get('m1', experiment.factor.mask([1]), experiment.path.output)
 
     >>> print(constantSettingDescription)
     f1 2
