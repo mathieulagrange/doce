@@ -40,10 +40,10 @@ class Metric():
 
   In this case, the odd values will be removed before reduction and the last reduction will select the first value of the metric vector, expressed in percents by multiplying it by 100.
   """
-
-  _unit = types.SimpleNamespace()
-  _description = types.SimpleNamespace()
-  _metrics = []
+  def __init__(self):
+    self._unit = types.SimpleNamespace()
+    self._description = types.SimpleNamespace()
+    self._metrics = []
 
   def __setattr__(
     self,
@@ -101,10 +101,10 @@ class Metric():
             row.append(np.nan)
             idx+=1
       if len(row):
-        for factorName in reversed(settings.getFactorNames()):
+        for factorName in reversed(settings.factors()):
           row.insert(0, setting.__getattribute__(factorName))
         table.append(row)
-    nbFactors = len(settings.getFactorNames())
+    nbFactors = len(settings.factors())
     for ir, row in enumerate(table):
       table[ir] = row[:nbFactors]+list(compress(row[nbFactors:], reducedMetrics))
     return (table, metricHasData)
@@ -147,7 +147,7 @@ class Metric():
               data = settingGroup._f_get_child(metric)
             row.append(self.reduceMetric(data, reductionType))
         if len(row):
-          for factorName in reversed(settings.getFactorNames()):
+          for factorName in reversed(settings.factors()):
             row.insert(0, setting.__getattribute__(factorName))
         table.append(row)
     h5.close()
@@ -394,7 +394,7 @@ class Metric():
       (settingDescription, metricHasData) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose)
 
     columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricHasData, reducedMetricDisplay)
-    nbColumnFactor = len(settings.getFactorNames())
+    nbColumnFactor = len(settings.factors())
 
     (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = eu.pruneSettingDescription(settingDescription, columnHeader, nbColumnFactor, factorDisplay)
 
@@ -664,7 +664,7 @@ class Metric():
     """
     # print(factorDisplay)
     columnHeader = []
-    for factorName in factor.getFactorNames():
+    for factorName in factor.factors():
       columnHeader.append(eu.compressDescription(factorName, factorDisplay, factorDisplayLength))
     for mIndex, metric in enumerate(self.name()):
       if metricHasData[mIndex]:

@@ -50,16 +50,16 @@ class Factor():
   0  factor1: 3
   1  factor2: 4
   """
-  _setting = None
-  _changed = False
-  _currentSetting = 0
-  _settings = []
-  _mask = []
-  _nonSingleton = []
-  _factors = []
-  _default = types.SimpleNamespace()
-  _parallel = False
-
+  def __init__(self):
+    self._setting = None
+    self._changed = False
+    self._currentSetting = 0
+    self._settings = []
+    self._mask = []
+    self._nonSingleton = []
+    self._factors = []
+    self._default = types.SimpleNamespace()
+    self._parallel = False
 
   def setDefault(
     self,
@@ -268,25 +268,25 @@ class Factor():
     self._mask = mask
     return self
 
-  def getFactorNames(
+  def factors(
     self
     ):
-    """one liner
+    """returns the names of the factors.
 
-  	Desc
-
-  	Parameters
-  	----------
-
-  	Returns
-  	-------
-
-  	See Also
-  	--------
+  	Returns the names of the factors as a list of strings.
 
   	Examples
   	--------
 
+    >>> import explanes as el
+
+    >>> f = el.factor.Factor()
+    >>> f.f1=['a', 'b']
+    >>> f.f2=[1, 2]
+    >>> f.f3=[0, 1]
+
+    >>> print(f.factors())
+    ['f1', 'f2', 'f3']
     """
     return self._factors
 
@@ -294,26 +294,41 @@ class Factor():
     self,
     factor
     ):
-    """Returns the number of :term:`modalities<modality>` for a given :term:`factor`.
+    """returns the number of :term:`modalities<modality>` for a given :term:`factor`.
 
-  	Desc
+  	Returns the number of :term:`modalities<modality>` for a given :term:`factor` as an integer value.
 
   	Parameters
   	----------
 
-  	Returns
-  	-------
+    factor: int or str
+      if int, considered as the index inside an array of the factors sorted by order of definition.
 
-  	See Also
-  	--------
+      If str, the name of the factor.
 
   	Examples
   	--------
 
+    >>> import explanes as el
+
+    >>> f = el.factor.Factor()
+    >>> f.one=['a', 'b']
+    >>> f.two=[1]*10
+
+    >>> print(f.nbModalities('one'))
+    2
+    >>> print(f.nbModalities(1))
+    10
+
+    >>> f2 = el.factor.Factor()
+    >>> f2.two=[1]*10
+    >>> f2.one=['a', 'b']
+    >>> print(f2.nbModalities(1))
+    10
     """
     if isinstance(factor, int):
-      name = self.getFactorNames()[factor]
-    return len(object.__getattribute__(self, name))
+      factor = self.factors()[factor]
+    return len(object.__getattribute__(self, factor))
 
   def cleanH5(self, path, reverse=False, force=False, settingEncoding={}):
     """one liner
@@ -435,9 +450,9 @@ class Factor():
     if isinstance(modality, int) and modality<0:
       relative = True
     if isinstance(factor, str):
-      factor = self.getFactorNames().index(factor)
+      factor = self.factors().index(factor)
     if not positional and not relative:
-      factorName = self.getFactorNames()[factor]
+      factorName = self.factors()[factor]
       set = self._setting
       self._setting = None
       modalities = self.__getattribute__(factorName)
@@ -493,7 +508,7 @@ class Factor():
 
     """
     id = []
-    fNames = self.getFactorNames()
+    fNames = self.factors()
     if isinstance(hideFactor, str):
       hideFactor=[hideFactor]
     elif isinstance(hideFactor, int) :
@@ -591,7 +606,7 @@ class Factor():
 
     value = object.__getattribute__(self, name)
     if name[0] != '_' and self._setting and type(inspect.getattr_static(self, name)) != types.FunctionType:
-      idx = self.getFactorNames().index(name)
+      idx = self.factors().index(name)
       if self._setting[idx] == -2:
         value = None
       else:
@@ -649,7 +664,7 @@ class Factor():
       self._setting = None
 
       mask = copy.deepcopy(mask)
-      nbFactors = len(self.getFactorNames())
+      nbFactors = len(self.factors())
       if mask is None or len(mask)==0 or (len(mask)==1 and len(mask)==0) :
          mask = [[-1]*nbFactors]
       if isinstance(mask, list) and not all(isinstance(x, list) for x in mask):
@@ -665,8 +680,8 @@ class Factor():
       for m in mask:
         # handle -1 in mask
         for mfi, mf in enumerate(m):
-          if isinstance(mf, int) and mf == -1 and mfi<len(self.getFactorNames()):
-            attr = self.__getattribute__(self.getFactorNames()
+          if isinstance(mf, int) and mf == -1 and mfi<len(self.factors()):
+            attr = self.__getattribute__(self.factors()
             [mfi])
             # print(attr)
             # print(isinstance(attr, int))

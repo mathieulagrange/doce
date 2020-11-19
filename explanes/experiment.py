@@ -271,12 +271,12 @@ class Experiment():
     info2: 2
   specificInfo: stuff
   """
-  # list of attributes (preserving order of insertion for aloder versions of python)
-  _atrs = []
 
   def __init__(
     self
     ):
+    # list of attributes (preserving order of insertion for antique versions of python)
+    self._atrs = []
     self.project = types.SimpleNamespace()
     self.project.name = ''
     self.project.description = ''
