@@ -61,7 +61,7 @@ class Factor():
     self._default = types.SimpleNamespace()
     self._parallel = False
 
-  def setDefault(
+  def default(
     self,
     name,
     value,
@@ -85,7 +85,7 @@ class Factor():
 
     """
     if hasattr(self, name):
-      if not force and any(item in getattr(self, name) for item in [0, 'none']):
+      if not force and any(item == getattr(self, name) for item in [0, 'none']):
         print('Setting an explicit default modality to factor '+name+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <hideNonAndZero> set to False when using method id(). You can remove this warning by setting the flag <force> to True.')
         if value not in getattr(self, name):
           print('The default modality of factor '+name+' should be available in the set of modalities.')
@@ -312,18 +312,18 @@ class Factor():
     >>> import explanes as el
 
     >>> f = el.factor.Factor()
-    >>> f.one=['a', 'b']
-    >>> f.two=[1]*10
+    >>> f.one = ['a', 'b']
+    >>> f.two = list(range(10))
 
     >>> print(f.nbModalities('one'))
     2
     >>> print(f.nbModalities(1))
     10
 
-    >>> f2 = el.factor.Factor()
-    >>> f2.two=[1]*10
-    >>> f2.one=['a', 'b']
-    >>> print(f2.nbModalities(1))
+    >>> f = el.factor.Factor()
+    >>> f.two = list(range(10))
+    >>> f.one = ['a', 'b']
+    >>> print(f.nbModalities(1))
     10
     """
     if isinstance(factor, int):
@@ -331,22 +331,9 @@ class Factor():
     return len(object.__getattribute__(self, factor))
 
   def cleanH5(self, path, reverse=False, force=False, settingEncoding={}):
-    """one liner
+    """Clean a h5 data sink by considering the settings set.
 
-  	Desc
-
-  	Parameters
-  	----------
-
-  	Returns
-  	-------
-
-  	See Also
-  	--------
-
-  	Examples
-  	--------
-
+  	This method is more conveniently used by considering the method :meth:`explanes.experiment.Experiment.cleanDataSink, please see its documentation for usage.
     """
     h5 = tb.open_file(path, mode='a')
     if reverse:
@@ -383,20 +370,7 @@ class Factor():
     ):
     """Clean a data sink by considering the settings set.
 
-  	Returns the number of :term:`modalities<modality>`, for a given :term:`factor`. This method is more conveniently used by considering the method explanes.experiment.Experiment.cleanDataSink, please see its documentation for usage.
-
-  	Parameters
-  	----------
-
-  	Returns
-  	-------
-
-  	See Also
-  	--------
-
-  	Examples
-  	--------
-
+  	This method is more conveniently used by considering the method :meth:`explanes.experiment.Experiment.cleanDataSink, please see its documentation for usage.
     """
 
     path = os.path.expanduser(path)
@@ -428,83 +402,173 @@ class Factor():
           else:
             os.remove(f)
 
-  def alternative(self, factor, modality, positional=False, relative=False):
-    """one liner
+  def alternative(self, factor, value=None, positional=0, relative=0):
+    """returns a new explanes.factor.Factor object with one factor with modified modality.
 
-  	Desc
+  	Returns a new explanes.factor.Factor object with with one factor with modified modality. The value of the requested new modality can requested by 3 exclusive means: its value, its position in the modality array, or its relative position in the array with respect to the position of the current modality.
 
   	Parameters
   	----------
 
-  	Returns
-  	-------
+    factor: int or str
+      if int, considered as the index inside an array of the factors sorted by order of definition.
 
-  	See Also
-  	--------
+      If str, the name of the factor.
+
+    modality: literal or None (optional)
+      the value of the modality.
+
+    positional: int (optional)
+      if 0, this parameter is not considered (default).
+
+      If >0, interpreted as the index in the modality array (default).
+
+    relative: int (optional)
+      if 0, this parameter is not considered (default).
+
+      Otherwise, interpreted as an index, relative to the current modality.
 
   	Examples
   	--------
 
+    >>> import explanes as el
+
+    >>> f = el.factor.Factor()
+    >>> f.one = ['a', 'b', 'c']
+    >>> f.two = [1, 2, 3]
+
+    >>> for setting in f.mask([1, 1]):
+    >>>   # the inital setting
+    >>>   print(setting.describe())
+    one b two 2
+    >>> # the same setting but with the factor 'two' set to modality 1
+    one b two 1
+    >>> print(setting.alternative('two', value=1).describe())
+    >>> # the same setting but with the first factor set to modality
+    one b two 1
+    >>> print(setting.alternative(1, value=1).describe())
+    >>> # the same setting but with the factor 'two' set to modality index 0
+    one b two 1
+    >>> print(setting.alternative('two', positional=0).describe())
+    one b two 1
+    >>> # the same setting but with the factor 'two' set to modality of relative index -1 with respect to the modality index of the current setting
+    >>> print(setting.alternative('two', relative=-1).describe())
+    one b two 1
     """
 
-    if isinstance(modality, int) and modality<0:
-      relative = True
+    # get factor index
     if isinstance(factor, str):
       factor = self.factors().index(factor)
-    if not positional and not relative:
+    # get modality index
+    if value is not None:
       factorName = self.factors()[factor]
       set = self._setting
       self._setting = None
       modalities = self.__getattribute__(factorName)
-      modality = modalities.index(modality)
+      positional = modalities.index(value)
       self._setting = set
 
     f = copy.deepcopy(self)
     if relative:
-      f._setting[factor] += modality
+      f._setting[factor] += relative
     else:
-      f._setting[factor] = modality
+      f._setting[factor] = positional
     if f._setting[factor]< 0 or f._setting[factor] >= self.nbModalities(factor):
+      print('Unable to find the requested modality.')
       return None
     else:
       return f
 
   def describe(self):
-    """one liner
+    """returns a one-liner str with a readable description of the Factor object or the current setting.
 
-  	Desc
-
-  	Parameters
-  	----------
-
-  	Returns
-  	-------
-
-  	See Also
-  	--------
+  	returns a one-liner str with a readable description of the Factor object or the current setting if in an iterable.
 
   	Examples
   	--------
 
+    >>> import explanes as el
+
+    >>> f = el.factor.Factor()
+    >>> f.one = ['a', 'b']
+    >>> f.two = [1, 2]
+
+    >>> print(f.describe())
+    one ['a', 'b'] two [1, 2]
+    >>> for setting in f:
+    >>>   print(setting.describe())
+    one a two 1
+    one a two 2
+    one b two 1
+    one b two 2
     """
-    return self.id(singleton=False, sort=False, factorSeparator=' ', hideNonAndZero=False)
+    return self.id(singleton=False, sort=False, separator=' ', hideNonAndZero=False)
 
-  def id(self, format='long', sort=True, singleton=True, hideNonAndZero=True, hideDefault=True, factorSeparator='_', hideFactor=[]):
-    """one liner
+  def id(self, format='long', sort=True, singleton=True, hideNonAndZero=True, hideDefault=True, separator='_', hideFactor=[]):
+    """return a one-liner str or a list of str that describes a setting or a :class:`~explanes.factor.Factor` object.
 
-  	Desc
+  	Return a one-liner str or a list of str that describes a setting or a :class:` ~explanes.factor.Factor` object with a high degree of flexibility.
 
   	Parameters
   	----------
 
-  	Returns
-  	-------
+    format: str (optional)
+      'long': (default)
+      'shortUnderscore': pythonCase delimitation
+      'shortCapital': camelCase delimitation
+      'short':
+      'list': a list of string alternating factor and the corresponding modality
+      'hash':
+
+    sort: bool (optional)
+     if True  (default)
+    singleton: bool (optional)
+      if True (default)
+    hideNonAndZero: bool (optional)
+     if True (default)
+    hideDefault: bool (optional)
+     if True (default)
+    separator: str
+      default '_',
+    hideFactor=[]
 
   	See Also
   	--------
 
+    The method to set explicit default values, different from the references ones: O for int or float and 'none' for str:
+    :meth:`~explanes.factor.Factor.default`.
+
+    The method to compress the names :meth:.explanes.util.compressName`
+
   	Examples
   	--------
+
+    import explanes as el
+
+    f = el.factor.Factor()
+    f.one = ['a', 'b']
+    f.two = [0, 1]
+    f.three = ['none', 'c']
+
+    print(f.id())
+
+    for setting in f.mask([0, 1, 1]):
+      print(setting.id())
+      print(setting.id(sort=False))
+      print(setting.id(separator=' '))
+      print(setting.id(hideFactor=['one', 'three']))
+
+    print('//')
+    for setting in f.mask([0, 0, 0]):
+      print(setting.id())
+      print(setting.id(hideNonAndZero=False))
+    print('//')
+
+    f.default('one', 'a')
+    for setting in f.mask([0, 1, 1]):
+      print(setting.id())
+      print(setting.id(hideDefault=False))
+
 
     """
     id = []
@@ -524,28 +588,32 @@ class Factor():
           id.append(eu.compressDescription(f, format))
           id.append(str(getattr(self, f)))
     if 'list' not in format:
-      id = factorSeparator.join(id)
+      id = separator.join(id)
       if format == 'hash':
         id  = hashlib.md5(id.encode("utf-8")).hexdigest()
     return id
 
   def asPandaFrame(self):
-    """one liner
+    """returns a panda frame that describes the Factor object.
 
-  	Desc
-
-  	Parameters
-  	----------
-
-  	Returns
-  	-------
-
-  	See Also
-  	--------
+  	Returns a panda frame describing the Factor object. For ease of definition of a mask to select some settings, the columns and the rows of the panda frame are numbered.
 
   	Examples
   	--------
 
+    >>> import explanes as el
+
+    >>> f = el.factor.Factor()
+    >>> f.one = ['a', 'b']
+    >>> f.two = list(range(10))
+
+    >>> print(f)
+      0  one: ['a', 'b']
+      1  two: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    >>> print(f.asPandaFrame())
+      Factor  0  1  2  3  4  5  6  7  8  9
+    0    one  a  b
+    1    two  0  1  2  3  4  5  6  7  8  9
     """
     l = 1
     for ai, atr in enumerate(self._factors):
@@ -598,6 +666,17 @@ class Factor():
     if name[0] != '_' and type(value) in {list, np.ndarray} and name not in self._nonSingleton:
       self._nonSingleton.append(name)
     return object.__setattr__(self, name, value)
+
+  def __delattr__(
+    self,
+    name):
+
+    self._settings = []
+    self._changed = True
+    if hasattr(self, name) and name[0] != '_':
+      self._factors.remove(name)
+      self._nonSingleton.remove(name)
+    return object.__delattr__(self, name)
 
   def __getattribute__(
     self,

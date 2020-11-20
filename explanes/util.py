@@ -7,7 +7,6 @@ def constantColumn(
 ):
   """detect which column(s) have the same value for all lines.
 
-
 	Parameters
 	----------
 
