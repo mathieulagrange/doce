@@ -484,7 +484,7 @@ class Metric():
     settingDescription = []
     settingDescriptionFormat = copy.deepcopy(settingEncoding)
     settingDescriptionFormat['format'] = 'list'
-    settingDescriptionFormat['hideNonAndZero'] = False
+    settingDescriptionFormat['hideNoneAndZero'] = False
     settingDescriptionFormat['hideDefault'] = False
 
     if isinstance(dataLocation, str):

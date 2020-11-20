@@ -86,7 +86,7 @@ class Factor():
     """
     if hasattr(self, name):
       if not force and any(item == getattr(self, name) for item in [0, 'none']):
-        print('Setting an explicit default modality to factor '+name+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <hideNonAndZero> set to False when using method id(). You can remove this warning by setting the flag <force> to True.')
+        print('Setting an explicit default modality to factor '+name+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <hideNoneAndZero> set to False when using method id(). You can remove this warning by setting the flag <force> to True.')
         if value not in getattr(self, name):
           print('The default modality of factor '+name+' should be available in the set of modalities.')
           raise ValueError
@@ -502,12 +502,12 @@ class Factor():
     one b two 1
     one b two 2
     """
-    return self.id(singleton=False, sort=False, separator=' ', hideNonAndZero=False)
+    return self.id(singleton=False, sort=False, separator=' ', hideNoneAndZero=False)
 
-  def id(self, format='long', sort=True, singleton=True, hideNonAndZero=True, hideDefault=True, separator='_', hideFactor=[]):
+  def id(self, format='long', sort=True, singleton=True, hideNoneAndZero=True, hideDefault=True, separator='_', hideFactor=[]):
     """return a one-liner str or a list of str that describes a setting or a :class:`~explanes.factor.Factor` object.
 
-  	Return a one-liner str or a list of str that describes a setting or a :class:` ~explanes.factor.Factor` object with a high degree of flexibility.
+  	Return a one-liner str or a list of str that describes a setting or a :class:`~explanes.factor.Factor` object with a high degree of flexibility.
 
   	Parameters
   	----------
@@ -524,7 +524,7 @@ class Factor():
      if True  (default)
     singleton: bool (optional)
       if True (default)
-    hideNonAndZero: bool (optional)
+    hideNoneAndZero: bool (optional)
      if True (default)
     hideDefault: bool (optional)
      if True (default)
@@ -535,41 +535,79 @@ class Factor():
   	See Also
   	--------
 
-    The method to set explicit default values, different from the references ones: O for int or float and 'none' for str:
-    :meth:`~explanes.factor.Factor.default`.
+    explanes.factor.Factor.default 
 
-    The method to compress the names :meth:.explanes.util.compressName`
+    explanes.util.compressName
 
   	Examples
   	--------
 
-    import explanes as el
+    >>> import explanes as el
 
-    f = el.factor.Factor()
-    f.one = ['a', 'b']
-    f.two = [0, 1]
-    f.three = ['none', 'c']
+    >>> f = el.factor.Factor()
+    >>> f.one = ['a', 'b']
+    >>> f.two = [0, 1]
+    >>> f.three = ['none', 'c']
 
-    print(f.id())
+    >>> print(f.id())
+    one_['a', 'b']_three_['none', 'c']_two_[0, 1]
+    >>> for setting in f.mask([0, 1, 1]):
+    >>>   # default display
+    >>>   print(setting.id())
+    one_a_three_c_two_1
+    >>>   # list format
+    >>>   print(setting.id('list'))
+    ['one', 'a', 'three', 'c', 'two', '1']
+    >>>   # hashed version of the default display
+    >>>   print(setting.id('hash'))
+    3eea8431b66ad3eceb02b50bb2b882f9
+    >>>   # do not apply sorting of the factor
+    >>>   print(setting.id(sort=False))
+    one_a_two_1_three_c
+    >>>   # specify a separator
+    >>>   print(setting.id(separator=' '))
+    one a three c two 1
+    >>>   # do not show some factors
+    >>>   print(setting.id(hideFactor=['one', 'three']))
+    two_1
+    >>> for setting in f.mask([0, 0, 0]):
+    >>>   print(setting.id())
+    one_a
+    >>>   # do not hide the default value in the description
+    >>>   print(setting.id(hideNoneAndZero=False))
+    one_a_three_none_two_0
+    >>> # set the default value of factor one to a
+    >>> f.default('one', 'a')
+    >>> for setting in f.mask([0, 1, 1]):
+    >>>   print(setting.id())
+    three_c_two_1
+    >>>   # do not hide the default value in the description
+    >>>   print(setting.id(hideDefault=False))
+    one_a_three_c_two_1
+    >>> f.optional_parameter = ['value_one', 'value_two']
+    >>> for setting in f.mask([0, 1, 1, 0]):
+    >>>   print(setting.id())
+    optional_parameter_value_one_three_c_two_1
+    >>>   # compress the names as pythonCase
+    >>>   print(setting.id(format = 'shortUnderscore'))
+    oppa_vaon_th_c_tw_1
+    >>> delattr(f, 'optional_parameter')
 
-    for setting in f.mask([0, 1, 1]):
-      print(setting.id())
-      print(setting.id(sort=False))
-      print(setting.id(separator=' '))
-      print(setting.id(hideFactor=['one', 'three']))
+    >>> f.optionalParameter = ['valueOne', 'valueTwo']
+    >>> for setting in f.mask([0, 1, 1, 0]):
+    >>>   print(setting.id())
+    optionalParameter_valueOne_three_c_two_1
+    >>>   # compress the names as camelCase
+    >>>   print(setting.id(format = 'shortCapital'))
+    oppa_vaon_th_c_tw_1
 
-    print('//')
-    for setting in f.mask([0, 0, 0]):
-      print(setting.id())
-      print(setting.id(hideNonAndZero=False))
-    print('//')
-
-    f.default('one', 'a')
-    for setting in f.mask([0, 1, 1]):
-      print(setting.id())
-      print(setting.id(hideDefault=False))
-
-
+    >>> f.optionalParameter = ['value_one', 'value_two']
+    >>> for setting in f.mask([0, 1, 1, 0]):
+    >>>   print(setting.id())
+    optionalParameter_value_one_three_c_two_1
+    >>>   # compress the names with smart detection of the type of case
+    >>>   print(setting.id(format = 'short'))
+    oppa_vaon_th_c_tw_1
     """
     id = []
     fNames = self.factors()
@@ -584,9 +622,9 @@ class Factor():
       fNames = sorted(fNames)
     for fIndex, f in enumerate(fNames):
       if f[0] != '_' and getattr(self, f) is not None and f not in hideFactor:
-        if (singleton or f in self._nonSingleton) and (not hideNonAndZero or (hideNonAndZero and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and (not hideDefault or not hasattr(self._default, f) or (hideDefault and hasattr(self._default, f) and getattr(self._default, f) != getattr(self, f))):
+        if (singleton or f in self._nonSingleton) and (not hideNoneAndZero or (hideNoneAndZero and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and (not hideDefault or not hasattr(self._default, f) or (hideDefault and hasattr(self._default, f) and getattr(self._default, f) != getattr(self, f))):
           id.append(eu.compressDescription(f, format))
-          id.append(str(getattr(self, f)))
+          id.append(eu.compressDescription(str(getattr(self, f)), format))
     if 'list' not in format:
       id = separator.join(id)
       if format == 'hash':
@@ -655,8 +693,8 @@ class Factor():
     name,
     value
     ):
-    if not name == '_settings':
-      _settings = []
+    # if not name == '_settings':
+    #   _settings = []
     if not hasattr(self, name) and name[0] != '_':
       self._factors.append(name)
     if hasattr(self, name) and type(inspect.getattr_static(self, name)) == types.FunctionType:
@@ -671,7 +709,6 @@ class Factor():
     self,
     name):
 
-    self._settings = []
     self._changed = True
     if hasattr(self, name) and name[0] != '_':
       self._factors.remove(name)
