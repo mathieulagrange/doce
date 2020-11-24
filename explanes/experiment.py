@@ -25,13 +25,13 @@ def run():
 
   >>> import explanes as el
   >>> if __name__ == "__main__":
-  >>>   el.experiment.run()
+  ...   el.experiment.run()
   >>> def set(experiment, args):
-  >>>   experiment.factor.factor1=[1, 3]
-  >>>   experiment.factor.factor2=[2, 4]
-  >>>   return experiment
+  ...   experiment.factor.factor1=[1, 3]
+  ...   experiment.factor.factor2=[2, 4]
+  ...   return experiment
   >>> def step(setting, experiment):
-  >>>   print(setting.id())
+  ...   print(setting.id())
 
   Executing this file with the --run option gives::
 
@@ -118,6 +118,7 @@ def run():
     selectDisplay = ast.literal_eval(args.display)
 
   module = sys.argv[0][:-3]
+  print('//'+module)
   try:
     config = importlib.import_module(module)
   except:
@@ -501,7 +502,6 @@ class Experiment():
 
       It >0, an email is sent as soon as an setting is done and the difference between the current time and the time the last mail was sent is larger than mailInterval.
 
-
     See Also
     --------
 
@@ -510,31 +510,31 @@ class Experiment():
     Examples
     --------
 
+    >>> import time
+    >>> import random
     >>> import explanes as el
+
     >>> e=el.experiment.Experiment()
     >>> e.factor.factor1=[1, 3]
-    >>> e.factor.factor2=[2, 4]
-    >>>
+    >>> e.factor.factor2=[2, 5]
+
     >>> # this function displays the sum of the two modalities of the current setting
     >>> def myFunction(setting, experiment):
-    >>>   print('{}+{}={}'.format(setting.factor1, setting.factor2, setting.factor1+setting.factor2))
+    ...  time.sleep(random.uniform(0, 2))
+    ...  print('{}+{}={}'.format(setting.factor1, setting.factor2, setting.factor1+setting.factor2))
 
+    >>> # sequential execution of settings
     >>> e.do([], myFunction, nbJobs=1, progress=False)
     1+2=3
-    1+4=5
+    1+5=6
     3+2=5
-    3+4=7
-
-    In this example, since nbJobs<2, the scheduling of the setting set is deterministic and implemented as depth first.
-
+    3+5=8
+    >>> # arbitrary order execution of settings due to the parallelization
     >>> e.do([], myFunction, nbJobs=3, progress=False)
-    1+2=3
-    1+4=5
-    3+4=7
     3+2=5
-
-    In this example, since nbJobs>1, the scheduling of the setting set is non deterministic.
-
+    1+5=6
+    1+2=3
+    3+5=8
     """
 
     return self.factor.mask(mask).do(function, self, *parameters, nbJobs=nbJobs, progress=progress, logFileName=logFileName, mailInterval=mailInterval)
@@ -728,4 +728,5 @@ class Experiment():
 
 if __name__ == '__main__':
     import doctest
-    doctest.testmod()
+    # doctest.testmod(optionflags=doctest.NORMALIZE_WHITESPACE)
+    doctest.run_docstring_examples(Experiment.cleanDataSink, globals(), optionflags=doctest.NORMALIZE_WHITESPACE)

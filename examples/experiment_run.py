@@ -10,4 +10,4 @@ def set(args):
   return experiment
 
 def step(setting, experiment):
-  print(setting.id())
+  print(setting)

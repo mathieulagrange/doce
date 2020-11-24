@@ -84,7 +84,7 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
   >>> print(nbColumnFactor)
   1
   >>> print(constantSettingDescription)
-  factor_1: a 
+  factor_1: a
   >>> print(columnHeader)
   ['factor_2', 'metric_1', 'metric_2']
   >>> print(settingDescription)
@@ -112,7 +112,7 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
         for r in settingDescription:
           r.pop(s)
     else:
-      constantSettingDescription = ' '.join(settingDescription[0])
+      constantSettingDescription = ' '.join(settingDescription[0]).strip()
   return (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor)
 
 

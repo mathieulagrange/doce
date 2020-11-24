@@ -36,19 +36,15 @@ class Factor():
   >>> f.factor2=[2, 4]
 
   >>> print(f)
-  0  factor1: [1, 3]
-  1  factor2: [2, 4]
+    0  factor1: [1, 3]
+    1  factor2: [2, 4]
 
   >>> for setting in f:
-  >>>   print(setting)
-  0  factor1: 1
-  1  factor2: 2
-  0  factor1: 1
-  1  factor2: 4
-  0  factor1: 3
-  1  factor2: 2
-  0  factor1: 3
-  1  factor2: 4
+  ...   print(setting)
+  factor1 1 factor2 2
+  factor1 1 factor2 4
+  factor1 3 factor2 2
+  factor1 3 factor2 4
   """
   def __init__(self):
     self._setting = None
@@ -59,7 +55,6 @@ class Factor():
     self._nonSingleton = []
     self._factors = []
     self._default = types.SimpleNamespace()
-    self._parallel = False
     self._maskVolatile = True
 
   def default(
@@ -104,35 +99,6 @@ class Factor():
     else:
       print('Please set the factor '+factor+' before choosing its default modality.')
       raise ValueError
-
-  def doFunction(
-    self,
-    function,
-    experiment,
-    logFileName,
-    *parameters
-    ):
-    """run the function given as parameter for the current setting.
-
-  	Helper function for the method :meth:`~explanes.factor.Factor.do`.
-
-  	See Also
-  	--------
-
-    explanes.factor.Factor.do
-
-    """
-    failed = 0
-    try:
-      function(self, experiment, *parameters)
-    except Exception as e:
-      if logFileName:
-        failed = 1
-        #print('setting '+setting.id()+' failed')
-        logging.info(traceback.format_exc())
-      else:
-        raise e
-    return failed
 
   def do(
     self,
@@ -196,9 +162,7 @@ class Factor():
       print('Number of settings: '+str(len(self)))
     if nbJobs>1 or nbJobs<0:
       # print(nbJobs)
-      self._parallel = True
-      result = Parallel(n_jobs=nbJobs, require='sharedmem')(delayed(setting.doSetting)(function, experiment, logFileName, *parameters) for setting in self)
-      self._parallel = False
+      result = Parallel(n_jobs=nbJobs, require='sharedmem')(delayed(setting.do)(function, experiment, logFileName, *parameters) for setting in self)
     else:
       startTime = time.time()
       stepTime = startTime
@@ -207,12 +171,12 @@ class Factor():
             description = ''
             if nbFailed:
                 description = '[failed: '+str(nbFailed)+']'
-            description += setting.describe()
+            description += str(setting)
             t.set_description(description)
             if function:
-              nbFailed += setting.doFunction(function, experiment, logFileName, *parameters)
+              nbFailed += setting.do(function, experiment, logFileName, *parameters)
             else:
-                print(setting.describe())
+                print(setting)
             delay = (time.time()-stepTime)
             if mailInterval>0 and iSetting<len(self)-1  and delay/(60**2) > mailInterval :
               stepTime = time.time()
@@ -253,28 +217,28 @@ class Factor():
 
     >>> # select the settings with the second modality of the first factor, and with the first modality of the second factor
     >>> for setting in f.mask([1, 0]):
-    >>>  print(setting.describe())
+    ...  print(setting)
     f1 b f2 1
     >>> # select the settings with the second modality of the first factor, and all the modalities of the second factor
     >>> for setting in f.mask([1, -1]):
-      print(setting.describe())
+    ...  print(setting)
     f1 b f2 1
     f1 b f2 2
     f1 b f2 3
     >>> # the selection of all the modalities of the remaining factors can be conveniently expressed
     >>> for setting in f.mask([1]):
-      print(setting.describe())
+    ...  print(setting)
     f1 b f2 1
     f1 b f2 2
     f1 b f2 3
     >>> # select the settings using 2 mask, where the first selects the settings with the first modality of the first factor and with the second modality of the second factor, and the second mask selects the settings with the second modality of the first factor, and with the third modality of the second factor
     >>> for setting in f.mask([[0, 1], [1, 2]]):
-      print(setting.describe())
+    ...  print(setting)
     f1 a f2 2
     f1 b f2 3
     >>> # the latter expression may be interpreted as the selection of the settings with the first and second modalities of the first factor and with second and third modalities of the second factor. In that case, one needs to add a -1 at the end the mask (even if by doing so the length of the mask is larger than the number of factors)
     >>> for setting in f.mask([[0, 1], [1, 2], -1]):
-      print(setting.describe())
+    ...  print(setting)
     f1 a f2 2
     f1 a f2 3
     f1 b f2 2
@@ -334,12 +298,6 @@ class Factor():
 
     >>> print(f.nbModalities('one'))
     2
-    >>> print(f.nbModalities(1))
-    10
-
-    >>> f = el.factor.Factor()
-    >>> f.two = list(range(10))
-    >>> f.one = ['a', 'b']
     >>> print(f.nbModalities(1))
     10
     """
@@ -635,4 +593,4 @@ class Factor():
 
 if __name__ == '__main__':
     import doctest
-    doctest.testmod()
+    doctest.testmod(optionflags=doctest.NORMALIZE_WHITESPACE)

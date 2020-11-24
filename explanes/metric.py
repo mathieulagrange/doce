@@ -304,6 +304,8 @@ class Metric():
     >>> import explanes as el
     >>> import numpy as np
     >>> import pandas as pd
+    >>> np.random.seed(0)
+
     >>> experiment = el.experiment.Experiment()
     >>> experiment.project.name = 'example'
     >>> experiment.path.output = '/tmp/'+experiment.project.name+'/'
@@ -312,12 +314,12 @@ class Metric():
     >>> experiment.metric.m1 = ['mean', 'std']
     >>> experiment.metric.m2 = ['min', 'argmin']
     >>> def process(setting, experiment):
-    >>>   metric1 = setting.f1+setting.f2+np.random.randn(100)
-    >>>   metric2 = setting.f1*setting.f2*np.random.randn(100)
-    >>>   np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
-    >>>   np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
+    ...   metric1 = setting.f1+setting.f2+np.random.randn(100)
+    ...   metric2 = setting.f1*setting.f2*np.random.randn(100)
+    ...   np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
+    ...   np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
     >>> experiment.makePaths()
-    >>> experiment.do([], process, progress=False)
+    >>> nbFailed = experiment.do([], process, progress=False)
     >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = experiment.metric.reduce(experiment.factor.mask([1]), experiment.path.output)
 
     >>> df = pd.DataFrame(settingDescription, columns=columnHeader)
@@ -325,10 +327,10 @@ class Metric():
     >>> print(constantSettingDescription)
     f1: 2
     >>> print(df)
-        f1  f2  m1Mean  m1Std  m2Min  m2Argmin
-    0   1   1    2.07   1.03  -1.94        33
-    1   1   2    3.04   0.88  -4.85        78
-    2   1   3    4.12   1.05  -7.70        36
+       f2  m1Mean  m1Std  m2Min  m2Argmin
+    0   1    2.87   1.00  -4.49        35
+    1   2    3.97   0.93  -8.19        13
+    2   3    5.00   0.91 -12.07        98
 
     explanes also supports metrics storage using one .h5 file sink structured with settings as groups et metrics as leaf nodes.
 
@@ -336,6 +338,8 @@ class Metric():
     >>> import numpy as np
     >>> import tables as tb
     >>> import pandas as pd
+    >>> np.random.seed(0)
+
     >>> experiment = el.experiment.Experiment()
     >>> experiment.project.name = 'example'
     >>> experiment.path.output = '/tmp/'+experiment.project.name+'.h5'
@@ -344,15 +348,15 @@ class Metric():
     >>> experiment.metric.m1 = ['mean', 'std']
     >>> experiment.metric.m2 = ['min', 'argmin']
     >>> def process(setting, experiment):
-    >>>   h5 = tb.open_file(experiment.path.output, mode='a')
-    >>>   settingGroup = experiment.metric.addSettingGroup(h5, setting,
-    >>>       metricDimension = [100, 100])
-    >>>   settingGroup.m1[:] = setting.f1+setting.f2+np.random.randn(100)
-    >>>   settingGroup.m2[:] = setting.f1*setting.f2*np.random.randn(100)
-    >>>   h5.close()
+    ...   h5 = tb.open_file(experiment.path.output, mode='a')
+    ...   settingGroup = experiment.metric.addSettingGroup(h5, setting, metricDimension = {'m1':100, 'm2':100})
+    ...   settingGroup.m1[:] = setting.f1+setting.f2+np.random.randn(100)
+    ...   settingGroup.m2[:] = setting.f1*setting.f2*np.random.randn(100)
+    ...   h5.close()
     >>> experiment.makePaths()
-    >>> experiment.do([], process, progress=False)
+    >>> nbFailed = experiment.do([], process, progress=False)
     >>> h5 = tb.open_file(experiment.path.output, mode='r')
+    >>> print(h5)
     /tmp/example.h5 (File) ''
     Last modif.: 'Thu Sep 24 17:03:45 2020'
     Object Tree:
@@ -382,12 +386,12 @@ class Metric():
     >>> df = pd.DataFrame(settingDescription, columns=columnHeader)
     >>> df[columnHeader[nbColumnFactor:]] = df[columnHeader[nbColumnFactor:]].round(decimals=2)
     >>> print(constantSettingDescription)
-    f1: 1 
+    f1: 1
     >>> print(df)
-        f2  m1Mean  m1Std  m2Min  m2Argmin
-    0   1    2.02   0.86  -2.43         6
-    1   2    3.11   1.02  -4.41        85
-    2   3    4.13   1.03  -6.21        65
+       f2  m1Mean  m1Std  m2Min  m2Argmin
+    0   1    2.06   1.01  -2.22        83
+    1   2    2.94   0.95  -5.32        34
+    2   3    3.99   1.04  -9.14        89
     """
     if dataLocation.endswith('.h5'):
       (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose)
@@ -757,4 +761,5 @@ class Metric():
 
 if __name__ == '__main__':
     import doctest
-    doctest.testmod()
+    # doctest.testmod(optionflags=doctest.NORMALIZE_WHITESPACE)
+    doctest.run_docstring_examples(Metric.reduce, globals(), optionflags=doctest.NORMALIZE_WHITESPACE)

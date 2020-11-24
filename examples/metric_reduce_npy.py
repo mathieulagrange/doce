@@ -2,6 +2,8 @@ import explanes as el
 import numpy as np
 import pandas as pd
 
+np.random.seed(0)
+
 experiment = el.experiment.Experiment()
 experiment.project.name = 'example'
 experiment.path.output = '/tmp/'+experiment.project.name+'/'
