@@ -358,27 +358,27 @@ class Metric():
     >>> h5 = tb.open_file(experiment.path.output, mode='r')
     >>> print(h5)
     /tmp/example.h5 (File) ''
-    Last modif.: 'Thu Sep 24 17:03:45 2020'
+    Last modif.: '...'
     Object Tree:
     / (RootGroup) ''
     /f1_1_f2_1 (Group) 'f1 1 f2 1'
     /f1_1_f2_1/m1 (Array(100,)) 'm1'
-    /f1_1_f2_1/m2 (Array(100,)) 'm2'
+    /f1_1_f2_1/m2 (EArray(100,)) 'm2'
     /f1_1_f2_2 (Group) 'f1 1 f2 2'
     /f1_1_f2_2/m1 (Array(100,)) 'm1'
-    /f1_1_f2_2/m2 (Array(100,)) 'm2'
+    /f1_1_f2_2/m2 (EArray(100,)) 'm2'
     /f1_1_f2_3 (Group) 'f1 1 f2 3'
     /f1_1_f2_3/m1 (Array(100,)) 'm1'
-    /f1_1_f2_3/m2 (Array(100,)) 'm2'
+    /f1_1_f2_3/m2 (EArray(100,)) 'm2'
     /f1_2_f2_1 (Group) 'f1 2 f2 1'
     /f1_2_f2_1/m1 (Array(100,)) 'm1'
-    /f1_2_f2_1/m2 (Array(100,)) 'm2'
+    /f1_2_f2_1/m2 (EArray(100,)) 'm2'
     /f1_2_f2_2 (Group) 'f1 2 f2 2'
     /f1_2_f2_2/m1 (Array(100,)) 'm1'
-    /f1_2_f2_2/m2 (Array(100,)) 'm2'
+    /f1_2_f2_2/m2 (EArray(100,)) 'm2'
     /f1_2_f2_3 (Group) 'f1 2 f2 3'
     /f1_2_f2_3/m1 (Array(100,)) 'm1'
-    /f1_2_f2_3/m2 (Array(100,)) 'm2'
+    /f1_2_f2_3/m2 (EArray(100,)) 'm2'
     >>> h5.close()
 
     >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = experiment.metric.reduce(experiment.factor.mask([0]), experiment.path.output)
@@ -465,16 +465,14 @@ class Metric():
     >>> experiment.metric.m2 = ['min', 'argmin']
 
     >>> def process(setting, experiment):
-      metric1 = setting.f1+setting.f2+np.random.randn(100)
-      metric2 = setting.f1*setting.f2*np.random.randn(100)
-      np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
-      np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
-
+    ...  metric1 = setting.f1+setting.f2+np.random.randn(100)
+    ...  metric2 = setting.f1*setting.f2*np.random.randn(100)
+    ...  np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
+    ...  np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
     >>> experiment.makePaths()
-    >>> experiment.do([], process, progress=False)
+    >>> nbFailed = experiment.do([], process, progress=False)
 
     >>> (settingMetric, settingDescription, constantSettingDescription) = experiment.metric.get('m1', experiment.factor.mask([1]), experiment.path.output)
-
     >>> print(constantSettingDescription)
     f1 2
     >>> print(settingDescription)
@@ -569,46 +567,46 @@ class Metric():
     >>> experiment.metric.m2 = ['min', 'argmin']
 
     >>> def process(setting, experiment):
-      h5 = tb.open_file(experiment.path.output, mode='a')
-      sg = experiment.metric.addSettingGroup(h5, setting,
-          metricDimension = {'m1':100})
-      sg.m1[:] = setting.f1+setting.f2+np.random.randn(100)
-      sg.m2.append(setting.f1*setting.f2*np.random.randn(100))
-      h5.close()
+    ...  h5 = tb.open_file(experiment.path.output, mode='a')
+    ...  sg = experiment.metric.addSettingGroup(h5, setting, metricDimension = {'m1':100})
+    ...  sg.m1[:] = setting.f1+setting.f2+np.random.randn(100)
+    ...  sg.m2.append(setting.f1*setting.f2*np.random.randn(100))
+    ...  h5.close()
 
     >>> experiment.makePaths()
-    >>> experiment.do([], process, progress=False)
+    >>> nbFailed = experiment.do([], process, progress=False)
 
     >>> h5 = tb.open_file(experiment.path.output, mode='r')
     >>> print(h5)
     /tmp/example.h5 (File) ''
-    Last modif.: 'Tue Oct 20 14:52:26 2020'
+    Last modif.: '...'
     Object Tree:
     / (RootGroup) ''
-    /f1_1_f2_1 (Group) 'f1_1_f2_1'
+    /f1_1_f2_1 (Group) 'f1 1 f2 1'
     /f1_1_f2_1/m1 (Array(100,)) 'm1'
     /f1_1_f2_1/m2 (EArray(100,)) 'm2'
-    /f1_1_f2_2 (Group) 'f1_1_f2_2'
+    /f1_1_f2_2 (Group) 'f1 1 f2 2'
     /f1_1_f2_2/m1 (Array(100,)) 'm1'
     /f1_1_f2_2/m2 (EArray(100,)) 'm2'
-    /f1_1_f2_3 (Group) 'f1_1_f2_3'
+    /f1_1_f2_3 (Group) 'f1 1 f2 3'
     /f1_1_f2_3/m1 (Array(100,)) 'm1'
     /f1_1_f2_3/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_1 (Group) 'f1_2_f2_1'
+    /f1_2_f2_1 (Group) 'f1 2 f2 1'
     /f1_2_f2_1/m1 (Array(100,)) 'm1'
     /f1_2_f2_1/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_2 (Group) 'f1_2_f2_2'
+    /f1_2_f2_2 (Group) 'f1 2 f2 2'
     /f1_2_f2_2/m1 (Array(100,)) 'm1'
     /f1_2_f2_2/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_3 (Group) 'f1_2_f2_3'
+    /f1_2_f2_3 (Group) 'f1 2 f2 3'
     /f1_2_f2_3/m1 (Array(100,)) 'm1'
     /f1_2_f2_3/m2 (EArray(100,)) 'm2'
+
     >>> h5.close()
     """
     groupName = setting.id(**settingEncoding)
     # print(groupName)
     if not fileId.__contains__('/'+groupName):
-      settingGroup = fileId.create_group('/', groupName, setting.id(settingEncoding))
+      settingGroup = fileId.create_group('/', groupName, str(setting))
     else:
       settingGroup = fileId.root._f_get_child(groupName)
     for metric in self.name():
@@ -742,7 +740,8 @@ class Metric():
     >>> m._unit.mse = ''
     >>> m._description.mse = 'Mean Square Error'
     >>> print(m)
-
+    duration: ['mean'], the duration of the trial in seconds.
+    mse: ['mean'], the Mean Square Error.
     """
     cString = ''
     atrs = dict(vars(type(self)))
@@ -757,9 +756,9 @@ class Metric():
         if hasattr(self._unit, atr) and self._unit.__getattribute__(atr):
           cString+=' in '+str(self._unit.__getattribute__(atr))
         cString += '.\r\n'
-    return cString
+    return cString.rstrip()
 
 if __name__ == '__main__':
     import doctest
-    # doctest.testmod(optionflags=doctest.NORMALIZE_WHITESPACE)
-    doctest.run_docstring_examples(Metric.reduce, globals(), optionflags=doctest.NORMALIZE_WHITESPACE)
+    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+    # doctest.run_docstring_examples(Metric.addSettingGroup, globals(), optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)

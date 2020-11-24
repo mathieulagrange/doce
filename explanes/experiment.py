@@ -657,7 +657,7 @@ class Experiment():
     >>> h5 = tb.open_file(e.path.output, mode='r')
     >>> print(h5)
     /tmp/test.h5 (File) ''
-    Last modif.: 'Wed Sep 16 17:54:08 2020'
+    Last modif.: '...'
     Object Tree:
     / (RootGroup) ''
     /factor1_3_factor2_2 (Group) 'factor1 3 factor2 2'
@@ -728,5 +728,5 @@ class Experiment():
 
 if __name__ == '__main__':
     import doctest
-    # doctest.testmod(optionflags=doctest.NORMALIZE_WHITESPACE)
-    doctest.run_docstring_examples(Experiment.cleanDataSink, globals(), optionflags=doctest.NORMALIZE_WHITESPACE)
+    # doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+    doctest.run_docstring_examples(Experiment.cleanDataSink, globals(), optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
