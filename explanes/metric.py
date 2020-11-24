@@ -177,6 +177,7 @@ class Metric():
     >>> import explanes as el
     >>> import numpy as np
     >>> data = np.linspace(1, 10, num=10)
+    >>> print(data)
     [ 1.  2.  3.  4.  5.  6.  7.  8.  9. 10.]
     >>> m  =el.metric.Metric()
     >>> m.reduceMetric(data, 0)
@@ -381,7 +382,7 @@ class Metric():
     >>> df = pd.DataFrame(settingDescription, columns=columnHeader)
     >>> df[columnHeader[nbColumnFactor:]] = df[columnHeader[nbColumnFactor:]].round(decimals=2)
     >>> print(constantSettingDescription)
-        f1: 1
+    f1: 1 
     >>> print(df)
         f2  m1Mean  m1Std  m2Min  m2Argmin
     0   1    2.02   0.86  -2.43         6
@@ -753,3 +754,7 @@ class Metric():
           cString+=' in '+str(self._unit.__getattribute__(atr))
         cString += '.\r\n'
     return cString
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()

@@ -20,6 +20,7 @@ For a quick introduction to using explanes, please refer to the :doc:`tutorial`.
   explanes
   experiment
   factor
+  setting
   metric
   util
 

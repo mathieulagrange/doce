@@ -79,12 +79,12 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
   >>> import explanes as el
 
   >>> header = ['factor_1', 'factor_2', 'metric_1', 'metric_2']
-  (settingDescription, columnHeader, constantSettingDescription, >>> table = [['a', 'b', 1, 2], ['a', 'c', 2, 2], ['a', 'b', 2, 2]]
-  >>> nbColumnFactor) = el.util.pruneSettingDescription(table, header, 2)
+  >>> table = [['a', 'b', 1, 2], ['a', 'c', 2, 2], ['a', 'b', 2, 2]]
+  >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = el.util.pruneSettingDescription(table, header, 2)
   >>> print(nbColumnFactor)
   1
   >>> print(constantSettingDescription)
-  factor_1: a
+  factor_1: a 
   >>> print(columnHeader)
   ['factor_2', 'metric_1', 'metric_2']
   >>> print(settingDescription)
@@ -142,9 +142,9 @@ def compressDescription(
 
   >>> import explanes as el
   >>> el.util.compressDescription('myVeryLongParameter', format='short')
-  myvelopa
+  'myvelopa'
   >>> el.util.compressDescription('that_very_long_parameter', format='short', atomLength=3)
-  thaverlonpar
+  'thaverlonpar'
   """
 
   if format == 'short':
@@ -217,3 +217,7 @@ def inNotebook():
     return True
   except NameError:
     return False
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()

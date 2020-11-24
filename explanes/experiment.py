@@ -725,3 +725,7 @@ class Experiment():
       print('checking '+sns+' path')
       self.cleanDataSink(sns, mask, reverse, force, selector, settingEncoding,
       archivePath)
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()

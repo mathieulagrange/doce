@@ -1,13 +1,14 @@
 import os
 import inspect
 import types
-import hashlib
+
 import numpy as np
 import tables as tb
 import pandas as pd
 import copy
 import glob
 import explanes.util as eu
+import explanes.setting as es
 import traceback
 import logging
 from joblib import Parallel, delayed
@@ -55,7 +56,7 @@ class Factor():
     self._changed = False
     self._currentSetting = 0
     self._settings = []
-    self._mask = []
+    self._mask = None
     self._nonSingleton = []
     self._factors = []
     self._default = types.SimpleNamespace()
@@ -63,36 +64,45 @@ class Factor():
 
   def default(
     self,
-    name,
-    value,
-    force=False
+    factor,
+    modality,
+    genericDefaultModalityWarning=True
     ):
-    """one liner
+    """set the default modality for the specified factor.
 
-  	Desc
+  	Set the default modality for the specified factor.
 
   	Parameters
   	----------
 
-  	Returns
-  	-------
+    factor: str
+
+    modality: str
+
+    genericDefaultModalityWarning: bool (optional)
+
+      if True,  print a warning if a default value is a generic default value is already in the set of modalities for this factor (default).
+
+      If False, do not print the warning.
 
   	See Also
   	--------
+
+    explanes.factor.Factor.id
 
   	Examples
   	--------
 
     """
-    if hasattr(self, name):
-      if not force and any(item == getattr(self, name) for item in [0, 'none']):
-        print('Setting an explicit default modality to factor '+name+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <hideNoneAndZero> set to False when using method id(). You can remove this warning by setting the flag <force> to True.')
-        if value not in getattr(self, name):
-          print('The default modality of factor '+name+' should be available in the set of modalities.')
-          raise ValueError
-      self._default.__setattr__(name, value)
+    if hasattr(self, factor):
+      if not genericDefaultModalityWarning and any(item == getattr(self, factor) for item in [0, 'none']):
+        print('Setting an explicit default modality to factor '+name+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <hideNoneAndZero> set to False when using method id() if (O or none). You can remove this warning by setting the flag <force> to True.')
+      if modality not in getattr(self, factor):
+        print('The default modality of factor '+factor+' should be available in the set of modalities.')
+        raise ValueError
+      self._default.__setattr__(factor, modality)
     else:
-      print('Please set the factor '+name+' before choosing its default modality.')
+      print('Please set the factor '+factor+' before choosing its default modality.')
       raise ValueError
 
   def doFunction(
@@ -214,7 +224,8 @@ class Factor():
 
   def mask(
     self,
-    mask=None
+    mask=None,
+    volatile=False
     ):
     """set the mask.
 
@@ -225,6 +236,11 @@ class Factor():
 
     mask: list of list of int or list of int
      a :term:`mask
+
+    volatile: bool
+      if True, the mask is disabled after a complete iteration over the setting set.
+
+      If False, the mask is saved for further iterations.
 
   	Examples
   	--------
@@ -266,6 +282,7 @@ class Factor():
     """
 
     self._mask = mask
+    self._maskVolatile = volatile
     return self
 
   def factors(
@@ -331,7 +348,7 @@ class Factor():
     return len(object.__getattribute__(self, factor))
 
   def cleanH5(self, path, reverse=False, force=False, settingEncoding={}):
-    """Clean a h5 data sink by considering the settings set.
+    """clean a h5 data sink by considering the settings set.
 
   	This method is more conveniently used by considering the method :meth:`explanes.experiment.Experiment.cleanDataSink, please see its documentation for usage.
     """
@@ -368,7 +385,7 @@ class Factor():
     settingEncoding={},
     archivePath=''
     ):
-    """Clean a data sink by considering the settings set.
+    """clean a data sink by considering the settings set.
 
   	This method is more conveniently used by considering the method :meth:`explanes.experiment.Experiment.cleanDataSink, please see its documentation for usage.
     """
@@ -479,157 +496,7 @@ class Factor():
     else:
       return f
 
-  def describe(self):
-    """returns a one-liner str with a readable description of the Factor object or the current setting.
 
-  	returns a one-liner str with a readable description of the Factor object or the current setting if in an iterable.
-
-  	Examples
-  	--------
-
-    >>> import explanes as el
-
-    >>> f = el.factor.Factor()
-    >>> f.one = ['a', 'b']
-    >>> f.two = [1, 2]
-
-    >>> print(f.describe())
-    one ['a', 'b'] two [1, 2]
-    >>> for setting in f:
-    >>>   print(setting.describe())
-    one a two 1
-    one a two 2
-    one b two 1
-    one b two 2
-    """
-    return self.id(singleton=False, sort=False, separator=' ', hideNoneAndZero=False)
-
-  def id(self, format='long', sort=True, singleton=True, hideNoneAndZero=True, hideDefault=True, separator='_', hideFactor=[]):
-    """return a one-liner str or a list of str that describes a setting or a :class:`~explanes.factor.Factor` object.
-
-  	Return a one-liner str or a list of str that describes a setting or a :class:`~explanes.factor.Factor` object with a high degree of flexibility.
-
-  	Parameters
-  	----------
-
-    format: str (optional)
-      'long': (default)
-      'shortUnderscore': pythonCase delimitation
-      'shortCapital': camelCase delimitation
-      'short':
-      'list': a list of string alternating factor and the corresponding modality
-      'hash':
-
-    sort: bool (optional)
-     if True  (default)
-    singleton: bool (optional)
-      if True (default)
-    hideNoneAndZero: bool (optional)
-     if True (default)
-    hideDefault: bool (optional)
-     if True (default)
-    separator: str
-      default '_',
-    hideFactor=[]
-
-  	See Also
-  	--------
-
-    explanes.factor.Factor.default 
-
-    explanes.util.compressName
-
-  	Examples
-  	--------
-
-    >>> import explanes as el
-
-    >>> f = el.factor.Factor()
-    >>> f.one = ['a', 'b']
-    >>> f.two = [0, 1]
-    >>> f.three = ['none', 'c']
-
-    >>> print(f.id())
-    one_['a', 'b']_three_['none', 'c']_two_[0, 1]
-    >>> for setting in f.mask([0, 1, 1]):
-    >>>   # default display
-    >>>   print(setting.id())
-    one_a_three_c_two_1
-    >>>   # list format
-    >>>   print(setting.id('list'))
-    ['one', 'a', 'three', 'c', 'two', '1']
-    >>>   # hashed version of the default display
-    >>>   print(setting.id('hash'))
-    3eea8431b66ad3eceb02b50bb2b882f9
-    >>>   # do not apply sorting of the factor
-    >>>   print(setting.id(sort=False))
-    one_a_two_1_three_c
-    >>>   # specify a separator
-    >>>   print(setting.id(separator=' '))
-    one a three c two 1
-    >>>   # do not show some factors
-    >>>   print(setting.id(hideFactor=['one', 'three']))
-    two_1
-    >>> for setting in f.mask([0, 0, 0]):
-    >>>   print(setting.id())
-    one_a
-    >>>   # do not hide the default value in the description
-    >>>   print(setting.id(hideNoneAndZero=False))
-    one_a_three_none_two_0
-    >>> # set the default value of factor one to a
-    >>> f.default('one', 'a')
-    >>> for setting in f.mask([0, 1, 1]):
-    >>>   print(setting.id())
-    three_c_two_1
-    >>>   # do not hide the default value in the description
-    >>>   print(setting.id(hideDefault=False))
-    one_a_three_c_two_1
-    >>> f.optional_parameter = ['value_one', 'value_two']
-    >>> for setting in f.mask([0, 1, 1, 0]):
-    >>>   print(setting.id())
-    optional_parameter_value_one_three_c_two_1
-    >>>   # compress the names as pythonCase
-    >>>   print(setting.id(format = 'shortUnderscore'))
-    oppa_vaon_th_c_tw_1
-    >>> delattr(f, 'optional_parameter')
-
-    >>> f.optionalParameter = ['valueOne', 'valueTwo']
-    >>> for setting in f.mask([0, 1, 1, 0]):
-    >>>   print(setting.id())
-    optionalParameter_valueOne_three_c_two_1
-    >>>   # compress the names as camelCase
-    >>>   print(setting.id(format = 'shortCapital'))
-    oppa_vaon_th_c_tw_1
-
-    >>> f.optionalParameter = ['value_one', 'value_two']
-    >>> for setting in f.mask([0, 1, 1, 0]):
-    >>>   print(setting.id())
-    optionalParameter_value_one_three_c_two_1
-    >>>   # compress the names with smart detection of the type of case
-    >>>   print(setting.id(format = 'short'))
-    oppa_vaon_th_c_tw_1
-    """
-    id = []
-    fNames = self.factors()
-    if isinstance(hideFactor, str):
-      hideFactor=[hideFactor]
-    elif isinstance(hideFactor, int) :
-      hideFactor=[fNames[hideFactor]]
-    elif isinstance(hideFactor, list) and len(hideFactor) and isinstance(hideFactor[0], int) :
-      for oi, o in enumerate(hideFactor):
-        hideFactor[oi]=fNames[o]
-    if sort:
-      fNames = sorted(fNames)
-    for fIndex, f in enumerate(fNames):
-      if f[0] != '_' and getattr(self, f) is not None and f not in hideFactor:
-        if (singleton or f in self._nonSingleton) and (not hideNoneAndZero or (hideNoneAndZero and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and (not hideDefault or not hasattr(self._default, f) or (hideDefault and hasattr(self._default, f) and getattr(self._default, f) != getattr(self, f))):
-          id.append(eu.compressDescription(f, format))
-          id.append(eu.compressDescription(str(getattr(self, f)), format))
-    if 'list' not in format:
-      id = separator.join(id)
-      if format == 'hash':
-        id  = hashlib.md5(id.encode("utf-8")).hexdigest()
-    return id
 
   def asPandaFrame(self):
     """returns a panda frame that describes the Factor object.
@@ -687,14 +554,11 @@ class Factor():
       cString+='  '+str(ai)+'  '+atr+': '+str(self.__getattribute__(atr))+'\r\n'
     return cString
 
-
   def __setattr__(
     self,
     name,
     value
     ):
-    # if not name == '_settings':
-    #   _settings = []
     if not hasattr(self, name) and name[0] != '_':
       self._factors.append(name)
     if hasattr(self, name) and type(inspect.getattr_static(self, name)) == types.FunctionType:
@@ -715,25 +579,25 @@ class Factor():
       self._nonSingleton.remove(name)
     return object.__delattr__(self, name)
 
-  def __getattribute__(
-    self,
-    name
-    ):
-
-    value = object.__getattribute__(self, name)
-    if name[0] != '_' and self._setting and type(inspect.getattr_static(self, name)) != types.FunctionType:
-      idx = self.factors().index(name)
-      if self._setting[idx] == -2:
-        value = None
-      else:
-        if  type(inspect.getattr_static(self, name)) in {list, np.ndarray} :
-          try:
-            value = value[self._setting[idx]]
-          except IndexError:
-            value = 'null'
-            print('Error: factor '+name+' have modalities 0 to '+str(len(value)-1)+'. Requested '+str(self._setting[idx]))
-            raise
-    return value
+  # def __getattribute__(
+  #   self,
+  #   name
+  #   ):
+  #
+  #   value = object.__getattribute__(self, name)
+  #   if name[0] != '_' and self._setting and type(inspect.getattr_static(self, name)) != types.FunctionType:
+  #     idx = self.factors().index(name)
+  #     if self._setting[idx] == -2:
+  #       value = None
+  #     else:
+  #       if  type(inspect.getattr_static(self, name)) in {list, np.ndarray} :
+  #         try:
+  #           value = value[self._setting[idx]]
+  #         except IndexError:
+  #           value = 'null'
+  #           print('Error: factor '+name+' have modalities 0 to '+str(len(value)-1)+'. Requested '+str(self._setting[idx]))
+  #           raise
+  #   return value
 
   def __iter__(
     self
@@ -748,15 +612,18 @@ class Factor():
     ):
 
     if self._currentSetting == len(self._settings):
+      if self._maskVolatile:
+        self._mask = None
       raise StopIteration
     else:
       self._setting = self._settings[self._currentSetting]
       # print(self._setting)
       self._currentSetting += 1
-      if self._parallel:
-        return copy.deepcopy(self)
-      else:
-        return self #  copy.deepcopy(self)
+      return es.Setting(self)
+      # if self._parallel:
+      #   return copy.deepcopy(self)
+      # else:
+      #   return self #  copy.deepcopy(self)
 
   def __getitem__(self, index):
     # print('get item')
@@ -843,3 +710,7 @@ class Factor():
       else:
         settings.insert(0, mask[done])
     return settings
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()

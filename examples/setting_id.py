@@ -5,7 +5,7 @@ f.one = ['a', 'b']
 f.two = [0, 1]
 f.three = ['none', 'c']
 
-print(f.id())
+print(f)
 
 for setting in f.mask([0, 1, 1]):
   # default display
