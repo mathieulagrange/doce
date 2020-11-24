@@ -472,8 +472,8 @@ class Factor():
     cString = ''
     l = 1
     for ai, atr in enumerate(self._factors):
-      cString+='  '+str(ai)+'  '+atr+': '+str(self.__getattribute__(atr))+'\r\n'
-    return cString
+      cString+='  '+str(ai)+'  '+atr+': '+str(self.__getattribute__(atr))+'\n'
+    return cString[:-1]
 
   def __setattr__(
     self,
