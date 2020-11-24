@@ -4,6 +4,7 @@ f = el.factor.Factor()
 f.one = ['a', 'b']
 f.two = [0, 1]
 f.three = ['none', 'c']
+f.four = 'd'
 
 print(f)
 
@@ -20,6 +21,10 @@ for setting in f.mask([0, 1, 1]):
   print(setting.id(separator=' '))
   # do not show some factors
   print(setting.id(hideFactor=['one', 'three']))
+  # do not show factors with only one modality
+  print(setting.id(hideSingleton=True))
+
+delattr(f, 'four')
 
 for setting in f.mask([0, 0, 0]):
   print(setting.id())

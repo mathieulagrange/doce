@@ -1,7 +1,6 @@
 import os
 import inspect
 import types
-
 import numpy as np
 import tables as tb
 import pandas as pd
@@ -487,7 +486,7 @@ class Factor():
       raise Exception('the attribute '+name+' is shadowing a builtin function')
     if name == '_mask' or name[0] != '_':
       self._changed = True
-    if name[0] != '_' and type(value) in {list, np.ndarray} and name not in self._nonSingleton:
+    if name[0] != '_' and type(value) in {list, np.ndarray} and len(value)>1 and name not in self._nonSingleton:
       self._nonSingleton.append(name)
     return object.__setattr__(self, name, value)
 
@@ -498,7 +497,8 @@ class Factor():
     self._changed = True
     if hasattr(self, name) and name[0] != '_':
       self._factors.remove(name)
-      self._nonSingleton.remove(name)
+      if name in self._nonSingleton:
+        self._nonSingleton.remove(name)
     return object.__delattr__(self, name)
 
   # def __getattribute__(
