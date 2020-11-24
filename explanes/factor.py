@@ -61,6 +61,7 @@ class Factor():
     self._factors = []
     self._default = types.SimpleNamespace()
     self._parallel = False
+    self._maskVolatile = True
 
   def default(
     self,
@@ -418,85 +419,6 @@ class Factor():
             os.rename(f, archivePath+'/'+os.path.basename(f))
           else:
             os.remove(f)
-
-  def alternative(self, factor, value=None, positional=0, relative=0):
-    """returns a new explanes.factor.Factor object with one factor with modified modality.
-
-  	Returns a new explanes.factor.Factor object with with one factor with modified modality. The value of the requested new modality can requested by 3 exclusive means: its value, its position in the modality array, or its relative position in the array with respect to the position of the current modality.
-
-  	Parameters
-  	----------
-
-    factor: int or str
-      if int, considered as the index inside an array of the factors sorted by order of definition.
-
-      If str, the name of the factor.
-
-    modality: literal or None (optional)
-      the value of the modality.
-
-    positional: int (optional)
-      if 0, this parameter is not considered (default).
-
-      If >0, interpreted as the index in the modality array (default).
-
-    relative: int (optional)
-      if 0, this parameter is not considered (default).
-
-      Otherwise, interpreted as an index, relative to the current modality.
-
-  	Examples
-  	--------
-
-    >>> import explanes as el
-
-    >>> f = el.factor.Factor()
-    >>> f.one = ['a', 'b', 'c']
-    >>> f.two = [1, 2, 3]
-
-    >>> for setting in f.mask([1, 1]):
-    >>>   # the inital setting
-    >>>   print(setting.describe())
-    one b two 2
-    >>> # the same setting but with the factor 'two' set to modality 1
-    one b two 1
-    >>> print(setting.alternative('two', value=1).describe())
-    >>> # the same setting but with the first factor set to modality
-    one b two 1
-    >>> print(setting.alternative(1, value=1).describe())
-    >>> # the same setting but with the factor 'two' set to modality index 0
-    one b two 1
-    >>> print(setting.alternative('two', positional=0).describe())
-    one b two 1
-    >>> # the same setting but with the factor 'two' set to modality of relative index -1 with respect to the modality index of the current setting
-    >>> print(setting.alternative('two', relative=-1).describe())
-    one b two 1
-    """
-
-    # get factor index
-    if isinstance(factor, str):
-      factor = self.factors().index(factor)
-    # get modality index
-    if value is not None:
-      factorName = self.factors()[factor]
-      set = self._setting
-      self._setting = None
-      modalities = self.__getattribute__(factorName)
-      positional = modalities.index(value)
-      self._setting = set
-
-    f = copy.deepcopy(self)
-    if relative:
-      f._setting[factor] += relative
-    else:
-      f._setting[factor] = positional
-    if f._setting[factor]< 0 or f._setting[factor] >= self.nbModalities(factor):
-      print('Unable to find the requested modality.')
-      return None
-    else:
-      return f
-
-
 
   def asPandaFrame(self):
     """returns a panda frame that describes the Factor object.
