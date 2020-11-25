@@ -18,7 +18,7 @@ def process(setting, experiment):
   np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
   np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
 
-experiment.makePaths()
+experiment.setPath()
 experiment.do([], process, progress=False)
 
 (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = experiment.metric.reduce(experiment.factor.mask([1]), experiment.path.output, verbose=True)

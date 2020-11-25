@@ -16,7 +16,7 @@ def process(setting, experiment):
   np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
   np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
 
-experiment.makePaths()
+experiment.setPath()
 experiment.do([], process, progress=False)
 
 (settingMetric, settingDescription, constantSettingDescription) = experiment.metric.get('m1', experiment.factor.mask([1]), experiment.path.output)

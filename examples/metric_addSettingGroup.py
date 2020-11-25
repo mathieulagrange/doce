@@ -13,12 +13,12 @@ experiment.metric.m2 = ['min', 'argmin']
 def process(setting, experiment):
   h5 = tb.open_file(experiment.path.output, mode='a')
   sg = experiment.metric.addSettingGroup(h5, setting,
-      metricDimensions = {'m1':100})
+      metricDimensions = {'m1':100, 'm2':100})
   sg.m1[:] = setting.f1+setting.f2+np.random.randn(100)
   sg.m2.append(setting.f1*setting.f2*np.random.randn(100))
   h5.close()
 
-experiment.makePaths()
+experiment.setPath()
 experiment.do([], process, progress=False)
 
 h5 = tb.open_file(experiment.path.output, mode='r')

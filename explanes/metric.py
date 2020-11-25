@@ -318,7 +318,7 @@ class Metric():
     ...   metric2 = setting.f1*setting.f2*np.random.randn(100)
     ...   np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
     ...   np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
-    >>> experiment.makePaths()
+    >>> experiment.setPath()
     >>> nbFailed = experiment.do([], process, progress=False)
     >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = experiment.metric.reduce(experiment.factor.mask([1]), experiment.path.output)
 
@@ -353,7 +353,7 @@ class Metric():
     ...   settingGroup.m1[:] = setting.f1+setting.f2+np.random.randn(100)
     ...   settingGroup.m2[:] = setting.f1*setting.f2*np.random.randn(100)
     ...   h5.close()
-    >>> experiment.makePaths()
+    >>> experiment.setPath()
     >>> nbFailed = experiment.do([], process, progress=False)
     >>> h5 = tb.open_file(experiment.path.output, mode='r')
     >>> print(h5)
@@ -469,7 +469,7 @@ class Metric():
     ...  metric2 = setting.f1*setting.f2*np.random.randn(100)
     ...  np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
     ...  np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
-    >>> experiment.makePaths()
+    >>> experiment.setPath()
     >>> nbFailed = experiment.do([], process, progress=False)
 
     >>> (settingMetric, settingDescription, constantSettingDescription) = experiment.metric.get('m1', experiment.factor.mask([1]), experiment.path.output)
@@ -573,7 +573,7 @@ class Metric():
     ...  sg.m2.append(setting.f1*setting.f2*np.random.randn(100))
     ...  h5.close()
 
-    >>> experiment.makePaths()
+    >>> experiment.setPath()
     >>> nbFailed = experiment.do([], process, progress=False)
 
     >>> h5 = tb.open_file(experiment.path.output, mode='r')

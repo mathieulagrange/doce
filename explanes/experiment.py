@@ -25,7 +25,7 @@ def run():
 
   >>> import explanes as el
   >>> if __name__ == "__main__":
-  ...   el.experiment.run()
+  ...   el.experiment.run() # doctest: +SKIP
   >>> def set(experiment, args):
   ...   experiment.factor.factor1=[1, 3]
   ...   experiment.factor.factor2=[2, 4]
@@ -35,47 +35,59 @@ def run():
 
   Executing this file with the --run option gives::
 
-    $ python experiment_run.py -r
-     factor1_1_factor2_2
-     factor1_1_factor2_4
-     factor1_3_factor2_2
-     factor1_3_factor2_4
+  $ python experiment_run.py -r
+   factor1_1_factor2_2
+   factor1_1_factor2_4
+   factor1_3_factor2_2
+   factor1_3_factor2_4
 
   Executing this file with the --help option gives::
 
-    $ python experiment_run.py -h
+  $ python experiment_run.py -h
 
-    usage: experiment_run.py [-h] [-i] [-l] [-m MASK] [-M] [-S] [-s SERVER] [-d] [-r [RUN]] [-D] [-v] [-P] [-R [REMOVE]] [-K [KEEP]]
+  usage: experiment_run.py [-h] [-i] [-f] [-l] [-m MASK] [-M [MAIL]] [-C] [-S]
+                         [-s SERVER] [-d [DISPLAY]] [-r [RUN]] [-D] [-v] [-P]
+                         [-R [REMOVE]] [-K [KEEP]]
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      -i, --information     show information about the the experiment
-      -l, --list            list settings
-      -m MASK, --mask MASK  mask of the experiment to run
-      -M, --mail            send email at the beginning and end of the computation
-      -S, --sync            sync to server defined
-      -s SERVER, --server SERVER
-                            running server side. Integer defines the index in the
-                            host array of config. -2 (default) runs attached on
-                            the local host, -1 runs detached on the local host, -3
-                            is a flag meaning that the experiment runs serverside
-      -d, --display         display metrics
-      -r [RUN], --run [RUN]
-                            perform computation. Integer parameter sets the number
-                            of jobs computed in parallel (default to one core).
-      -D, --debug           debug mode
-      -v, --version         print version
-      -P, --progress        display progress bar
-      -R [REMOVE], --remove [REMOVE]
-                            remove the selected settings from a given path (all
-                            paths of the experiment by default, if the argument
-                            does not have / or \, the argument is interpreted as a
-                            member of the experiments path)
-      -K [KEEP], --keep [KEEP]
-                            keep only the selected settings from a given path (all
-                            paths of the experiment by default, if the argument
-                            does not have / or \, the argument is interpreted as a
-                            member of the experiments path)
+optional arguments:
+  -h, --help            show this help message and exit
+  -i, --information     show information about the experiment
+  -f, --factor          show the factors of the experiment
+  -l, --list            list settings
+  -m MASK, --mask MASK  mask of the experiment to run
+  -M [MAIL], --mail [MAIL]
+                        send email at the beginning and end of the
+                        computation. If a positive integer value x is
+                        provided, additional emails are sent every x hours.
+  -C, --copy            copy codebase to server defined by -s argument
+  -S, --serverDefault   augment the command line with the content of the dict
+                        experiment._defaultServerRunArgument
+  -s SERVER, --server SERVER
+                        running server side. Integer defines the index in the
+                        host array of config. -2 (default) runs attached on
+                        the local host, -1 runs detached on the local host, -3
+                        is a flag meaning that the experiment runs serverside
+  -d [DISPLAY], --display [DISPLAY]
+                        display metrics. Str parameter (optional) should
+                        contain a list of integers specifiying the columns to
+                        keep for display.
+  -r [RUN], --run [RUN]
+                        perform computation. Integer parameter sets the number
+                        of jobs computed in parallel (default to one core).
+  -D, --debug           debug mode
+  -v, --version         print version
+  -P, --progress        display progress bar
+  -R [REMOVE], --remove [REMOVE]
+                        remove the selected settings from a given path (all
+                        paths of the experiment by default, if the argument
+                        does not have / or \, the argument is interpreted as a
+                        member of the experiments path)
+  -K [KEEP], --keep [KEEP]
+                        keep only the selected settings from a given path (all
+                        paths of the experiment by default, if the argument
+                        does not have / or \, the argument is interpreted as a
+                        member of the experiments path)
+
   """
 
   parser = argparse.ArgumentParser()
@@ -118,7 +130,6 @@ def run():
     selectDisplay = ast.literal_eval(args.display)
 
   module = sys.argv[0][:-3]
-  print('//'+module)
   try:
     config = importlib.import_module(module)
   except:
@@ -141,14 +152,14 @@ def run():
   if args.remove:
     path2clean = args.remove
     if path2clean == 'all':
-      experiment.cleanExperiment(mask, settingEncoding=experiment._settingEncoding)
+      experiment.clean(mask, settingEncoding=experiment._settingEncoding)
     else:
       experiment.cleanDataSink(path2clean, mask, settingEncoding=experiment._settingEncoding)
 
   if args.keep:
     path2clean = args.keep
     if path2clean == 'all':
-      experiment.cleanExperiment(mask, reverse=True, settingEncoding=experiment._settingEncoding)
+      experiment.clean(mask, reverse=True, settingEncoding=experiment._settingEncoding)
     else:
       experiment.cleanDataSink(path2clean, mask, reverse=True, settingEncoding=experiment._settingEncoding)
 
@@ -225,15 +236,15 @@ class Experiment():
   >>> e=el.experiment.Experiment()
   >>> e.project.name='myExperiment'
   >>> e.project.author='Mathieu Lagrange'
-  >>> e.project.address='mathieu.lagrange@cnrs.fr'
+  >>> e.project.address='mathieu.lagrange@ls2n.fr'
   >>> e.path.processing='/tmp'
   >>> print(e)
   project:
     name: myExperiment
     description:
     author: Mathieu Lagrange
-    address: mathieu.lagrange@cnrs.fr
-    runId: 1600171143
+    address: mathieu.lagrange@ls2n.fr
+    runId: ...
   factor:
   parameter:
   metric:
@@ -252,12 +263,12 @@ class Experiment():
   >>> e.myData.info1= 1
   >>> e.myData.info2= 2
   >>> print(e)
-    project: myProject
-    name:
+   project:
+    name: myExperiment
     description:
     author: Mathieu Lagrange
-    address: mathieu.lagrange@cnrs.fr
-    runId: 1600171908
+    address: mathieu.lagrange@ls2n.fr
+    runId: ...
   factor:
   parameter:
   metric:
@@ -267,10 +278,11 @@ class Experiment():
     storage:
     output:
   host: []
+  specificInfo: stuff
   myData:
     info1: 1
     info2: 2
-  specificInfo: stuff
+
   """
 
   def __init__(
@@ -282,7 +294,7 @@ class Experiment():
     self.project.name = ''
     self.project.description = ''
     self.project.author = 'no name'
-    self.project.address = 'noname@noname.org'
+    self.project.address = 'noname@noorg.org'
     self.project.runId = str(int((time.time()-datetime.datetime(2020,1,1,0,0).timestamp())/60))
     self.factor = el.Factor()
     self.parameter = types.SimpleNamespace()
@@ -309,7 +321,7 @@ class Experiment():
       self._atrs.append(name)
     return object.__setattr__(self, name, value)
 
-  def makePaths(
+  def setPath(
     self,
     force=False
     ):
@@ -334,7 +346,7 @@ class Experiment():
     >>> e.project.name = 'experiment'
     >>> e.path.processing = '/tmp/'+e.project.name+'/processing'
     >>> e.path.output = '/tmp/'+e.project.name+'/output'
-    >>> e.makePaths(force=True)
+    >>> e.setPath(force=True)
     >>> os.listdir('/tmp/'+e.project.name)
     ['processing', 'output']
     """
@@ -379,9 +391,9 @@ class Experiment():
     project:
       name:
       description:
-      author:
-      address:
-      runId: 1600099391
+      author: no name
+      address: noname@noorg.org
+      runId: ...
     factor:
     parameter:
     metric:
@@ -394,7 +406,7 @@ class Experiment():
 
     >>> import explanes as el
     >>> el.Experiment().__str__(format='html')
-    <h3> <div>project: </div><div>  name: </div><div>  description: </div><div>  author: </div><div>  address: </div><div>  runId: 1600100112</div><div>factor: </div><div>parameter: </div><div>metric: </div><div>path: </div><div>  input: </div><div>  processing: </div><div>  storage: </div><div>  output: </div><div>host: </div><div>[]</div></h3>
+    '<div>project: </div><div>  name: </div><div>  description: </div><div>  author: no name</div><div>  address: noname@noorg.org</div><div>  runId: ...</div><div>factor: </div><div>parameter: </div><div>metric: </div><div>path: </div><div>  input: </div><div>  processing: </div><div>  storage: </div><div>  output: </div><div>host: []</div><div></div>'
     """
     description = ''
     for atr in self._atrs:
@@ -434,7 +446,7 @@ class Experiment():
     >>> e=el.experiment.Experiment()
     >>> e.project.address = 'mathieu.lagrange@cnrs.fr'
     >>> e.sendMail('hello', '<div> good day </div>')
-    Sent message entitled: [explanes]  id 1600177004 hello
+    Sent message entitled: [explanes]  id ... hello ...
 
     """
     header = 'From: expLanes mailer <'+self._gmailId+'@gmail.com> \r\nTo: '+self.project.author+' '+self.project.address+'\r\nMIME-Version: 1.0 \r\nContent-type: text/html \r\nSubject: [explanes] '+self.project.name+' id '+self.project.runId+' '+title+'\r\n'
@@ -444,7 +456,7 @@ class Experiment():
     server.login(self._gmailId+'@gmail.com', self._gmailAppPassword)
     server.sendmail(self._gmailId, self.project.address, header+body+'<h3> '+self.__str__(format = 'html')+'</h3>')
     server.quit
-    print(time.ctime(time.time())+' Sent message entitled: [explanes] '+self.project.name+' id '+self.project.runId+' '+title)
+    print('Sent message entitled: [explanes] '+self.project.name+' id '+self.project.runId+' '+title+' on '+time.ctime(time.time()))
 
   def do(
     self,
@@ -524,13 +536,13 @@ class Experiment():
     ...  print('{}+{}={}'.format(setting.factor1, setting.factor2, setting.factor1+setting.factor2))
 
     >>> # sequential execution of settings
-    >>> e.do([], myFunction, nbJobs=1, progress=False)
+    >>> nbFailed = e.do([], myFunction, nbJobs=1, progress=False)
     1+2=3
     1+5=6
     3+2=5
     3+5=8
     >>> # arbitrary order execution of settings due to the parallelization
-    >>> e.do([], myFunction, nbJobs=3, progress=False)
+    >>> nbFailed = e.do([], myFunction, nbJobs=3, progress=False) # doctest: +SKIP
     3+2=5
     1+5=6
     1+2=3
@@ -598,13 +610,13 @@ class Experiment():
     >>> import os
     >>> e=el.experiment.Experiment()
     >>> e.path.output = '/tmp/test'
-    >>> e.makePaths()
+    >>> e.setPath()
     >>> e.factor.factor1=[1, 3]
     >>> e.factor.factor2=[2, 4]
     >>> def myFunction(setting, experiment):
-    >>>   np.save(experiment.path.output+'/'+setting.id()+'_sum.npy', e.factor.factor1+e.factor.factor2)
-    >>>   np.save(experiment.path.output+'/'+setting.id()+'_mult.npy', e.factor.factor1*e.factor.factor2)
-    >>> e.do([], myFunction, progress=False)
+    ...   np.save(experiment.path.output+'/'+setting.id()+'_sum.npy', setting.factor1+setting.factor2)
+    ...   np.save(experiment.path.output+'/'+setting.id()+'_mult.npy', setting.factor1*setting.factor2)
+    >>> nbFailed = e.do([], myFunction, progress=False)
     >>> os.listdir(e.path.output)
     ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_2_mult.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_1_factor2_2_sum.npy', 'factor1_1_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy', 'factor1_1_factor2_2_mult.npy', 'factor1_1_factor2_4_sum.npy']
 
@@ -627,16 +639,16 @@ class Experiment():
     >>> e.metric.sum = ['']
     >>> e.metric.mult = ['']
     >>> def myFunction(setting, experiment):
-    >>>   h5 = tb.open_file(experiment.path.output, mode='a')
-    >>>   sg = experiment.metric.addSettingGroup(h5, setting, metricDimensions=[1, 1])
-    >>>   sg.sum[0] = e.factor.factor1+e.factor.factor2
-    >>>   sg.mult[0] = e.factor.factor1*e.factor.factor2
-    >>>   h5.close()
-    >>> e.do([], myFunction, progress=False)
+    ...   h5 = tb.open_file(experiment.path.output, mode='a')
+    ...   sg = experiment.metric.addSettingGroup(h5, setting, metricDimension={'sum': 1, 'mult': 1})
+    ...   sg.sum[0] = setting.factor1+setting.factor2
+    ...   sg.mult[0] = setting.factor1*setting.factor2
+    ...   h5.close()
+    >>> nbFailed = e.do([], myFunction, progress=False)
     >>> h5 = tb.open_file(e.path.output, mode='r')
     >>> print(h5)
     /tmp/test.h5 (File) ''
-    Last modif.: 'Wed Sep 16 17:54:07 2020'
+    Last modif.: '...'
     Object Tree:
     / (RootGroup) ''
     /factor1_1_factor2_2 (Group) 'factor1 1 factor2 2'
@@ -672,7 +684,7 @@ class Experiment():
     >>> h5 = tb.open_file(e.path.output, mode='r')
     >>> print(h5)
     /tmp/test.h5 (File) ''
-    Last modif.: 'Wed Sep 16 17:54:08 2020'
+    Last modif.: '...'
     Object Tree:
     / (RootGroup) ''
     /factor1_3_factor2_4 (Group) 'factor1 3 factor2 4'
@@ -689,7 +701,7 @@ class Experiment():
     if path:
       self.factor.mask(mask).cleanDataSink(path, reverse, force, selector, settingEncoding, archivePath)
 
-  def cleanExperiment(
+  def clean(
     self,
     mask=[],
     reverse=False,
@@ -713,8 +725,8 @@ class Experiment():
     >>> import explanes as el
     >>> e=el.experiment.Experiment()
     >>> e.path.output = '/tmp/test'
-    >>> e.makePaths()
-    >>> e.cleanExperiment()
+    >>> e.setPath()
+    >>> e.clean()
     checking input path
     checking processing path
     checking storage path
@@ -728,5 +740,5 @@ class Experiment():
 
 if __name__ == '__main__':
     import doctest
-    # doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
-    doctest.run_docstring_examples(Experiment.cleanDataSink, globals(), optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+    #doctest.run_docstring_examples(run, globals(), optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.REPORT_ONLY_FIRST_FAILURE)
