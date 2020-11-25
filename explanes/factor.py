@@ -243,6 +243,40 @@ class Factor():
     f1 a f2 3
     f1 b f2 2
     f1 b f2 3
+    >>> # if volatile is set to False (default) when the mask is set and the setting set iterated, the setting set stays ready for another iteration.
+    >>> for setting in f.mask([0, 1]):
+    ...  pass
+    >>> for setting in f:
+    ...  print(setting)
+    f1 a f2 2
+    >>> # if volatile is set to False (default) when the mask is set and the setting set iterated, the setting set stays ready for another iteration.
+    >>> for setting in f.mask([0, 1], volatile=True):
+    ...  pass
+    >>> for setting in f:
+    ...  print(setting)
+    f1 a f2 1
+    f1 a f2 2
+    f1 a f2 3
+    f1 b f2 1
+    f1 b f2 2
+    f1 b f2 3
+    f1 c f2 1
+    f1 c f2 2
+    f1 c f2 3
+    >>> # if volatile was set to False (default) when the mask was first set and the setting set iterated, the complete set of settings can be reached by calling mask with no parameters.
+    >>> for setting in f.mask([0, 1]):
+    ...  pass
+    >>> for setting in f.mask():
+    ...  print(setting)
+    f1 a f2 1
+    f1 a f2 2
+    f1 a f2 3
+    f1 b f2 1
+    f1 b f2 2
+    f1 b f2 3
+    f1 c f2 1
+    f1 c f2 2
+    f1 c f2 3
     """
 
     self._mask = mask
