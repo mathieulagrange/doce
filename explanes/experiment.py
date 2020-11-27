@@ -461,7 +461,7 @@ class Experiment():
   def do(
     self,
     mask,
-    function,
+    function=None,
     *parameters,
     nbJobs=1,
     progress=True,
@@ -480,8 +480,10 @@ class Experiment():
     mask : a list of literals or a list of lists of literals
       :term:`mask` used to specify the :term:`settings<setting>` set
 
-    function : function(:class:`~explanes.factor.Factor`, :class:`~explanes.experiment.Experiment`, \*parameters)
+    function : function(:class:`~explanes.factor.Factor`, :class:`~explanes.experiment.Experiment`, \*parameters) (optional)
       A function that operates on a given setting within the experiment environnment with optional parameters.
+
+      If None, a description of the given setting is shown.
 
     *parameters : any type (optional)
       parameters to be given to the function.

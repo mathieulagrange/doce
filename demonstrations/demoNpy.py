@@ -23,7 +23,7 @@ def set(args):
 
   experiment.path.output = '/tmp/'+experiment.project.name+'/'
   experiment.path.code = '~/tools/explanes.py/demonstrations/'
-  experiment.makePaths()
+  experiment.setPath()
 
   experiment._settingEncoding = {'format': 'hash'}
   experiment._archivePath = '/tmp'
