@@ -59,7 +59,8 @@ class Metric():
     settings,
     dataLocation,
     settingEncoding={},
-    verbose = False
+    verbose = False,
+    reductionDirectiveModule = None
     ):
     """Handle reduction of the metrics when considering numpy storage.
 
@@ -93,7 +94,7 @@ class Metric():
           for reductionType in self.__getattribute__(metric):
             reducedMetrics[idx] = True
             idx+=1
-            row.append(self.reduceMetric(data, reductionType))
+            row.append(self.reduceMetric(data, reductionType, reductionDirectiveModule))
         else:
           if verbose:
             print('** Unable to find '+fileName)
@@ -145,7 +146,7 @@ class Metric():
             if settingGroup.__contains__(metric):
               metricHasData[mIndex] = True
               data = settingGroup._f_get_child(metric)
-            row.append(self.reduceMetric(data, reductionType))
+            row.append(self.reduceMetric(data, reductionType, reductionDirectiveModule))
         if len(row):
           for factorName in reversed(settings.factors()):
             row.insert(0, setting.__getattribute__(factorName))
@@ -156,7 +157,8 @@ class Metric():
   def reduceMetric(
     self,
     data,
-    reductionType
+    reductionType,
+    reductionDirectiveModule=None
     ):
     """Apply reduction directive to a metric vector after potentially remove non wanted items from the vector.
 
@@ -194,6 +196,9 @@ class Metric():
     30.0
 
     """
+    if not reductionDirectiveModule or not hasattr(reductionDirectiveModule, reductionType):
+      reductionDirectiveModule = np
+      data = data.flatten()
     indexPercent=-1
     if reductionType:
       if isinstance(reductionType, int):
@@ -210,16 +215,16 @@ class Metric():
         if len(ags)>1:
           ignore = int(ags[1])
           if ignore == 0:
-            value = getattr(np, reductionType)(data[1:])
+            value = getattr(reductionDirectiveModule, reductionType)(data[1:])
           elif ignore == 1:
-            value = getattr(np, reductionType)(data[::2])
+            value = getattr(reductionDirectiveModule, reductionType)(data[::2])
           elif ignore == 2:
-            value = getattr(np, reductionType)(data[1::2])
+            value = getattr(reductionDirectiveModule, reductionType)(data[1::2])
           else:
             print('Unrecognized pruning directive')
             raise ValueError
         else :
-          value = getattr(np, reductionType)(data)
+          value = getattr(reductionDirectiveModule, reductionType)(data)
     else:
       data = np.array(data)
       if data.size>1:
@@ -238,7 +243,8 @@ class Metric():
     factorDisplay='long',
     factorDisplayLength=2,
     reducedMetricDisplay = 'capitalize',
-    verbose = False
+    verbose = False,
+    reductionDirectiveModule=None
     ):
     """Apply the reduction directives described in each members of explanes.metric.Metric objects for the settings given as parameters.
 
@@ -394,9 +400,9 @@ class Metric():
     2   3    3.99   1.04  -9.14        89
     """
     if dataLocation.endswith('.h5'):
-      (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose)
+      (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule)
     else:
-      (settingDescription, metricHasData) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose)
+      (settingDescription, metricHasData) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule)
 
     columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricHasData, reducedMetricDisplay)
     nbColumnFactor = len(settings.factors())

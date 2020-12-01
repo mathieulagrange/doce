@@ -197,7 +197,7 @@ optional arguments:
     if hasattr(config, 'display'):
       config.display(experiment, experiment.factor.mask(mask))
     else:
-      (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.mask(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, settingEncoding = experiment._settingEncoding, verbose=args.debug)
+      (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.mask(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
       # print(table)
       # print(columns)
       df = pd.DataFrame(table, columns=columns).fillna('')
@@ -299,7 +299,7 @@ class Experiment():
     self.factor = el.Factor()
     self.parameter = types.SimpleNamespace()
     self.metric = el.Metric()
-    self.path = types.SimpleNamespace()
+    self.path = Path()
     self.path.input = ''
     self.path.processing = ''
     self.path.storage = ''
@@ -739,6 +739,15 @@ class Experiment():
       print('checking '+sns+' path')
       self.cleanDataSink(sns, mask, reverse, force, selector, settingEncoding,
       archivePath)
+
+class Path:
+    def __setattr__(
+      self,
+      name,
+      value
+      ):
+      return object.__setattr__(self, name, os.path.expanduser(value))
+
 
 if __name__ == '__main__':
     import doctest

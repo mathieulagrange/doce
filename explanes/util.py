@@ -112,7 +112,7 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
         for r in settingDescription:
           r.pop(s)
     else:
-      constantSettingDescription = ' '.join(settingDescription[0]).strip()
+      constantSettingDescription = ''#' '.join(str(x) for x in settingDescription[0]).strip()
   return (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor)
 
 
