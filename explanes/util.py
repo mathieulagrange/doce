@@ -91,9 +91,9 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
   [['b', 1, 2], ['c', 2, 2], ['b', 2, 2]]
   """
   constantSettingDescription = ''
-  if nbColumnFactor == 0:
-    nbColumnFactor = len(settingDescription[0])
   if settingDescription:
+    if nbColumnFactor == 0:
+      nbColumnFactor = len(settingDescription[0])
     if len(settingDescription)>1:
       constantValue = constantColumn(settingDescription)
       for si, s in enumerate(constantValue):
