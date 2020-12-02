@@ -321,26 +321,26 @@ class Experiment():
       self._atrs.append(name)
     return object.__setattr__(self, name, value)
 
-  def expandPath(
-    self
-    ):
-    """
-    
-    Examples
-    --------
-
-    >>> import explanes as el
-    >>> import os
-    >>> e=el.Experiment()
-    >>> e.project.name = 'experiment'
-    >>> e.path.processing = '/tmp/'+e.project.name+'/processing'
-    >>> e.path.output = '/tmp/'+e.project.name+'/output'
-    >>> e.setPath(force=True)
-    >>> os.listdir('/tmp/'+e.project.name)
-    ['processing', 'output']
-    """
-    for sns in self.__getattribute__('path').__dict__.keys():
-      self.__getattribute__('path') = os.path.abspath(os.path.expanduser(self.__getattribute__('path').__getattribute__(sns)))
+  # def expandPath(
+  #   self
+  #   ):
+  #   """
+  #
+  #   Examples
+  #   --------
+  #
+  #   >>> import explanes as el
+  #   >>> import os
+  #   >>> e=el.Experiment()
+  #   >>> e.project.name = 'experiment'
+  #   >>> e.path.processing = '/tmp/'+e.project.name+'/processing'
+  #   >>> e.path.output = '/tmp/'+e.project.name+'/output'
+  #   >>> e.setPath(force=True)
+  #   >>> os.listdir('/tmp/'+e.project.name)
+  #   ['processing', 'output']
+  #   """
+  #   for sns in self.__getattribute__('path').__dict__.keys():
+  #     self.__getattribute__('path') = os.path.abspath(os.path.expanduser(self.__getattribute__('path').__getattribute__(sns)))
 
   def setPath(
     self,
