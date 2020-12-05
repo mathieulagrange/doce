@@ -68,7 +68,7 @@ def step(setting, experiment):
   np.save(experiment.path.output+baseFileName+'_duration.npy', duration)
 
 # uncomment this method to fine tune display of metrics
-def display(experiment, settings):
+def myDisplay(experiment, settings):
   (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output, settingEncoding = experiment._settingEncoding)
 
   print(header)

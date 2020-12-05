@@ -199,6 +199,8 @@ class Metric():
     if not reductionDirectiveModule or not hasattr(reductionDirectiveModule, reductionType):
       reductionDirectiveModule = np
       data = data.flatten()
+    if not hasattr(reductionDirectiveModule, reductionType):
+      return np.nan
     indexPercent=-1
     if reductionType:
       if isinstance(reductionType, int):

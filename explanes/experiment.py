@@ -99,7 +99,7 @@ optional arguments:
   parser.add_argument('-C', '--copy', help='copy codebase to server defined by -s argument', action='store_true')
   parser.add_argument('-S', '--serverDefault', help='augment the command line with the content of the dict experiment._defaultServerRunArgument', action='store_true')
   parser.add_argument('-s', '--server', type=int, help='running server side. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside', default=-2)
-  parser.add_argument('-d', '--display', type=str, help='display metrics. Str parameter (optional) should contain a list of integers specifiying the columns to keep for display.', nargs='?', default='-1')
+  parser.add_argument('-d', '--display', type=str, help='display metrics. If no parameter is given, consider the default display and show all metrics. If the str parameter contain a list of integers, use the default display and show only the selected metrics defined by the integer list. If the str parameter contain a name, run the display method with this name.', nargs='?', default='-1')
   parser.add_argument('-r', '--run', type=int, help='perform computation. Integer parameter sets the number of jobs computed in parallel (default to one core).', nargs='?', const=1)
   parser.add_argument('-D', '--debug', help='debug mode', action='store_true')
   parser.add_argument('-v', '--version', help='print version', action='store_true')
@@ -121,14 +121,17 @@ optional arguments:
 
   mask = ast.literal_eval(args.mask)
   selectDisplay = []
+  displayMethod = ''
   display = True
   if args.display == '-1':
     display = False
-  elif args.display is None:
-    args.display = '-2'
-  elif args.display == '-2':
-    selectDisplay = ast.literal_eval(args.display)
-
+  elif args.display is not None:
+    if '[' in args.display:
+      selectDisplay = ast.literal_eval(args.display)
+    else:
+      displayMethod = args.display
+  # print(displayMethod)
+  # print(selectDisplay)
   module = sys.argv[0][:-3]
   try:
     config = importlib.import_module(module)
@@ -136,6 +139,7 @@ optional arguments:
    print('Please provide a valid project name')
    raise ValueError
   experiment = config.set(args)
+  experiment.mask = mask
   if args.serverDefault:
     args.serverDefault = False
     for key in experiment._defaultServerRunArgument:
@@ -147,21 +151,21 @@ optional arguments:
   if args.factor:
       print(experiment.factor.asPandaFrame())
   if args.list:
-    experiment.do(mask, progress=False)
+    experiment.do(experiment.mask, progress=False)
 
   if args.remove:
     path2clean = args.remove
     if path2clean == 'all':
-      experiment.clean(mask, settingEncoding=experiment._settingEncoding)
+      experiment.clean(experiment.mask, settingEncoding=experiment._settingEncoding)
     else:
-      experiment.cleanDataSink(path2clean, mask, settingEncoding=experiment._settingEncoding)
+      experiment.cleanDataSink(path2clean, experiment.mask, settingEncoding=experiment._settingEncoding)
 
   if args.keep:
     path2clean = args.keep
     if path2clean == 'all':
-      experiment.clean(mask, reverse=True, settingEncoding=experiment._settingEncoding)
+      experiment.clean(experiment.mask, reverse=True, settingEncoding=experiment._settingEncoding)
     else:
-      experiment.cleanDataSink(path2clean, mask, reverse=True, settingEncoding=experiment._settingEncoding)
+      experiment.cleanDataSink(path2clean, experiment.mask, reverse=True, settingEncoding=experiment._settingEncoding)
 
   logFileName = ''
   if args.server>-2:
@@ -194,10 +198,10 @@ optional arguments:
 
   body = '<div> Mask = '+args.mask+'</div>'
   if display:
-    if hasattr(config, 'display'):
-      config.display(experiment, experiment.factor.mask(mask))
+    if hasattr(config, displayMethod):
+      getattr(config, displayMethod)(experiment, experiment.factor.mask(experiment.mask))
     else:
-      (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.mask(mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
+      (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.mask(experiment.mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
       # print(table)
       # print(columns)
       df = pd.DataFrame(table, columns=columns).fillna('')
