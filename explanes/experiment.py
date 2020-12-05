@@ -68,9 +68,12 @@ optional arguments:
                         the local host, -1 runs detached on the local host, -3
                         is a flag meaning that the experiment runs serverside
   -d [DISPLAY], --display [DISPLAY]
-                        display metrics. Str parameter (optional) should
-                        contain a list of integers specifiying the columns to
-                        keep for display.
+                        display metrics. If no parameter is given, consider
+                        the default display and show all metrics. If the str
+                        parameter contain a list of integers, use the default
+                        display and show only the selected metrics defined by
+                        the integer list. If the str parameter contain a name,
+                        run the display method with this name.
   -r [RUN], --run [RUN]
                         perform computation. Integer parameter sets the number
                         of jobs computed in parallel (default to one core).
