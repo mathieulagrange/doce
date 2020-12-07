@@ -411,6 +411,20 @@ class Factor():
           else:
             os.remove(f)
 
+  def merge(self):
+    tmp = Factor()
+    for x in self.factors():
+      for f in getattr(self, x).factors():
+        setattr(tmp, f, [])
+    for x in self.factors():
+      for f in getattr(self, x).factors():
+        for m in getattr(getattr(self, x), f):
+          getattr(tmp, f).append(m)
+    factor = Factor()
+    for f in tmp.factors():
+      setattr(factor, f, getattr(tmp, f))
+    return factor
+
   def asPandaFrame(self):
     """returns a panda frame that describes the Factor object.
 

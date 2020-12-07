@@ -149,6 +149,8 @@ optional arguments:
       experiment.factor = getattr(experiment.factor, args.experiment)
     else:
       print('Unrecognized experiment: '+args.experiment)
+  elif len(experiment.factor.factors())>0 and isinstance(getattr(experiment.factor, experiment.factor.factors()[0]), el.factor.Factor):
+    experiment.factor = experiment.factor.merge()
   if args.serverDefault:
     args.serverDefault = False
     for key in experiment._defaultServerRunArgument:
