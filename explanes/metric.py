@@ -101,7 +101,7 @@ class Metric():
           for reductionType in self.__getattribute__(metric):
             row.append(np.nan)
             idx+=1
-      if len(row):
+      if len(row) and not all(np.isnan(c) for c in row):
         for factorName in reversed(settings.factors()):
           row.insert(0, setting.__getattribute__(factorName))
         table.append(row)
@@ -147,7 +147,7 @@ class Metric():
               metricHasData[mIndex] = True
               data = settingGroup._f_get_child(metric)
             row.append(self.reduceMetric(data, reductionType, reductionDirectiveModule))
-        if len(row):
+        if len(row) and not all(np.isnan(c) for c in row):
           for factorName in reversed(settings.factors()):
             row.insert(0, setting.__getattribute__(factorName))
         table.append(row)

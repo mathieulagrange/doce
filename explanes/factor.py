@@ -428,7 +428,7 @@ class Factor():
       for x in self.factors():
         if not f in getattr(self, x).factors():
           have[fi] = False
-    print(have)
+    # print(have)
     factor = Factor()
     for fi, f in enumerate(tmp.factors()):
       m = getattr(tmp, f)
