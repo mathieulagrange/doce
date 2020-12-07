@@ -388,7 +388,7 @@ class Factor():
     else:
       fileNames = []
       for setting in self:
-        # print(path+'/'+setting.id(**settingEncoding)+selector)
+        print(path+'/'+setting.id(**settingEncoding)+selector)
         for f in glob.glob(path+'/'+setting.id(**settingEncoding)+selector):
             fileNames.append(f)
       if reverse:
@@ -398,7 +398,8 @@ class Factor():
         # print(fileNames)
         fileNames = [i for i in complete if i not in fileNames]
       #   print(complete)
-      # print(fileNames)
+      fileNames = set(fileNames)
+      print(fileNames)
       # print(len(fileNames))
       if archivePath:
         destination = 'move to '+archivePath+' '
@@ -412,6 +413,7 @@ class Factor():
             os.remove(f)
 
   def merge(self):
+    # build temporary factor
     tmp = Factor()
     for x in self.factors():
       for f in getattr(self, x).factors():
@@ -420,9 +422,22 @@ class Factor():
       for f in getattr(self, x).factors():
         for m in getattr(getattr(self, x), f):
           getattr(tmp, f).append(m)
+    # check if factors are available in every experiment
+    have = [True]*len(tmp.factors())
+    for fi, f in enumerate(tmp.factors()):
+      for x in self.factors():
+        if not f in getattr(self, x).factors():
+          have[fi] = False
+    print(have)
     factor = Factor()
-    for f in tmp.factors():
-      setattr(factor, f, getattr(tmp, f))
+    for fi, f in enumerate(tmp.factors()):
+      m = getattr(tmp, f)
+      if not have[fi]:
+        if isinstance(m[0], str) and 'none' not in m:
+          m.insert(0, 'none')
+        elif 0 not in m:
+          m.insert(0, 0)
+      setattr(factor, f, m)
     return factor
 
   def asPandaFrame(self):
