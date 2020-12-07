@@ -94,12 +94,13 @@ optional arguments:
   """
 
   parser = argparse.ArgumentParser()
+  parser.add_argument('-e', '--experiment', type=str, help='select experiment', default='all')
   parser.add_argument('-i', '--information', help='show information about the experiment', action='store_true')
   parser.add_argument('-f', '--factor', help='show the factors of the experiment', action='store_true')
   parser.add_argument('-l', '--list', help='list settings', action='store_true')
   parser.add_argument('-m', '--mask', type=str, help='mask of the experiment to run', default='[]')
   parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation. If a positive integer value x is provided, additional emails are sent every x hours.', nargs='?', default='-1')
-  parser.add_argument('-C', '--copy', help='copy codebase to server defined by -s argument', action='store_true')
+  parser.add_argument('-C', '--copy', help='copy codebase to server defined by the server (-s) argument', action='store_true')
   parser.add_argument('-S', '--serverDefault', help='augment the command line with the content of the dict experiment._defaultServerRunArgument', action='store_true')
   parser.add_argument('-s', '--server', type=int, help='running server side. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside', default=-2)
   parser.add_argument('-d', '--display', type=str, help='display metrics. If no parameter is given, consider the default display and show all metrics. If the str parameter contain a list of integers, use the default display and show only the selected metrics defined by the integer list. If the str parameter contain a name, run the display method with this name.', nargs='?', default='-1')
@@ -143,6 +144,11 @@ optional arguments:
    raise ValueError
   experiment = config.set(args)
   experiment.mask = mask
+  if args.experiment != 'all':
+    if hasattr(experiment.factor, args.experiment):
+      experiment.factor = getattr(experiment.factor, args.experiment)
+    else:
+      print('Unrecognized experiment: '+args.experiment)
   if args.serverDefault:
     args.serverDefault = False
     for key in experiment._defaultServerRunArgument:

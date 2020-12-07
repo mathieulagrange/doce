@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
 def set(args):
   experiment = el.experiment.Experiment()
-  experiment.project.name = 'demoNpy'
+  experiment.project.name = 'npyDemo'
   experiment.project.description = 'demonstration of npy storage of metrics'
   experiment.project.author = 'mathieu Lagrange'
   experiment.project.address = 'mathieu.lagrange@ls2n.fr'
