@@ -400,7 +400,7 @@ class Metric():
     else:
       (settingDescription, metricHasData) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule)
 
-    columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricHasData, reducedMetricDisplay)
+    columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricDisplay, metricDisplayLength, metricHasData, reducedMetricDisplay)
     nbColumnFactor = len(settings.factors())
 
     (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = eu.pruneSettingDescription(settingDescription, columnHeader, nbColumnFactor, factorDisplay)
@@ -635,6 +635,8 @@ class Metric():
     factor,
     factorDisplay='long',
     factorDisplayLength=2,
+    metricDisplay='long',
+    metricDisplayLength=2,
     metricHasData=[],
     reducedMetricDisplay = 'capitalize',
     ):
@@ -681,7 +683,7 @@ class Metric():
           else:
             print('Unrecognized reducedMetricDisplay value. Should be \'capitalize\' or \'underscore\'. Got:'+reducedMetricDisplay)
             raise ValueError
-          columnHeader.append(name)
+          columnHeader.append(eu.compressDescription(name, metricDisplay, metricDisplayLength))
     return columnHeader
 
   def name(
