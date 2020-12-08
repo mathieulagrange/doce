@@ -1,8 +1,6 @@
 import os
 import inspect
 import types
-import re
-import hashlib
 import numpy as np
 import tables as tb
 import explanes.util as eu
@@ -244,6 +242,8 @@ class Metric():
     settingEncoding={},
     factorDisplay='long',
     factorDisplayLength=2,
+    metricDisplay='long',
+    metricDisplayLength=2,
     reducedMetricDisplay = 'capitalize',
     verbose = False,
     reductionDirectiveModule=None
@@ -264,7 +264,6 @@ class Metric():
     settingEncoding : dict
       Encoding of the setting. See explanes.factor.Factor.id for references.
 
-
     reducedMetricDisplay : str (optional)
       If set to 'capitalize' (default), the description of the reduced metric is done in a Camel case fashion: metricReduction.
 
@@ -278,11 +277,6 @@ class Metric():
 
     factorDisplayLength : int (optional)
       If factorDisplay has 'short', factorDisplayLength specifies the maximal length of each word of the description of the factor.
-
-    reducedMetricDisplay : str (optional)
-      If set to 'capitalize' (default), the description of the reduced metric is done in a Camel case fashion: metricReduction.
-
-      If set to 'underscore', the description of the reduced
 
     verbose : bool
       In the case of .npy metric storage, if verbose is set to True, print the fileName seeked for each metric as well as its time of last modification.

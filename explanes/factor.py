@@ -8,7 +8,6 @@ import copy
 import glob
 import explanes.util as eu
 import explanes.setting as es
-import traceback
 import logging
 from joblib import Parallel, delayed
 from subprocess import call
