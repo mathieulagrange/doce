@@ -64,10 +64,10 @@ class Setting():
     one b two 1
     one b two 2
     """
-    return self.id(sort=False, separator=' ', hideSingleton=False, hideNoneAndZero=False)
+    return self.id(sort=False, separator=' ', hideSingleton=False, hideDefault=False)
 
 
-  def id(self, format='long', sort=True, separator='_', hideSingleton=False, hideNoneAndZero=True, hideDefault=True, hideFactor=[]):
+  def id(self, format='long', sort=True, separator='_', hideSingleton=False, hideDefault=True, hideFactor=[]):
     """return a one-liner str or a list of str that describes a setting or a :class:`~explanes.factor.Factor` object.
 
   	Return a one-liner str or a list of str that describes a setting or a :class:`~explanes.factor.Factor` object with a high degree of flexibility.
@@ -92,8 +92,6 @@ class Setting():
       if True, do not consider factors with only one modality.
 
       if False, consider factors with only one modality (default).
-    hideNoneAndZero: bool (optional)
-      if True, do not consider couple of factor/modality where the modality is 'none' or 0.
 
     hideDefault: bool (optional)
       do not consider couple of factor/modality where the modality is explicitly set to be a default value for this factor using :meth:`explanes.factor.Factors.default`.
@@ -154,9 +152,6 @@ class Setting():
     >>> for setting in f.mask([0, 0, 0]):
     ...   print(setting.id())
     one_a
-    >>> # do not hide the default value in the description
-    >>> print(setting.id(hideNoneAndZero=False))
-    one_a_three_none_two_0
 
     >>> # set the default value of factor one to a
     >>> f.default('one', 'a')
@@ -205,7 +200,7 @@ class Setting():
       fNames = sorted(fNames)
     for fIndex, f in enumerate(fNames):
       if f[0] != '_' and getattr(self, f) is not None and f not in hideFactor:
-        if (not hideSingleton or f in self._factor._nonSingleton) and (not hideNoneAndZero or (hideNoneAndZero and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and (not hideDefault or not hasattr(self._factor._default, f) or (hideDefault and hasattr(self._factor._default, f) and getattr(self._factor._default, f) != getattr(self, f))):
+        if (not hideSingleton or f in self._factor._nonSingleton) and (not hideDefault or not hasattr(self._factor._default, f) or (hideDefault and hasattr(self._factor._default, f) and getattr(self._factor._default, f) != getattr(self, f))): # (not hideNoneAndZero or (hideNoneAndZero and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and 
           id.append(eu.compressDescription(f, format))
           id.append(eu.compressDescription(str(getattr(self, f)), format))
     if 'list' not in format:

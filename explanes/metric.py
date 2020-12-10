@@ -197,7 +197,7 @@ class Metric():
     if not reductionDirectiveModule or not hasattr(reductionDirectiveModule, reductionType):
       reductionDirectiveModule = np
       data = data.flatten()
-    if not hasattr(reductionDirectiveModule, reductionType):
+    if reductionType and not hasattr(reductionDirectiveModule, reductionType):
       return np.nan
     indexPercent=-1
     if reductionType:
@@ -226,7 +226,8 @@ class Metric():
         else :
           value = getattr(reductionDirectiveModule, reductionType)(data)
     else:
-      data = np.array(data)
+      if not isinstance(data, np.ndarray):
+        data = np.array(data)
       if data.size>1:
         value = float(data[0])
       else:
@@ -489,7 +490,6 @@ class Metric():
     settingDescription = []
     settingDescriptionFormat = copy.deepcopy(settingEncoding)
     settingDescriptionFormat['format'] = 'list'
-    settingDescriptionFormat['hideNoneAndZero'] = False
     settingDescriptionFormat['hideDefault'] = False
 
     if isinstance(dataLocation, str):

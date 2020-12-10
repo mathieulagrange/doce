@@ -104,10 +104,9 @@ optional arguments:
   parser.add_argument('-P', '--progress', help='display progress bar', action='store_true')
   parser.add_argument('-R', '--remove', type=str, help='remove the selected  settings from a given path (all paths of the experiment by default, if the argument does not have / or \, the argument is interpreted as a member of the experiments path)', nargs='?', const='all')
   parser.add_argument('-K', '--keep', type=str, help='keep only the selected settings from a given path (all paths of the experiment by default, if the argument does not have / or \, the argument is interpreted as a member of the experiments path)', nargs='?', const='all')
+  parser.add_argument('-p', '--parameter', type=str, help='a dict specified as str (for example, \'{\"test\": 1}\') that will be available in Experiment.parameter (parameter.test 1)', default='{}')
 
   args = parser.parse_args()
-
-
 
   if args.version:
     print("Experiment version "+experiment.project.version)
@@ -118,6 +117,8 @@ optional arguments:
     args.mail = float(args.mail)
 
   mask = ast.literal_eval(args.mask)
+  parameter = ast.literal_eval(args.parameter)
+
   selectDisplay = []
   displayMethod = ''
   display = True
@@ -138,6 +139,9 @@ optional arguments:
    raise ValueError
   experiment = config.set(args)
   experiment.mask = mask
+  if isinstance(parameter, dict):
+    experiment.parameter = parameter
+
   if args.experiment != 'all':
     if hasattr(experiment.factor, args.experiment):
       experiment.factor = getattr(experiment.factor, args.experiment)
@@ -217,6 +221,7 @@ optional arguments:
       print(header)
       print(df)
       body += '<div> '+header+' </div><br>'+df.to_html()
+      df.to_html(experiment.project.name+'.html')
   if args.server == -3:
     logFileName = '/tmp/explanes_'+experiment.project.name+'_'+experiment.project.runId+'.txt'
     with open(logFileName, 'r') as file:

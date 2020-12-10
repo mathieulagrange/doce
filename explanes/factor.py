@@ -59,8 +59,7 @@ class Factor():
   def default(
     self,
     factor,
-    modality,
-    genericDefaultModalityWarning=True
+    modality
     ):
     """set the default modality for the specified factor.
 
@@ -70,14 +69,10 @@ class Factor():
   	----------
 
     factor: str
+      the name of the factor
 
-    modality: str
-
-    genericDefaultModalityWarning: bool (optional)
-
-      if True,  print a warning if a default value is a generic default value is already in the set of modalities for this factor (default).
-
-      If False, do not print the warning.
+    modality: int or str
+      the modality value
 
   	See Also
   	--------
@@ -87,10 +82,35 @@ class Factor():
   	Examples
   	--------
 
+    >>> import explanes as el
+
+    f = el.Factor()
+
+    f.f1 = ['a', 'b']
+    f.f2 = [1, 2, 3]
+
+    print(f)
+    for setting in f.mask():
+      print(setting.id())
+
+    f.default('f2', 2)
+
+    for setting in f:
+      print(setting.id())
+
+    f.f2 = [0, 1, 2, 3]
+    print(f)
+
+    f.default('f2', 2)
+
+    for setting in f:
+      print(setting.id())
+
+
     """
     if hasattr(self, factor):
-      if not genericDefaultModalityWarning and any(item == getattr(self, factor) for item in [0, 'none']):
-        print('Setting an explicit default modality to factor '+name+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <hideNoneAndZero> set to False when using method id() if (O or none). You can remove this warning by setting the flag <force> to True.')
+      # if genericDefaultModalityWarning and len([item for item in getattr(self, factor) if item in [0, 'none']]):
+      #   print('Setting an explicit default modality to factor '+factor+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <hideNoneAndZero> set to False when using method id() if (O or none). You can remove this warning by setting the flag <force> to True.')
       if modality not in getattr(self, factor):
         print('The default modality of factor '+factor+' should be available in the set of modalities.')
         raise ValueError
@@ -417,25 +437,37 @@ class Factor():
     for x in self.factors():
       for f in getattr(self, x).factors():
         setattr(tmp, f, [])
+        if hasattr(getattr(self, x)._default, f):
+          if hasattr(tmp._default, f) and getattr(getattr(self, x)._default, f) != getattr(tmp._default, f):
+            print(getattr(tmp._default, f))
+            print('While merging factors of the different experiment, a conflict of default modalities for the factor '+f+' is detected. This may lead to an inconsistent behavior.')
+            raise ValueError
+          else:
+            setattr(tmp._default, f, getattr(getattr(self, x)._default, f))
     for x in self.factors():
       for f in getattr(self, x).factors():
         for m in getattr(getattr(self, x), f):
-          getattr(tmp, f).append(m)
+          if m not in getattr(tmp, f):
+            getattr(tmp, f).append(m)
     # check if factors are available in every experiment
     have = [True]*len(tmp.factors())
     for fi, f in enumerate(tmp.factors()):
       for x in self.factors():
         if not f in getattr(self, x).factors():
           have[fi] = False
-    # print(have)
+    print(have)
     factor = Factor()
     for fi, f in enumerate(tmp.factors()):
       m = getattr(tmp, f)
-      if not have[fi]:
+      setattr(factor, f, m)
+      if not have[fi] and not hasattr(tmp._default, f):
         if isinstance(m[0], str) and 'none' not in m:
           m.insert(0, 'none')
-        elif 0 not in m:
+          factor.default(f, 'none')
+        if not isinstance(m[0], str) and 0 not in m:
           m.insert(0, 0)
+          factor.default(f, 0)
+          print('pass'+str(fi))
       setattr(factor, f, m)
     return factor
 
