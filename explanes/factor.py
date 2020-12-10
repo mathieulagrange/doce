@@ -444,6 +444,7 @@ class Factor():
             raise ValueError
           else:
             setattr(tmp._default, f, getattr(getattr(self, x)._default, f))
+            # print(tmp._default)
     for x in self.factors():
       for f in getattr(self, x).factors():
         for m in getattr(getattr(self, x), f):
@@ -455,8 +456,9 @@ class Factor():
       for x in self.factors():
         if not f in getattr(self, x).factors():
           have[fi] = False
-    print(have)
+    # print(have)
     factor = Factor()
+    factor._default = tmp._default
     for fi, f in enumerate(tmp.factors()):
       m = getattr(tmp, f)
       setattr(factor, f, m)
@@ -494,23 +496,24 @@ class Factor():
     1    two  0  1  2  3  4  5  6  7  8  9
     """
     l = 1
-    for ai, atr in enumerate(self._factors):
-      if isinstance(self.__getattribute__(atr), list):
-        l = max(l, len(self.__getattribute__(atr)))
-      elif isinstance(self.__getattribute__(atr), np.ndarray):
-        l = max(l, len(self.__getattribute__(atr)))
+    for ai, f in enumerate(self._factors):
+      if isinstance(getattr(self, f), list):
+        l = max(l, len(getattr(self, f)))
+      elif isinstance(getattr(self, f), np.ndarray):
+        l = max(l, len(getattr(self, f)))
 
     table = []
-    for atr in self._factors:
+    for f in self._factors:
       line = []
-      line.append(atr)
+      line.append(f)
       for il in range(l):
-        if isinstance(self.__getattribute__(atr), list) and len(self.__getattribute__(atr)) > il :
-          line.append(self.__getattribute__(atr)[il])
-        elif isinstance(self.__getattribute__(atr), np.ndarray) and len(self.__getattribute__(atr)) > il :
-          line.append(self.__getattribute__(atr)[il])
+        if ((isinstance(getattr(self, f), list)) or isinstance(getattr(self, f), np.ndarray)) and len(getattr(self, f)) > il :
+          m = str(getattr(self, f)[il])
+          if hasattr(self._default, f) and getattr(self._default, f) == getattr(self, f)[il]:
+            m = '*'+m+'*'
+          line.append(m)
         elif il<1:
-          line.append(self.__getattribute__(atr))
+          line.append(getattr(self, f))
         else:
           line.append('')
       table.append(line)
@@ -523,8 +526,8 @@ class Factor():
   def __str__(self):
     cString = ''
     l = 1
-    for ai, atr in enumerate(self._factors):
-      cString+='  '+str(ai)+'  '+atr+': '+str(self.__getattribute__(atr))+'\n'
+    for ai, f in enumerate(self._factors):
+      cString+='  '+str(ai)+'  '+f+': '+str(self.__getattribute__(f))+'\n'
     return cString[:-1]
 
   def __setattr__(
