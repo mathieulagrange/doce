@@ -5,7 +5,6 @@ import os
 import time
 import datetime
 import explanes as el
-import os
 
 class Experiment():
   """Stores high level information about the experiment and tools to control the processing and storage of data.
@@ -88,10 +87,7 @@ class Experiment():
     self.parameter = types.SimpleNamespace()
     self.metric = el.Metric()
     self.path = Path()
-    self.path.input = ''
-    self.path.processing = ''
-    self.path.storage = ''
-    self.path.output = ''
+    self.path.code = os.getcwd()
     self.host = []
     self._settingEncoding = {}
     self._archivePath = ''
@@ -223,7 +219,7 @@ class Experiment():
     description = ''
     for atr in self._atrs:
       if type(inspect.getattr_static(self, atr)) != types.FunctionType:
-        if type(self.__getattribute__(atr)) == types.SimpleNamespace:
+        if type(self.__getattribute__(atr)) in [types.SimpleNamespace, Path]:
           description += atr+': \r\n'
           for sns in self.__getattribute__(atr).__dict__.keys():
             description+='  '+sns+': '+str(self.__getattribute__(atr).__getattribute__(sns))+'\r\n'
@@ -558,7 +554,8 @@ class Path:
       name,
       value
       ):
-      return object.__setattr__(self, name, os.path.expanduser(value))
+      object.__setattr__(self, name+'_raw', value)
+      object.__setattr__(self, name, os.path.expanduser(value))
 
 
 if __name__ == '__main__':

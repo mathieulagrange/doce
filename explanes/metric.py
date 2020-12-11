@@ -194,13 +194,14 @@ class Metric():
     30.0
 
     """
-    if not reductionDirectiveModule or not hasattr(reductionDirectiveModule, reductionType):
+    reductionTypeDirective = reductionType.replace('%', '').split('-')[0]
+    if not reductionDirectiveModule or not hasattr(reductionDirectiveModule, reductionTypeDirective):
       reductionDirectiveModule = np
       data = data.flatten()
-    if reductionType and not hasattr(reductionDirectiveModule, reductionType):
+    if reductionTypeDirective and not hasattr(reductionDirectiveModule, reductionTypeDirective):
       return np.nan
     indexPercent=-1
-    if reductionType:
+    if reductionTypeDirective:
       if isinstance(reductionType, int):
         if data.size>1:
           value = float(data[reductionType])
@@ -208,23 +209,20 @@ class Metric():
           value = float(data)
       elif isinstance(reductionType, str):
         indexPercent = reductionType.find('%')
-        if indexPercent>-1:
-          reductionType = reductionType.replace('%', '')
         ags = reductionType.split('-')
-        reductionType = ags[0]
         if len(ags)>1:
           ignore = int(ags[1])
           if ignore == 0:
-            value = getattr(reductionDirectiveModule, reductionType)(data[1:])
+            value = getattr(reductionDirectiveModule, reductionTypeDirective)(data[1:])
           elif ignore == 1:
-            value = getattr(reductionDirectiveModule, reductionType)(data[::2])
+            value = getattr(reductionDirectiveModule, reductionTypeDirective)(data[::2])
           elif ignore == 2:
-            value = getattr(reductionDirectiveModule, reductionType)(data[1::2])
+            value = getattr(reductionDirectiveModule, reductionTypeDirective)(data[1::2])
           else:
             print('Unrecognized pruning directive')
             raise ValueError
         else :
-          value = getattr(reductionDirectiveModule, reductionType)(data)
+          value = getattr(reductionDirectiveModule, reductionTypeDirective)(data)
     else:
       if not isinstance(data, np.ndarray):
         data = np.array(data)

@@ -188,7 +188,7 @@ optional arguments:
     message = 'experiment launched on local host'
     if args.server>-1:
       if args.copy:
-        syncCommand = 'rsync -r '+experiment.path.code+'/* '+experiment.host[args.server]+':'+experiment.path.code
+        syncCommand = 'rsync -r '+experiment.path.code+'* '+experiment.host[args.server]+':'+experiment.path.code_raw
         print(syncCommand)
         os.system(syncCommand)
       command = 'ssh '+experiment.host[args.server]+' "cd '+experiment.path.code+'; '+command+'"'
@@ -216,7 +216,8 @@ optional arguments:
       df = pd.DataFrame(table, columns=columns).fillna('')
       df[columns[nbFactorColumns:]] = df[columns[nbFactorColumns:]].round(decimals=2)
       if selectDisplay:
-        selector = [columns[i] for i in selectDisplay]
+        selector = [columns[i] for i in [*range(nbFactorColumns)]+[s+nbFactorColumns for s in selectDisplay]]
+        # print(selector)
         df = df[selector]
       print(header)
       print(df)
