@@ -7,7 +7,7 @@ from pathlib import Path
 import os
 
 if __name__ == "__main__":
-  el.experiment.run()
+  el.run.run()
 
 
 def set(args):

@@ -191,7 +191,7 @@ optional arguments:
         syncCommand = 'rsync -r '+experiment.path.code+'* '+experiment.host[args.server]+':'+experiment.path.code_raw
         print(syncCommand)
         os.system(syncCommand)
-      command = 'ssh '+experiment.host[args.server]+' "cd '+experiment.path.code+'; '+command+'"'
+      command = 'ssh '+experiment.host[args.server]+' "cd '+experiment.path.code_raw+'; '+command+'"'
       message = 'experiment launched on host: '+experiment.host[args.server]
     print(command)
     os.system(command)

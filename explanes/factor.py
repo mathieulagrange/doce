@@ -45,16 +45,19 @@ class Factor():
   factor1 3 factor2 2
   factor1 3 factor2 4
   """
-  def __init__(self):
-    self._setting = None
-    self._changed = False
-    self._currentSetting = 0
-    self._settings = []
-    self._mask = None
-    self._nonSingleton = []
-    self._factors = []
-    self._default = types.SimpleNamespace()
-    self._maskVolatile = True
+  def __init__(self, factor=None):
+    if factor:
+      self = copy.deepcopy(factor)
+    else:
+      self._setting = None
+      self._changed = False
+      self._currentSetting = 0
+      self._settings = []
+      self._mask = None
+      self._nonSingleton = []
+      self._factors = []
+      self._default = types.SimpleNamespace()
+      self._maskVolatile = True
 
   def default(
     self,
@@ -463,13 +466,14 @@ class Factor():
       m = getattr(tmp, f)
       setattr(factor, f, m)
       if not have[fi] and not hasattr(tmp._default, f):
-        if isinstance(m[0], str) and 'none' not in m:
-          m.insert(0, 'none')
+        if isinstance(m[0], str):
+          if'none' not in m:
+            m.insert(0, 'none')
           factor.default(f, 'none')
-        if not isinstance(m[0], str) and 0 not in m:
-          m.insert(0, 0)
+        if not isinstance(m[0], str):
+          if 0 not in m:
+            m.insert(0, 0)
           factor.default(f, 0)
-          print('pass'+str(fi))
       setattr(factor, f, m)
     return factor
 
