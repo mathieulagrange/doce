@@ -45,10 +45,7 @@ class Factor():
   factor1 3 factor2 2
   factor1 3 factor2 4
   """
-  def __init__(self, factor=None):
-    if factor:
-      self = copy.deepcopy(factor)
-    else:
+  def __init__(self):
       self._setting = None
       self._changed = False
       self._currentSetting = 0
@@ -58,6 +55,9 @@ class Factor():
       self._factors = []
       self._default = types.SimpleNamespace()
       self._maskVolatile = True
+
+  def copy(self):
+    return copy.deepcopy(self)
 
   def default(
     self,
