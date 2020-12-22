@@ -200,7 +200,8 @@ class Metric():
       data = data.flatten()
     if reductionTypeDirective and not hasattr(reductionDirectiveModule, reductionTypeDirective):
       return np.nan
-    indexPercent=-1
+    # indexPercent=-1
+    indexPercent = reductionType.find('%')
     if reductionTypeDirective:
       if isinstance(reductionType, int):
         if data.size>1:
@@ -208,7 +209,6 @@ class Metric():
         else:
           value = float(data)
       elif isinstance(reductionType, str):
-        indexPercent = reductionType.find('%')
         ags = reductionType.split('-')
         if len(ags)>1:
           ignore = int(ags[1])

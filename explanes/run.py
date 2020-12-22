@@ -7,6 +7,7 @@ import ast
 import importlib
 import os
 import copy
+import subprocess
 
 def run():
   """This method shall be called from the main script of the experiment to control the experiment using the command line.
@@ -98,6 +99,7 @@ optional arguments:
   parser.add_argument('-S', '--serverDefault', help='augment the command line with the content of the dict experiment._defaultServerRunArgument', action='store_true')
   parser.add_argument('-s', '--server', type=int, help='running server side. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside', default=-2)
   parser.add_argument('-d', '--display', type=str, help='display metrics. If no parameter is given, consider the default display and show all metrics. If the str parameter contain a list of integers, use the default display and show only the selected metrics defined by the integer list. If the str parameter contain a name, run the display method with this name.', nargs='?', default='-1')
+  parser.add_argument('-E', '--export', type=str, help='Export the display of reduced metrics among different file types (html, png, pdf). If parameter is empty, all exports are made. If parameter has a dot, interpreted as a filename which should be of support type. If parameter has nothing before the dot, interpreted as file type, and experiment.project.name is used. If parameter has no dot, interpreted as file name with no extension, and all exports are made', nargs='?', default='none')
   parser.add_argument('-r', '--run', type=int, help='perform computation. Integer parameter sets the number of jobs computed in parallel (default to one core).', nargs='?', const=1)
   parser.add_argument('-D', '--debug', help='debug mode', action='store_true')
   parser.add_argument('-v', '--version', help='print version', action='store_true')
@@ -115,6 +117,9 @@ optional arguments:
     args.mail = 0
   else:
     args.mail = float(args.mail)
+
+  if args.export is None:
+    args.export = 'all'
 
   mask = ast.literal_eval(args.mask)
   parameter = ast.literal_eval(args.parameter)
@@ -222,7 +227,32 @@ optional arguments:
       print(header)
       print(df)
       body += '<div> '+header+' </div><br>'+df.to_html()
-      df.to_html(experiment.project.name+'.html')
+      if args.export is not 'none':
+        if args.export is 'all':
+          exportFileName = experiment.project.name
+        else:
+          a = args.export.split('.')
+          # print(a)
+          if a[0]:
+            exportFileName = a[0]
+          else:
+            exportFileName = experiment.project.name
+          if len(a)>1:
+            args.export = '.'+a[1]
+          else:
+            args.export = 'all'
+        # print(exportFileName)
+        # print(args.export)
+        df.to_html(exportFileName+'.html')
+        if 'png' in args.export or 'all' is args.export:
+          subprocess.call(
+            'wkhtmltoimage -f png --width 0 '+exportFileName+'.html '+exportFileName+'.png', shell=True)
+        if 'pdf' in args.export or 'all' is args.export:
+          subprocess.call(
+          'wkhtmltopdf '+exportFileName+'.html '+exportFileName+'.pdf', shell=True)
+        if 'html' not in args.export and not 'all' is args.export:
+          os.remove(exportFileName+'.html')
+
   if args.server == -3:
     logFileName = '/tmp/explanes_'+experiment.project.name+'_'+experiment.project.runId+'.txt'
     with open(logFileName, 'r') as file:
