@@ -220,15 +220,15 @@ optional arguments:
       # print(columns)
       df = pd.DataFrame(table, columns=columns).fillna('')
       df[columns[nbFactorColumns:]] = df[columns[nbFactorColumns:]].round(decimals=2)
-      if selectDisplay:
+      if selectDisplay and len(columns)>=max(selectDisplay)+nbFactorColumns:
         selector = [columns[i] for i in [*range(nbFactorColumns)]+[s+nbFactorColumns for s in selectDisplay]]
         # print(selector)
         df = df[selector]
       print(header)
       print(df)
       body += '<div> '+header+' </div><br>'+df.to_html()
-      if args.export is not 'none':
-        if args.export is 'all':
+      if args.export != 'none':
+        if args.export == 'all':
           exportFileName = experiment.project.name
         else:
           a = args.export.split('.')
@@ -244,13 +244,15 @@ optional arguments:
         # print(exportFileName)
         # print(args.export)
         df.to_html(exportFileName+'.html')
-        if 'png' in args.export or 'all' is args.export:
+        if 'png' in args.export or 'all' == args.export:
           subprocess.call(
             'wkhtmltoimage -f png --width 0 '+exportFileName+'.html '+exportFileName+'.png', shell=True)
-        if 'pdf' in args.export or 'all' is args.export:
+        if 'pdf' in args.export or 'all' == args.export:
           subprocess.call(
           'wkhtmltopdf '+exportFileName+'.html '+exportFileName+'.pdf', shell=True)
-        if 'html' not in args.export and not 'all' is args.export:
+          subprocess.call(
+          'pdfcrop '+exportFileName+'.pdf '+exportFileName+'.pdf', shell=True)
+        if 'html' not in args.export and 'all' != args.export:
           os.remove(exportFileName+'.html')
 
   if args.server == -3:
