@@ -93,6 +93,7 @@ class Experiment():
     self._archivePath = ''
     self._factorFormatInReduce = 'long'
     self._metricFormatInReduce = 'long'
+    self._metricPrecision = 2
     self._factorFormatInReduceLength = 2
     self._metricFormatInReduceLength = 2
     self._gmailId = 'expcode.mailer'

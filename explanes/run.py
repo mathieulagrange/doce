@@ -219,7 +219,8 @@ optional arguments:
       # print(table)
       # print(columns)
       df = pd.DataFrame(table, columns=columns).fillna('')
-      df[columns[nbFactorColumns:]] = df[columns[nbFactorColumns:]].round(decimals=2)
+      df[columns[nbFactorColumns:]] = df[columns[nbFactorColumns:]].round(experiment._metricPrecision)
+      pd.set_option('precision', experiment._metricPrecision)
       if selectDisplay and len(columns)>=max(selectDisplay)+nbFactorColumns:
         selector = [columns[i] for i in [*range(nbFactorColumns)]+[s+nbFactorColumns for s in selectDisplay]]
         # print(selector)
