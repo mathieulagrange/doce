@@ -142,10 +142,13 @@ optional arguments:
   except:
    print('Please provide a valid project name')
    raise ValueError
-  experiment = config.set(args)
-  experiment.mask = mask
+
+  experiment = el.experiment.Experiment()
   if isinstance(parameter, dict):
     experiment.parameter = parameter
+
+  experiment = config.set(experiment)
+  experiment.mask = mask
 
   if args.experiment != 'all':
     if hasattr(experiment.factor, args.experiment):
@@ -221,13 +224,32 @@ optional arguments:
       df = pd.DataFrame(table, columns=columns).fillna('')
       df[columns[nbFactorColumns:]] = df[columns[nbFactorColumns:]].round(experiment._metricPrecision)
       pd.set_option('precision', experiment._metricPrecision)
+
       if selectDisplay and len(columns)>=max(selectDisplay)+nbFactorColumns:
         selector = [columns[i] for i in [*range(nbFactorColumns)]+[s+nbFactorColumns for s in selectDisplay]]
         # print(selector)
         df = df[selector]
+
+      d = dict(selector="th", props=[('text-align', 'center'), ('border-bottom', '.1rem solid')])
+      # Construct a mask of which columns are numeric
+      import numpy as np
+      numeric_col_mask = df.dtypes.apply(lambda d: issubclass(np.dtype(d).type, np.number))
+      print(numeric_col_mask)
+      # Style
+      styler = df.style.set_properties(subset=df.columns[numeric_col_mask], # right-align the numeric columns and set their width
+            **{'width':'10em', 'text-align':'right'})\
+            .set_properties(subset=df.columns[~numeric_col_mask], # left-align the non-numeric columns and set their width
+            **{'width':'10em', 'text-align':'left'})\
+            .set_properties(subset=df.columns[nbFactorColumns], # left-align the non-numeric columns and set their width
+            **{'border-left':'.1rem solid'})\
+            .set_table_styles([d]).hide_index()
+      # text_file = open("test.html", "w")
+      # text_file.write(styler.render())
+      # text_file.close()
+
       print(header)
       print(df)
-      body += '<div> '+header+' </div><br>'+df.to_html()
+      body += '<div> '+header+' </div><br>'+styler.render()
       if args.export != 'none':
         if args.export == 'all':
           exportFileName = experiment.project.name
@@ -244,7 +266,11 @@ optional arguments:
             args.export = 'all'
         # print(exportFileName)
         # print(args.export)
-        df.to_html(exportFileName+'.html')
+        with open(exportFileName+'.html', "w") as outFile:
+          reloadHeader =  '<script> window.onblur= function() {window.onfocus= function () {location.reload(true)}}; </script>'
+          outFile.write(reloadHeader)
+          outFile.write(styler.render())
+          
         if 'png' in args.export or 'all' == args.export:
           subprocess.call(
             'wkhtmltoimage -f png --width 0 '+exportFileName+'.html '+exportFileName+'.png', shell=True)
