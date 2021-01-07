@@ -215,6 +215,7 @@ optional arguments:
     else:
       displayMethod = args.display
 
+  body = '<div> Mask = '+args.mask+'</div>'
   if display:
     if hasattr(config, displayMethod):
       getattr(config, displayMethod)(experiment, experiment.factor.mask(experiment.mask))
@@ -224,9 +225,7 @@ optional arguments:
       print(df)
       if args.export != 'none':
         exportDataFrame(experiment, args, df, styler)
-
-  body = '<div> Mask = '+args.mask+'</div>'
-  body += '<div> '+header+' </div><br>'+styler.render()
+      body += '<div> '+header+' </div><br>'+styler.render()
 
   if args.server == -3:
     logFileName = '/tmp/explanes_'+experiment.project.name+'_'+experiment.project.runId+'.txt'

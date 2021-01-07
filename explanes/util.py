@@ -160,6 +160,8 @@ def compressDescription(
     compressedDescription = ''.join([itf[0:atomLength] for itf in description.split('_')])
   if 'shortCapital' in format:
     compressedDescription = description[0:atomLength]+''.join([itf[0:atomLength] for itf in re.findall('[A-Z][^A-Z]*', description)]).lower()
+  if '%' in description:
+    compressedDescription += '%'
   return compressedDescription
 
 def query_yes_no(
