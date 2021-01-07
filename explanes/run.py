@@ -248,16 +248,30 @@ def dataFrameDisplay(experiment, args, config, selectDisplay):
   numeric_col_mask = df.dtypes.apply(lambda d: issubclass(np.dtype(d).type, np.number))
   cPercent = []
   cNoPercent = []
+  precisionFormat = {}
   for ci, c in enumerate(columns):
     if ci >= nbFactorColumns:
       if '%' in c:
-        cPercent.append(ci)
+        precisionFormat[c] = '{0:.'+str(experiment._display.metricPrecision-2)+'f}'
+        cPercent.append(c)
       else:
-        cNoPercent.append(ci)
-  form = '{0:.'+str(experiment._display.metricPrecision-2)+'f}'
-  df[df.columns[cPercent]]= df[df.columns[cPercent]].applymap(form.format)
-  form = '{0:.'+str(experiment._display.metricPrecision)+'f}'
-  df[df.columns[cNoPercent]]= df[df.columns[cNoPercent]].applymap(form.format)
+        precisionFormat[c] = '{0:.'+str(experiment._display.metricPrecision)+'f}'
+        cNoPercent.append(c)
+  print(precisionFormat)
+  # form = '{0:.'+str(experiment._display.metricPrecision-2)+'f}'
+  # df[df.columns[cPercent]]= df[df.columns[cPercent]].applymap(lambda x: np.round(x, experiment._display.metricPrecision-2)) # form.format
+  # form = '{0:.'+str(experiment._display.metricPrecision)+'f}'
+  # df[df.columns[cNoPercent]]= df[df.columns[cNoPercent]].applymap(lambda x: np.round(x, experiment._display.metricPrecision)) # form.format
+  # print(cPercent)
+  # print([experiment._display.metricPrecision-2]*len(cPercent))
+  dPercent = pd.Series([experiment._display.metricPrecision-2]*len(cPercent), index=cPercent)
+  dNoPercent = pd.Series([experiment._display.metricPrecision]*len(cNoPercent), index=cNoPercent)
+  df=df.round(dPercent).round(dNoPercent)
+  form = '%.'+str(experiment._display.metricPrecision)+'f'
+  # print(form)
+  pd.set_option('display.float_format', lambda x: '%.0f' % x
+                      if (x == x and x*10 % 10 == 0)
+                      else form % x)
 
   styler = df.style.set_properties(subset=df.columns[numeric_col_mask], # right-align the numeric columns and set their width
         **{'width':'10em', 'text-align':'right'})\
@@ -265,9 +279,11 @@ def dataFrameDisplay(experiment, args, config, selectDisplay):
         **{'width':'10em', 'text-align':'left'})\
         .set_properties(subset=df.columns[nbFactorColumns], # left-align the non-numeric columns and set their width
         **{'border-left':'.1rem solid'})\
-        .set_table_styles([d])
+        .set_table_styles([d]).format(precisionFormat)
   if not experiment._display.showRowIndex:
     styler.hide_index()
+  if experiment._display.highlight:
+    styler.highlight_max(subset=df.columns[nbFactorColumns:], axis=0)
 
 
   print(header)
