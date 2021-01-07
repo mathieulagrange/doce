@@ -219,7 +219,14 @@ optional arguments:
     if hasattr(config, displayMethod):
       getattr(config, displayMethod)(experiment, experiment.factor.mask(experiment.mask))
     else:
-      dataFrameDisplay(experiment, args, config, selectDisplay)
+      (df, header, styler) = dataFrameDisplay(experiment, args, config, selectDisplay)
+      print(header)
+      print(df)
+      if args.export != 'none':
+        exportDataFrame(experiment, args, styler)
+
+  body = '<div> Mask = '+args.mask+'</div>'
+  body += '<div> '+header+' </div><br>'+styler.render()
 
   if args.server == -3:
     logFileName = '/tmp/explanes_'+experiment.project.name+'_'+experiment.project.runId+'.txt'
@@ -287,65 +294,63 @@ def dataFrameDisplay(experiment, args, config, selectDisplay):
   if experiment._display.bar:
     styler.bar(subset=df.columns[nbFactorColumns:], align='mid', color=['#d65f5f', '#5fba7d'])
 
+  return (df, header, styler)
 
-  print(header)
-  print(df)
-  body = '<div> Mask = '+args.mask+'</div>'
-  body += '<div> '+header+' </div><br>'+styler.render()
-  if args.export != 'none':
-    if not os.path.exists('export'):
-      os.makedirs('export')
-    if args.export == 'all':
-      exportFileName = experiment.project.name
+
+def exportDataFrame(experiment, args, styler):
+  if not os.path.exists('export'):
+    os.makedirs('export')
+  if args.export == 'all':
+    exportFileName = experiment.project.name
+  else:
+    a = args.export.split('.')
+    # print(a)
+    if a[0]:
+      exportFileName = a[0]
     else:
-      a = args.export.split('.')
-      # print(a)
-      if a[0]:
-        exportFileName = a[0]
-      else:
-        exportFileName = experiment.project.name
-      if len(a)>1:
-        args.export = '.'+a[1]
-      else:
-        args.export = 'all'
-    exportFileName = 'export/'+exportFileName
-    reloadHeader =  '<script> window.onblur= function() {window.onfocus= function () {location.reload(true)}}; </script>'
-    with open(exportFileName+'.html', "w") as outFile:
-      outFile.write(reloadHeader)
-      outFile.write(styler.render())
+      exportFileName = experiment.project.name
+    if len(a)>1:
+      args.export = '.'+a[1]
+    else:
+      args.export = 'all'
+  exportFileName = 'export/'+exportFileName
+  reloadHeader =  '<script> window.onblur= function() {window.onfocus= function () {location.reload(true)}}; </script>'
+  with open(exportFileName+'.html', "w") as outFile:
+    outFile.write(reloadHeader)
+    outFile.write(styler.render())
 
-    if 'tex' in args.export or 'all' == args.export:
-      columnFormat = ''
-      for n in numeric_col_mask:
-        if n:
-          columnFormat+='r'
-        else:
-          columnFormat+='l'
-      df.to_latex(buf=exportFileName+'.tex', column_format=columnFormat, index=experiment._display.showRowIndex, bold_rows=True)
+  if 'tex' in args.export or 'all' == args.export:
+    columnFormat = ''
+    for n in numeric_col_mask:
+      if n:
+        columnFormat+='r'
+      else:
+        columnFormat+='l'
+    df.to_latex(buf=exportFileName+'.tex', column_format=columnFormat, index=experiment._display.showRowIndex, bold_rows=True)
 
-    if 'png' in args.export or 'all' == args.export:
-        if shutil.which('wkhtmltoimage') is not None:
-          subprocess.call(
-          'wkhtmltoimage -f png --width 0 '+exportFileName+'.html '+exportFileName+'.png', shell=True)
-        else:
-          print('generation of png is handled by converting the html generated from the result dataframe using the wkhtmltoimage tool. This tool must be installed and reachable from you path.')
-    if 'pdf' in args.export or 'all' == args.export:
-      # /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --headless --print-to-pdf=testChrome.pdf cds.html --print-to-pdf-no-header
-      if shutil.which('chrome') is not None:
-        subprocess.call('chrome --headless --print-to-pdf-no-header --print-to-pdf='+exportFileName+'.pdf '+exportFileName+'.html', shell=True)
-      elif shutil.which('chromium') is not None:
-        subprocess.call('chromium --headless --print-to-pdf-no-header --print-to-pdf='+exportFileName+'.pdf '+exportFileName+'.html', shell=True)
-      elif shutil.which('wkhtmltopdf') is not None:
+  if 'png' in args.export or 'all' == args.export:
+      if shutil.which('wkhtmltoimage') is not None:
         subprocess.call(
-        'wkhtmltopdf '+exportFileName+'.html '+exportFileName+'.pdf', shell=True)
+        'wkhtmltoimage -f png --width 0 '+exportFileName+'.html '+exportFileName+'.png', shell=True)
       else:
-        print('generation of pdf is handled by converting the html generated from the result dataframe using chrome, chromium or the wkhtmltoimage tool. At least one of those tools must be installed and reachable from you path.')
+        print('generation of png is handled by converting the html generated from the result dataframe using the wkhtmltoimage tool. This tool must be installed and reachable from you path.')
+  if 'pdf' in args.export or 'all' == args.export:
+    # /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --headless --print-to-pdf=testChrome.pdf cds.html --print-to-pdf-no-header
+    if shutil.which('chrome') is not None:
+      subprocess.call('chrome --headless --print-to-pdf-no-header --print-to-pdf='+exportFileName+'.pdf '+exportFileName+'.html', shell=True)
+    elif shutil.which('chromium') is not None:
+      subprocess.call('chromium --headless --print-to-pdf-no-header --print-to-pdf='+exportFileName+'.pdf '+exportFileName+'.html', shell=True)
+    elif shutil.which('wkhtmltopdf') is not None:
+      subprocess.call(
+      'wkhtmltopdf '+exportFileName+'.html '+exportFileName+'.pdf', shell=True)
+    else:
+      print('generation of pdf is handled by converting the html generated from the result dataframe using chrome, chromium or the wkhtmltoimage tool. At least one of those tools must be installed and reachable from you path.')
 
-      if shutil.which('pdfcrop') is not None:
-        subprocess.call(
-        'pdfcrop '+exportFileName+'.pdf '+exportFileName+'.pdf', shell=True)
-      else:
-        print('crop of pdf is handled using the pdfcrop tool. This tool must be installed and reachable from you path.')
+    if shutil.which('pdfcrop') is not None:
+      subprocess.call(
+      'pdfcrop '+exportFileName+'.pdf '+exportFileName+'.pdf', shell=True)
+    else:
+      print('crop of pdf is handled using the pdfcrop tool. This tool must be installed and reachable from you path.')
 
-    if 'html' not in args.export and 'all' != args.export:
-      os.remove(exportFileName+'.html')
+  if 'html' not in args.export and 'all' != args.export:
+    os.remove(exportFileName+'.html')
