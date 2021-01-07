@@ -102,9 +102,7 @@ class Experiment():
     self._display.factorFormatInReduceLength = 2
     self._display.metricFormatInReduceLength = 2
     self._display.showRowIndex = True
-    self._display.html2pdf = ''
-    self._display.pdfCrop = ''
-
+  
   def __setattr__(
     self,
     name,

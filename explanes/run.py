@@ -9,6 +9,7 @@ import os
 import copy
 import subprocess
 import numpy as np
+import shutil
 
 def run():
   """This method shall be called from the main script of the experiment to control the experiment using the command line.
@@ -305,13 +306,28 @@ def dataFrameDisplay(experiment, args, config, selectDisplay):
       df.to_latex(buf=exportFileName+'.tex', column_format=columnFormat, index=experiment._display.showRowIndex, bold_rows=True)
 
     if 'png' in args.export or 'all' == args.export:
-      subprocess.call(
-        'wkhtmltoimage -f png --width 0 '+exportFileName+'.html '+exportFileName+'.png', shell=True)
+        if shutil.which('wkhtmltoimage') is not None:
+          subprocess.call(
+          'wkhtmltoimage -f png --width 0 '+exportFileName+'.html '+exportFileName+'.png', shell=True)
+        else:
+          print('generation of png is handled by converting the html generated from the result dataframe using the wkhtmltoimage tool. This tool must be installed and reachable from you path.')
     if 'pdf' in args.export or 'all' == args.export:
       # /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --headless --print-to-pdf=testChrome.pdf cds.html --print-to-pdf-no-header
-      subprocess.call(
-      'wkhtmltopdf '+exportFileName+'.html '+exportFileName+'.pdf', shell=True)
-      subprocess.call(
-      'pdfcrop '+exportFileName+'.pdf '+exportFileName+'.pdf', shell=True)
+      if shutil.which('chrome') is not None:
+        subprocess.call('chrome --headless --print-to-pdf-no-header --print-to-pdf='+exportFileName+'.pdf '+exportFileName+'.html', shell=True)
+      elif shutil.which('chromium') is not None:
+        subprocess.call('chromium --headless --print-to-pdf-no-header --print-to-pdf='+exportFileName+'.pdf '+exportFileName+'.html', shell=True)
+      elif shutil.which('wkhtmltopdf') is not None:
+        subprocess.call(
+        'wkhtmltopdf '+exportFileName+'.html '+exportFileName+'.pdf', shell=True)
+      else:
+        print('generation of pdf is handled by converting the html generated from the result dataframe using chrome, chromium or the wkhtmltoimage tool. At least one of those tools must be installed and reachable from you path.')
+
+      if shutil.which('pdfcrop') is not None:
+        subprocess.call(
+        'pdfcrop '+exportFileName+'.pdf '+exportFileName+'.pdf', shell=True)
+      else:
+        print('crop of pdf is handled using the pdfcrop tool. This tool must be installed and reachable from you path.')
+
     if 'html' not in args.export and 'all' != args.export:
       os.remove(exportFileName+'.html')
