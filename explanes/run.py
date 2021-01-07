@@ -295,6 +295,15 @@ def dataFrameDisplay(experiment, args, config, selectDisplay):
       outFile.write(reloadHeader)
       outFile.write(styler.render())
 
+    if 'tex' in args.export or 'all' == args.export:
+      columnFormat = ''
+      for n in numeric_col_mask:
+        if n:
+          columnFormat+='r'
+        else:
+          columnFormat+='l'
+      df.to_latex(buf=exportFileName+'.tex', column_format=columnFormat, index=experiment._display.showRowIndex, bold_rows=True)
+
     if 'png' in args.export or 'all' == args.export:
       subprocess.call(
         'wkhtmltoimage -f png --width 0 '+exportFileName+'.html '+exportFileName+'.png', shell=True)
