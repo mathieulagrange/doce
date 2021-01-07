@@ -223,7 +223,7 @@ optional arguments:
       print(header)
       print(df)
       if args.export != 'none':
-        exportDataFrame(experiment, args, styler)
+        exportDataFrame(experiment, args, df, styler)
 
   body = '<div> Mask = '+args.mask+'</div>'
   body += '<div> '+header+' </div><br>'+styler.render()
@@ -264,7 +264,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay):
       else:
         precisionFormat[c] = '{0:.'+str(experiment._display.metricPrecision)+'f}'
         cNoPercent.append(c)
-  print(precisionFormat)
+  # print(precisionFormat)
   # form = '{0:.'+str(experiment._display.metricPrecision-2)+'f}'
   # df[df.columns[cPercent]]= df[df.columns[cPercent]].applymap(lambda x: np.round(x, experiment._display.metricPrecision-2)) # form.format
   # form = '{0:.'+str(experiment._display.metricPrecision)+'f}'
@@ -289,15 +289,15 @@ def dataFrameDisplay(experiment, args, config, selectDisplay):
         .set_table_styles([d]).format(precisionFormat)
   if not experiment._display.showRowIndex:
     styler.hide_index()
-  if experiment._display.highlight:
-    styler.highlight_max(subset=df.columns[nbFactorColumns:], axis=0)
   if experiment._display.bar:
     styler.bar(subset=df.columns[nbFactorColumns:], align='mid', color=['#d65f5f', '#5fba7d'])
+  if experiment._display.highlight:
+    styler.highlight_max(subset=df.columns[nbFactorColumns:], axis=0)
 
   return (df, header, styler)
 
 
-def exportDataFrame(experiment, args, styler):
+def exportDataFrame(experiment, args, df, styler):
   if not os.path.exists('export'):
     os.makedirs('export')
   if args.export == 'all':
@@ -320,13 +320,14 @@ def exportDataFrame(experiment, args, styler):
     outFile.write(styler.render())
 
   if 'tex' in args.export or 'all' == args.export:
-    columnFormat = ''
-    for n in numeric_col_mask:
-      if n:
-        columnFormat+='r'
-      else:
-        columnFormat+='l'
-    df.to_latex(buf=exportFileName+'.tex', column_format=columnFormat, index=experiment._display.showRowIndex, bold_rows=True)
+    # columnFormat = ''
+    # for n in numeric_col_mask:
+    #   if n:
+    #     columnFormat+='r'
+    #   else:
+    #     columnFormat+='l'
+    df.to_latex(buf=exportFileName+'.tex', index=experiment._display.showRowIndex, bold_rows=True)
+    # column_format=columnFormat,
 
   if 'png' in args.export or 'all' == args.export:
       if shutil.which('wkhtmltoimage') is not None:
