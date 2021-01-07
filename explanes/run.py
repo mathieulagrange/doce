@@ -279,11 +279,13 @@ def dataFrameDisplay(experiment, args, config, selectDisplay):
         **{'width':'10em', 'text-align':'left'})\
         .set_properties(subset=df.columns[nbFactorColumns], # left-align the non-numeric columns and set their width
         **{'border-left':'.1rem solid'})\
-        .set_table_styles([d]).format(precisionFormat)df.style.bar(subset=df.columns[nbFactorColumns:], align='mid', color=['#d65f5f', '#5fba7d'])
+        .set_table_styles([d]).format(precisionFormat)
   if not experiment._display.showRowIndex:
     styler.hide_index()
   if experiment._display.highlight:
     styler.highlight_max(subset=df.columns[nbFactorColumns:], axis=0)
+  if experiment._display.bar:
+    styler.bar(subset=df.columns[nbFactorColumns:], align='mid', color=['#d65f5f', '#5fba7d'])
 
 
   print(header)

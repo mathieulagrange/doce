@@ -103,6 +103,7 @@ class Experiment():
     self._display.metricFormatInReduceLength = 2
     self._display.showRowIndex = True
     self._display.highlight = True
+    self._display.bar = True
 
   def __setattr__(
     self,
