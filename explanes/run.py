@@ -8,6 +8,7 @@ import importlib
 import os
 import copy
 import subprocess
+import numpy as np
 
 def run():
   """This method shall be called from the main script of the experiment to control the experiment using the command line.
@@ -124,18 +125,6 @@ optional arguments:
   mask = ast.literal_eval(args.mask)
   parameter = ast.literal_eval(args.parameter)
 
-  selectDisplay = []
-  displayMethod = ''
-  display = True
-  if args.display == '-1':
-    display = False
-  elif args.display is not None:
-    if '[' in args.display:
-      selectDisplay = ast.literal_eval(args.display)
-    else:
-      displayMethod = args.display
-  # print(displayMethod)
-  # print(selectDisplay)
   module = sys.argv[0][:-3]
   try:
     config = importlib.import_module(module)
@@ -213,74 +202,23 @@ optional arguments:
   if args.run and hasattr(config, 'step'):
     experiment.do(mask, config.step, nbJobs=args.run, logFileName=logFileName, progress=args.progress, mailInterval = float(args.mail))
 
-  body = '<div> Mask = '+args.mask+'</div>'
+
+  selectDisplay = []
+  displayMethod = ''
+  display = True
+  if args.display == '-1':
+    display = False
+  elif args.display is not None:
+    if '[' in args.display:
+      selectDisplay = ast.literal_eval(args.display)
+    else:
+      displayMethod = args.display
+
   if display:
     if hasattr(config, displayMethod):
       getattr(config, displayMethod)(experiment, experiment.factor.mask(experiment.mask))
     else:
-      (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.mask(experiment.mask), experiment.path.output, factorDisplay=experiment._factorFormatInReduce, metricDisplay=experiment._metricFormatInReduce, factorDisplayLength=experiment._factorFormatInReduceLength, metricDisplayLength=experiment._metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
-      # print(table)
-      # print(columns)
-      df = pd.DataFrame(table, columns=columns).fillna('')
-      df[columns[nbFactorColumns:]] = df[columns[nbFactorColumns:]].round(experiment._metricPrecision)
-      pd.set_option('precision', experiment._metricPrecision)
-
-      if selectDisplay and len(columns)>=max(selectDisplay)+nbFactorColumns:
-        selector = [columns[i] for i in [*range(nbFactorColumns)]+[s+nbFactorColumns for s in selectDisplay]]
-        # print(selector)
-        df = df[selector]
-
-      d = dict(selector="th", props=[('text-align', 'center'), ('border-bottom', '.1rem solid')])
-      # Construct a mask of which columns are numeric
-      import numpy as np
-      numeric_col_mask = df.dtypes.apply(lambda d: issubclass(np.dtype(d).type, np.number))
-      print(numeric_col_mask)
-      # Style
-      styler = df.style.set_properties(subset=df.columns[numeric_col_mask], # right-align the numeric columns and set their width
-            **{'width':'10em', 'text-align':'right'})\
-            .set_properties(subset=df.columns[~numeric_col_mask], # left-align the non-numeric columns and set their width
-            **{'width':'10em', 'text-align':'left'})\
-            .set_properties(subset=df.columns[nbFactorColumns], # left-align the non-numeric columns and set their width
-            **{'border-left':'.1rem solid'})\
-            .set_table_styles([d]).hide_index()
-      # text_file = open("test.html", "w")
-      # text_file.write(styler.render())
-      # text_file.close()
-
-      print(header)
-      print(df)
-      body += '<div> '+header+' </div><br>'+styler.render()
-      if args.export != 'none':
-        if args.export == 'all':
-          exportFileName = experiment.project.name
-        else:
-          a = args.export.split('.')
-          # print(a)
-          if a[0]:
-            exportFileName = a[0]
-          else:
-            exportFileName = experiment.project.name
-          if len(a)>1:
-            args.export = '.'+a[1]
-          else:
-            args.export = 'all'
-        # print(exportFileName)
-        # print(args.export)
-        with open(exportFileName+'.html', "w") as outFile:
-          reloadHeader =  '<script> window.onblur= function() {window.onfocus= function () {location.reload(true)}}; </script>'
-          outFile.write(reloadHeader)
-          outFile.write(styler.render())
-          
-        if 'png' in args.export or 'all' == args.export:
-          subprocess.call(
-            'wkhtmltoimage -f png --width 0 '+exportFileName+'.html '+exportFileName+'.png', shell=True)
-        if 'pdf' in args.export or 'all' == args.export:
-          subprocess.call(
-          'wkhtmltopdf '+exportFileName+'.html '+exportFileName+'.pdf', shell=True)
-          subprocess.call(
-          'pdfcrop '+exportFileName+'.pdf '+exportFileName+'.pdf', shell=True)
-        if 'html' not in args.export and 'all' != args.export:
-          os.remove(exportFileName+'.html')
+      dataFrameDisplay(experiment, args, config, selectDisplay)
 
   if args.server == -3:
     logFileName = '/tmp/explanes_'+experiment.project.name+'_'+experiment.project.runId+'.txt'
@@ -291,3 +229,80 @@ optional arguments:
 
   if args.mail>-1:
     experiment.sendMail(args.mask+' is over.', body) #
+
+def dataFrameDisplay(experiment, args, config, selectDisplay):
+
+  (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.mask(experiment.mask), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
+
+  df = pd.DataFrame(table, columns=columns).fillna('')
+  # df[columns[nbFactorColumns+2:]] = df[columns[nbFactorColumns+2:]].round(experiment._display.metricPrecision)
+  # pd.set_option('precision', experiment._display.metricPrecision)
+
+  if selectDisplay and len(columns)>=max(selectDisplay)+nbFactorColumns:
+    selector = [columns[i] for i in [*range(nbFactorColumns)]+[s+nbFactorColumns for s in selectDisplay]]
+    df = df[selector]
+
+  d = dict(selector="th", props=[('text-align', 'center'), ('border-bottom', '.1rem solid')])
+  # Construct a mask of which columns are numeric
+  numeric_col_mask = df.dtypes.apply(lambda d: issubclass(np.dtype(d).type, np.number))
+  cPercent = []
+  cNoPercent = []
+  for ci, c in enumerate(columns):
+    if ci >= nbFactorColumns:
+      if '%' in c:
+        cPercent.append(ci)
+      else:
+        cNoPercent.append(ci)
+  form = '{0:.'+str(experiment._display.metricPrecision-2)+'f}'
+  df[df.columns[cPercent]]= df[df.columns[cPercent]].applymap(form.format)
+  form = '{0:.'+str(experiment._display.metricPrecision)+'f}'
+  df[df.columns[cNoPercent]]= df[df.columns[cNoPercent]].applymap(form.format)
+
+  styler = df.style.set_properties(subset=df.columns[numeric_col_mask], # right-align the numeric columns and set their width
+        **{'width':'10em', 'text-align':'right'})\
+        .set_properties(subset=df.columns[~numeric_col_mask], # left-align the non-numeric columns and set their width
+        **{'width':'10em', 'text-align':'left'})\
+        .set_properties(subset=df.columns[nbFactorColumns], # left-align the non-numeric columns and set their width
+        **{'border-left':'.1rem solid'})\
+        .set_table_styles([d])
+  if not experiment._display.showRowIndex:
+    styler.hide_index()
+
+
+  print(header)
+  print(df)
+  body = '<div> Mask = '+args.mask+'</div>'
+  body += '<div> '+header+' </div><br>'+styler.render()
+  if args.export != 'none':
+    if not os.path.exists('export'):
+      os.makedirs('export')
+    if args.export == 'all':
+      exportFileName = experiment.project.name
+    else:
+      a = args.export.split('.')
+      # print(a)
+      if a[0]:
+        exportFileName = a[0]
+      else:
+        exportFileName = experiment.project.name
+      if len(a)>1:
+        args.export = '.'+a[1]
+      else:
+        args.export = 'all'
+    exportFileName = 'export/'+exportFileName
+    reloadHeader =  '<script> window.onblur= function() {window.onfocus= function () {location.reload(true)}}; </script>'
+    with open(exportFileName+'.html', "w") as outFile:
+      outFile.write(reloadHeader)
+      outFile.write(styler.render())
+
+    if 'png' in args.export or 'all' == args.export:
+      subprocess.call(
+        'wkhtmltoimage -f png --width 0 '+exportFileName+'.html '+exportFileName+'.png', shell=True)
+    if 'pdf' in args.export or 'all' == args.export:
+      # /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --headless --print-to-pdf=testChrome.pdf cds.html --print-to-pdf-no-header
+      subprocess.call(
+      'wkhtmltopdf '+exportFileName+'.html '+exportFileName+'.pdf', shell=True)
+      subprocess.call(
+      'pdfcrop '+exportFileName+'.pdf '+exportFileName+'.pdf', shell=True)
+    if 'html' not in args.export and 'all' != args.export:
+      os.remove(exportFileName+'.html')

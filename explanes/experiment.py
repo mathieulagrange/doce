@@ -91,14 +91,19 @@ class Experiment():
     self.host = []
     self._settingEncoding = {}
     self._archivePath = ''
-    self._factorFormatInReduce = 'long'
-    self._metricFormatInReduce = 'long'
-    self._metricPrecision = 2
-    self._factorFormatInReduceLength = 2
-    self._metricFormatInReduceLength = 2
     self._gmailId = 'expcode.mailer'
     self._gmailAppPassword = 'tagsqtlirkznoxro'
     self._defaultServerRunArgument =  {}
+
+    self._display = types.SimpleNamespace()
+    self._display.factorFormatInReduce = 'long'
+    self._display.metricFormatInReduce = 'long'
+    self._display.metricPrecision = 2
+    self._display.factorFormatInReduceLength = 2
+    self._display.metricFormatInReduceLength = 2
+    self._display.showRowIndex = True
+    self._display.html2pdf = ''
+    self._display.pdfCrop = ''
 
   def __setattr__(
     self,
