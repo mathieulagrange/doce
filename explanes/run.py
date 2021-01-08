@@ -250,6 +250,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay):
     df = df[selector]
 
   d = dict(selector="th", props=[('text-align', 'center'), ('border-bottom', '.1rem solid')])
+  print(d)
   # Construct a mask of which columns are numeric
   numeric_col_mask = df.dtypes.apply(lambda d: issubclass(np.dtype(d).type, np.number))
   cPercent = []
