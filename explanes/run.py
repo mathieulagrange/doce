@@ -254,6 +254,8 @@ def dataFrameDisplay(experiment, args, config, selectDisplay):
   numeric_col_mask = df.dtypes.apply(lambda d: issubclass(np.dtype(d).type, np.number))
   cPercent = []
   cNoPercent = []
+  cMinus = []
+  cNoMinus = []
   precisionFormat = {}
   for ci, c in enumerate(columns):
     if ci >= nbFactorColumns:
@@ -263,6 +265,10 @@ def dataFrameDisplay(experiment, args, config, selectDisplay):
       else:
         precisionFormat[c] = '{0:.'+str(experiment._display.metricPrecision)+'f}'
         cNoPercent.append(c)
+      if '-' in c:
+        cMinus.append(c)
+      else:
+        cNoMinus.append(c)
   # print(precisionFormat)
   # form = '{0:.'+str(experiment._display.metricPrecision-2)+'f}'
   # df[df.columns[cPercent]]= df[df.columns[cPercent]].applymap(lambda x: np.round(x, experiment._display.metricPrecision-2)) # form.format
@@ -291,9 +297,17 @@ def dataFrameDisplay(experiment, args, config, selectDisplay):
   if experiment._display.bar:
     styler.bar(subset=df.columns[nbFactorColumns:], align='mid', color=['#d65f5f', '#5fba7d'])
   if experiment._display.highlight:
-    styler.highlight_max(subset=df.columns[nbFactorColumns:], axis=0)
+    styler.apply(highlightMax, subset=cNoMinus, axis=0)
+    styler.apply(highlightMin, subset=cMinus, axis=0)
 
   return (df, header, styler)
+
+def highlightMax(s):
+  is_max = s == s.max()
+  return ['font-weight: bold' if v else '' for v in is_max]
+def highlightMin(s):
+  is_min = s == s.min()
+  return ['font-weight: bold' if v else '' for v in is_min]
 
 
 def exportDataFrame(experiment, args, df, styler):
