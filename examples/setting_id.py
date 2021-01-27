@@ -28,8 +28,8 @@ delattr(f, 'four')
 
 for setting in f.mask([0, 0, 0]):
   print(setting.id())
-# do not hide the default value in the description
-print(setting.id(hideNoneAndZero=False))
+# show the default value in the description
+print(setting.id(default=True))
 
 # set the default value of factor one to a
 f.default('one', 'a')
