@@ -22,7 +22,7 @@ print(setting.id(separator=' '))
 # do not show some factors
 print(setting.id(hideFactor=['one', 'three']))
 # do not show factors with only one modality
-print(setting.id(hideSingleton=True))
+print(setting.id(singleton=False))
 
 delattr(f, 'four')
 
@@ -36,7 +36,7 @@ f.default('one', 'a')
 for setting in f.mask([0, 1, 1]):
   print(setting.id())
 # do not hide the default value in the description
-print(setting.id(hideDefault=False))
+print(setting.id(default=True))
 
 f.optional_parameter = ['value_one', 'value_two']
 for setting in f.mask([0, 1, 1]):
