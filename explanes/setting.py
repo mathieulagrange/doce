@@ -69,7 +69,7 @@ class Setting():
     return self.id(sort=False, separator=' ', singleton=True, hideDefault=False)
 
 
-  def id(self, format='long', sort=True, separator='_', singleton=True, default=True, hideFactor=[]):
+  def id(self, format='long', sort=True, separator='_', singleton=True, default=True, hide=[]):
     """return a one-liner str or a list of str that describes a setting or a :class:`~explanes.factor.Factor` object.
 
   	Return a one-liner str or a list of str that describes a setting or a :class:`~explanes.factor.Factor` object with a high degree of flexibility.
@@ -98,7 +98,7 @@ class Setting():
     default: bool (optional)
       also consider couple of factor/modality where the modality is explicitly set to be a default value for this factor using :meth:`explanes.factor.Factors.default`.
 
-    hideFactor: list of str
+    hide: list of str
       list the factors that should not be considered. The list is empty by default.
 
     separator: str
@@ -145,7 +145,7 @@ class Setting():
     >>> print(setting.id(separator=' '))
     four d one a three c two 1
     >>> # do not show some factors
-    >>> print(setting.id(hideFactor=['one', 'three']))
+    >>> print(setting.id(hide=['one', 'three']))
     four_d_two_1
     >>> # do not show factors with only one modality
     >>> print(setting.id(singleton=False))
@@ -191,17 +191,17 @@ class Setting():
     """
     id = []
     fNames = self._factor._factors
-    if isinstance(hideFactor, str):
-      hideFactor=[hideFactor]
-    elif isinstance(hideFactor, int) :
-      hideFactor=[fNames[hideFactor]]
-    elif isinstance(hideFactor, list) and len(hideFactor) and isinstance(hideFactor[0], int) :
-      for oi, o in enumerate(hideFactor):
-        hideFactor[oi]=fNames[o]
+    if isinstance(hide, str):
+      hide=[hide]
+    elif isinstance(hide, int) :
+      hide=[fNames[hide]]
+    elif isinstance(hide, list) and len(hide) and isinstance(hide[0], int) :
+      for oi, o in enumerate(hide):
+        hide[oi]=fNames[o]
     if sort:
       fNames = sorted(fNames)
     for fIndex, f in enumerate(fNames):
-      if f[0] != '_' and getattr(self, f) is not None and f not in hideFactor:
+      if f[0] != '_' and getattr(self, f) is not None and f not in hide:
         if (singleton or f in self._factor._nonSingleton) and (not hideDefault or not hasattr(self._factor._default, f) or (hideDefault and hasattr(self._factor._default, f) and getattr(self._factor._default, f) != getattr(self, f))): # (not hideNoneAndZero or (hideNoneAndZero and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and
           id.append(eu.compressDescription(f, format))
           id.append(eu.compressDescription(str(getattr(self, f)), format))

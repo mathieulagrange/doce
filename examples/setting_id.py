@@ -20,7 +20,7 @@ print(setting.id(sort=False))
 # specify a separator
 print(setting.id(separator=' '))
 # do not show some factors
-print(setting.id(hideFactor=['one', 'three']))
+print(setting.id(hide=['one', 'three']))
 # do not show factors with only one modality
 print(setting.id(singleton=False))
 
