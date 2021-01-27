@@ -211,7 +211,7 @@ class Setting():
         id  = hashlib.md5(id.encode("utf-8")).hexdigest()
     return id
 
-  def alternative(self, factor, value=None, positional=0, relative=0):
+  def replace(self, factor, value=None, positional=0, relative=0):
     """returns a new explanes.factor.Factor object with one factor with modified modality.
 
     Returns a new explanes.factor.Factor object with with one factor with modified modality. The value of the requested new modality can requested by 3 exclusive means: its value, its position in the modality array, or its relative position in the array with respect to the position of the current modality.
@@ -251,17 +251,17 @@ class Setting():
     ...   print(setting)
     one b two 2
     >>> # the same setting but with the factor 'two' set to modality 1
-    >>> print(setting.alternative('two', value=1))
+    >>> print(setting.replace('two', value=1))
     one b two 1
     >>> # the same setting but with the first factor set to modality
-    >>> print(setting.alternative(1, value=1))
+    >>> print(setting.replace(1, value=1))
     one b two 1
     >>> # the same setting but with the factor 'two' set to modality index 0
     one b two 1
-    >>> print(setting.alternative('two', positional=0))
+    >>> print(setting.replace('two', positional=0))
     one b two 1
     >>> # the same setting but with the factor 'two' set to modality of relative index -1 with respect to the modality index of the current setting
-    >>> print(setting.alternative('two', relative=-1))
+    >>> print(setting.replace('two', relative=-1))
     one b two 1
     """
 
@@ -315,6 +315,13 @@ class Setting():
       else:
         raise e
     return failed
+
+  def remove(self, factor):
+    delattr(self, factor)
+    print(': '+factor)
+    # print(self)
+    return self
+
 
 if __name__ == '__main__':
     import doctest
