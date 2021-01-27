@@ -139,6 +139,7 @@ optional arguments:
 
   experiment = config.set(experiment)
   experiment.mask = mask
+  experiment.status.debug = args.debug
 
   if args.experiment != 'all':
     if hasattr(experiment.factor, args.experiment):
