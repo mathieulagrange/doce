@@ -82,7 +82,11 @@ class Experiment():
     self.project.description = ''
     self.project.author = 'no name'
     self.project.address = 'noname@noorg.org'
-    self.project.runId = str(int((time.time()-datetime.datetime(2020,1,1,0,0).timestamp())/60))
+
+    self.status = types.SimpleNamespace()
+    self.status.runId = str(int((time.time()-datetime.datetime(2020,1,1,0,0).timestamp())/60))
+    self.status.debug = False
+
     self.factor = el.Factor()
     self.parameter = types.SimpleNamespace()
     self.metric = el.Metric()
@@ -104,6 +108,8 @@ class Experiment():
     self._display.showRowIndex = True
     self._display.highlight = True
     self._display.bar = True
+
+
 
   def __setattr__(
     self,
@@ -263,14 +269,14 @@ class Experiment():
     Sent message entitled: [explanes]  id ... hello ...
 
     """
-    header = 'From: expLanes mailer <'+self._gmailId+'@gmail.com> \r\nTo: '+self.project.author+' '+self.project.address+'\r\nMIME-Version: 1.0 \r\nContent-type: text/html \r\nSubject: [explanes] '+self.project.name+' id '+self.project.runId+' '+title+'\r\n'
+    header = 'From: expLanes mailer <'+self._gmailId+'@gmail.com> \r\nTo: '+self.project.author+' '+self.project.address+'\r\nMIME-Version: 1.0 \r\nContent-type: text/html \r\nSubject: [explanes] '+self.project.name+' id '+self.status.runId+' '+title+'\r\n'
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
     server.login(self._gmailId+'@gmail.com', self._gmailAppPassword)
     server.sendmail(self._gmailId, self.project.address, header+body+'<h3> '+self.__str__(format = 'html')+'</h3>')
     server.quit
-    print('Sent message entitled: [explanes] '+self.project.name+' id '+self.project.runId+' '+title+' on '+time.ctime(time.time()))
+    print('Sent message entitled: [explanes] '+self.project.name+' id '+self.status.runId+' '+title+' on '+time.ctime(time.time()))
 
   def do(
     self,
