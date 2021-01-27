@@ -250,7 +250,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay):
     df = df[selector]
 
   d = dict(selector="th", props=[('text-align', 'center'), ('border-bottom', '.1rem solid')])
-  print(d)
+
   # Construct a mask of which columns are numeric
   numeric_col_mask = df.dtypes.apply(lambda d: issubclass(np.dtype(d).type, np.number))
   cPercent = []
@@ -351,11 +351,10 @@ def exportDataFrame(experiment, args, df, styler):
         print('generation of png is handled by converting the html generated from the result dataframe using the wkhtmltoimage tool. This tool must be installed and reachable from you path.')
   if 'pdf' in args.export or 'all' == args.export:
     # /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --headless --print-to-pdf=testChrome.pdf cds.html --print-to-pdf-no-header
-    if shutil.which('chrome') is not None:
-      subprocess.call('chrome --headless --print-to-pdf-no-header --print-to-pdf='+exportFileName+'.pdf '+exportFileName+'.html', shell=True)
-    elif shutil.which('chromium') is not None:
-      subprocess.call('chromium --headless --print-to-pdf-no-header --print-to-pdf='+exportFileName+'.pdf '+exportFileName+'.html', shell=True)
-    elif shutil.which('wkhtmltopdf') is not None:
+    # if shutil.which('chromium'):
+    #   subprocess.call('chromium --headless --print-to-pdf-no-header --print-to-pdf='+exportFileName+'.pdf '+exportFileName+'.html', shell=True)
+    # el
+    if shutil.which('wkhtmltopdf'):
       subprocess.call(
       'wkhtmltopdf '+exportFileName+'.html '+exportFileName+'.pdf', shell=True)
     else:
