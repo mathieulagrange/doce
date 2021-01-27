@@ -66,7 +66,7 @@ class Setting():
     one b two 1
     one b two 2
     """
-    return self.id(sort=False, separator=' ', singleton=True, hideDefault=False)
+    return self.id(sort=False, separator=' ', singleton=True, default=False)
 
 
   def id(self, format='long', sort=True, separator='_', singleton=True, default=True, hide=[]):
@@ -161,7 +161,7 @@ class Setting():
     ...   print(setting.id())
     three_c_two_1
     >>> # do not hide the default value in the description
-    >>> print(setting.id(hideDefault=False))
+    >>> print(setting.id(default=False))
     one_a_three_c_two_1
 
     >>> f.optional_parameter = ['value_one', 'value_two']
@@ -202,7 +202,7 @@ class Setting():
       fNames = sorted(fNames)
     for fIndex, f in enumerate(fNames):
       if f[0] != '_' and getattr(self, f) is not None and f not in hide:
-        if (singleton or f in self._factor._nonSingleton) and (not hideDefault or not hasattr(self._factor._default, f) or (hideDefault and hasattr(self._factor._default, f) and getattr(self._factor._default, f) != getattr(self, f))): # (not hideNoneAndZero or (hideNoneAndZero and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and
+        if (singleton or f in self._factor._nonSingleton) and (default or not hasattr(self._factor._default, f) or (not default and hasattr(self._factor._default, f) and getattr(self._factor._default, f) != getattr(self, f))): # (not hideNoneAndZero or (hideNoneAndZero and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and
           id.append(eu.compressDescription(f, format))
           id.append(eu.compressDescription(str(getattr(self, f)), format))
     if 'list' not in format:
