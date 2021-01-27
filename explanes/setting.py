@@ -69,7 +69,7 @@ class Setting():
     return self.id(sort=False, separator=' ', singleton=True, default=False)
 
 
-  def id(self, format='long', sort=True, separator='_', singleton=True, default=True, hide=[]):
+  def id(self, format='long', sort=True, separator='_', singleton=True, default=False, hide=[]):
     """return a one-liner str or a list of str that describes a setting or a :class:`~explanes.factor.Factor` object.
 
   	Return a one-liner str or a list of str that describes a setting or a :class:`~explanes.factor.Factor` object with a high degree of flexibility.
