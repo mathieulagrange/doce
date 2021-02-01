@@ -202,7 +202,7 @@ class Setting():
       fNames = sorted(fNames)
     for fIndex, f in enumerate(fNames):
       if f[0] != '_' and getattr(self, f) is not None and f not in hide:
-        if (singleton or f in self._factor._nonSingleton) and (default or not hasattr(self._factor._default, f) or (not default and hasattr(self._factor._default, f) and getattr(self._factor._default, f) != getattr(self, f))): # (not hideNoneAndZero or (hideNoneAndZero and (isinstance(getattr(self, f), str) and getattr(self, f).lower() != 'none') or  (not isinstance(getattr(self, f), str) and getattr(self, f) != 0))) and
+        if (singleton or f in self._factor._nonSingleton) and (default or not hasattr(self._factor._default, f) or (not default and hasattr(self._factor._default, f) and getattr(self._factor._default, f) != getattr(self, f))): 
           id.append(eu.compressDescription(f, format))
           id.append(eu.compressDescription(str(getattr(self, f)), format))
     if 'list' not in format:

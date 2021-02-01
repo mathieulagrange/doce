@@ -488,7 +488,7 @@ class Metric():
     settingDescription = []
     settingDescriptionFormat = copy.deepcopy(settingEncoding)
     settingDescriptionFormat['format'] = 'list'
-    settingDescriptionFormat['hideDefault'] = False
+    settingDescriptionFormat['default'] = True
 
     if isinstance(dataLocation, str):
       if dataLocation.endswith('.h5'):
