@@ -198,7 +198,7 @@ optional arguments:
     exit()
 
   if args.server == -3:
-    logFileName = '/tmp/explanes_'+experiment.project.name+'_'+experiment.project.runId+'.txt'
+    logFileName = '/tmp/explanes_'+experiment.project.name+'_'+experiment.status.runId+'.txt'
   if args.mail>-1:
     experiment.sendMail(args.mask+' has started.', '<div> Mask = '+args.mask+'</div>')
   if args.run and hasattr(config, 'step'):
@@ -229,11 +229,12 @@ optional arguments:
       body += '<div> '+header+' </div><br>'+styler.render()
 
   if args.server == -3:
-    logFileName = '/tmp/explanes_'+experiment.project.name+'_'+experiment.project.runId+'.txt'
-    with open(logFileName, 'r') as file:
-      log = file.read()
-      if log:
-        body+= '<h2> Error log </h2>'+log.replace('\n', '<br>')
+    logFileName = '/tmp/explanes_'+experiment.project.name+'_'+experiment.status.runId+'.txt'
+    if os.path.exists(logFileName):
+      with open(logFileName, 'r') as file:
+        log = file.read()
+        if log:
+          body+= '<h2> Error log </h2>'+log.replace('\n', '<br>')
 
   if args.mail>-1:
     experiment.sendMail(args.mask+' is over.', body) #

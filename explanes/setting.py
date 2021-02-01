@@ -1,6 +1,8 @@
 import explanes.util as eu
 import hashlib
 import copy
+import logging
+import traceback
 
 class Setting():
   """stores a :term:`setting`, where each member is a factor and the value of the member is a modality.
