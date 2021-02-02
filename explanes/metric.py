@@ -245,7 +245,9 @@ class Metric():
     metricDisplayLength=2,
     reducedMetricDisplay = 'capitalize',
     verbose = False,
-    reductionDirectiveModule=None
+    reductionDirectiveModule=None,
+    expandFactor=None,
+    metricSelector=None
     ):
     """Apply the reduction directives described in each members of explanes.metric.Metric objects for the settings given as parameters.
 
@@ -394,6 +396,8 @@ class Metric():
     1   2    2.94   0.95  -5.32        34
     2   3    3.99   1.04  -9.14        89
     """
+
+
     if dataLocation.endswith('.h5'):
       (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule)
     else:

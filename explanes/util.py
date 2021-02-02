@@ -1,6 +1,6 @@
 import sys
 import re
-
+import copy
 
 def constantColumn(
   table=None
@@ -211,6 +211,22 @@ def query_yes_no(
     else:
       sys.stdout.write("Please respond with 'yes' or 'no' "
                            "(or 'y' or 'n').\n")
+
+def expandMask(mask, factor, settings):
+
+  fi = settings.factors().index(factor)
+
+  if len(mask)<=fi:
+    for m in range(1+fi-len(mask)):
+      mask.append(-1)
+
+  nm = []
+  for mi, m in enumerate(mask):
+    if m==-1:
+      nm.append(list(range(len(getattr(settings, settings.factors()[mi])))))
+    else:
+      nm.append(m)
+  return nm
 
 
 def inNotebook():

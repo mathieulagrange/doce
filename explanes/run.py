@@ -206,12 +206,17 @@ optional arguments:
 
 
   selectDisplay = []
+  selectFactor = ''
   displayMethod = ''
   display = True
   if args.display == '-1':
     display = False
   elif args.display is not None:
-    if '[' in args.display:
+    if ',' in args.display:
+      s = args.display.split(',')
+      selectDisplay = [int(s[0])]
+      selectFactor = s[1]
+    elif '[' in args.display:
       selectDisplay = ast.literal_eval(args.display)
     else:
       displayMethod = args.display
@@ -221,12 +226,13 @@ optional arguments:
     if hasattr(config, displayMethod):
       getattr(config, displayMethod)(experiment, experiment.factor.mask(experiment.mask))
     else:
-      (df, header, styler) = dataFrameDisplay(experiment, args, config, selectDisplay)
+      (df, header, styler) = dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor)
       print(header)
       print(df)
       if args.export != 'none':
         exportDataFrame(experiment, args, df, styler)
-      body += '<div> '+header+' </div><br>'+styler.render()
+      if args.mail>-1:
+        body += '<div> '+header+' </div><br>'+styler.render()
 
   if args.server == -3:
     logFileName = '/tmp/explanes_'+experiment.project.name+'_'+experiment.status.runId+'.txt'
@@ -239,15 +245,39 @@ optional arguments:
   if args.mail>-1:
     experiment.sendMail(args.mask+' is over.', body) #
 
-def dataFrameDisplay(experiment, args, config, selectDisplay):
+def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 
-  (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.mask(experiment.mask), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
+  mask = experiment.mask
+  if selectFactor:
+    fi = experiment.factor.factors().index(selectFactor)
+    mask = el.util.expandMask(mask, selectFactor, experiment.factor)
+    ma=copy.deepcopy(mask)
+    ma[fi]=mask[fi][0]
+
+  (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.mask(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
+
+
+  if selectFactor:
+    modalities = getattr(experiment.factor, selectFactor)
+    header = 'metric: '+columns.pop()+' '+header.replace(selectFactor+': '+str(modalities[0])+' ', '')
+
+    columns.append(modalities[ma[fi]])
+
+    for m in range(1, len(mask[fi])):
+      ma[fi]=mask[fi][m]
+      (sd, ch, csd, nb)  = experiment.metric.reduce(experiment.factor.mask(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
+      columns.append(modalities[ma[fi]])
+      for s in range(len(sd)):
+        table[s].append(sd[s][-1])
+
+  #   (table, columns, header, nbFactorColumns) = el.util.expandMetric(table, columns, header, nbFactorColumns, experiment.mask, selectFactor, experiment.factor.mask(experiment.mask), experiment.path.output, experiment)
+
 
   df = pd.DataFrame(table, columns=columns).fillna('')
   # df[columns[nbFactorColumns+2:]] = df[columns[nbFactorColumns+2:]].round(experiment._display.metricPrecision)
   # pd.set_option('precision', experiment._display.metricPrecision)
 
-  if selectDisplay and len(columns)>=max(selectDisplay)+nbFactorColumns:
+  if selectDisplay and not selectFactor and  len(columns)>=max(selectDisplay)+nbFactorColumns:
     selector = [columns[i] for i in [*range(nbFactorColumns)]+[s+nbFactorColumns for s in selectDisplay]]
     df = df[selector]
 
