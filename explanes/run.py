@@ -248,6 +248,7 @@ optional arguments:
 def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 
   mask = experiment.mask
+  ma=copy.deepcopy(mask)
   if selectFactor:
     fi = experiment.factor.factors().index(selectFactor)
     mask = el.util.expandMask(mask, selectFactor, experiment.factor)
@@ -270,7 +271,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
       for s in range(len(sd)):
         table[s].append(sd[s][-1])
 
-  #   (table, columns, header, nbFactorColumns) = el.util.expandMetric(table, columns, header, nbFactorColumns, experiment.mask, selectFactor, experiment.factor.mask(experiment.mask), experiment.path.output, experiment)
+  (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.mask(experiment.mask), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
 
 
   df = pd.DataFrame(table, columns=columns).fillna('')
