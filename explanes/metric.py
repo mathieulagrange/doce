@@ -169,7 +169,10 @@ class Metric():
       1-D vector to be reduced.
 
     reductionType : str
-      type of reduction to be applied to the data vector. Can be any numpy method that can applied to a vector and returns a value. Selectors and layout can also be specified.
+      type of reduction to be applied to the data vector. Can be any method supplied by the reductionDirectiveModule. If unavailable, a numpy method with this name that can applied to a vector and returns a value is searched for. Selectors and layout can also be specified.
+
+    reductionDirectiveModule : str (optional)
+      Python module to perform the reduction. If None, numpy is considered.
 
     Examples
     --------
@@ -194,21 +197,31 @@ class Metric():
     30.0
 
     """
-    reductionTypeDirective = reductionType.replace('%', '').split('-')[0]
-    if not reductionDirectiveModule or not hasattr(reductionDirectiveModule, reductionTypeDirective):
+
+    if reductionDirectiveModule == 'None':
+      reductionDirectiveModule = np
+    reductionTypeDirective = reductionType
+    indexPercent = -1
+    if isinstance(reductionType, str):
+      reductionTypeDirective = reductionType.replace('%', '').split('-')[0]
+      indexPercent = reductionType.find('%')
+      # print(reductionTypeDirective)
+
+    if isinstance(reductionTypeDirective, int) or not reductionDirectiveModule or not hasattr(reductionDirectiveModule, reductionTypeDirective):
       reductionDirectiveModule = np
       data = data.flatten()
-    if reductionTypeDirective and not hasattr(reductionDirectiveModule, reductionTypeDirective):
+
+    if reductionTypeDirective and isinstance(reductionType, str) and not hasattr(reductionDirectiveModule, reductionTypeDirective):
       return np.nan
+
     # indexPercent=-1
-    indexPercent = reductionType.find('%')
     if reductionTypeDirective:
-      if isinstance(reductionType, int):
+      if isinstance(reductionTypeDirective, int):
         if data.size>1:
-          value = float(data[reductionType])
+          value = float(data[reductionTypeDirective])
         else:
           value = float(data)
-      elif isinstance(reductionType, str):
+      elif isinstance(reductionTypeDirective, str):
         ags = reductionType.split('-')
         if len(ags)>1:
           ignore = int(ags[1])

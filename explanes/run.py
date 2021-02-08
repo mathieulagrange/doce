@@ -212,12 +212,12 @@ optional arguments:
   if args.display == '-1':
     display = False
   elif args.display is not None:
-    if ',' in args.display:
+    if  '[' in args.display:
+      selectDisplay = ast.literal_eval(args.display)
+    elif ',' in args.display:
       s = args.display.split(',')
       selectDisplay = [int(s[0])]
       selectFactor = s[1]
-    elif '[' in args.display:
-      selectDisplay = ast.literal_eval(args.display)
     else:
       displayMethod = args.display
 
