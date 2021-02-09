@@ -222,7 +222,7 @@ class Metric():
         else:
           value = float(data)
       elif isinstance(reductionTypeDirective, str):
-        ags = reductionType.split('-')
+        ags = reductionTypeDirective.split('-')
         if len(ags)>1:
           ignore = int(ags[1])
           if ignore == 0:

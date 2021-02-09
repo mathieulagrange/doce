@@ -164,16 +164,16 @@ optional arguments:
   if args.remove:
     path2clean = args.remove
     if path2clean == 'all':
-      experiment.clean(experiment.mask, settingEncoding=experiment._settingEncoding)
+      experiment.clean(experiment.mask, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive)
     else:
-      experiment.cleanDataSink(path2clean, experiment.mask, settingEncoding=experiment._settingEncoding)
+      experiment.cleanDataSink(path2clean, experiment.mask, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive)
 
   if args.keep:
     path2clean = args.keep
     if path2clean == 'all':
-      experiment.clean(experiment.mask, reverse=True, settingEncoding=experiment._settingEncoding)
+      experiment.clean(experiment.mask, reverse=True, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive)
     else:
-      experiment.cleanDataSink(path2clean, experiment.mask, reverse=True, settingEncoding=experiment._settingEncoding)
+      experiment.cleanDataSink(path2clean, experiment.mask, reverse=True, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive)
 
   logFileName = ''
   if args.server>-2:

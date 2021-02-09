@@ -92,6 +92,7 @@ class Experiment():
     self.metric = el.Metric()
     self.path = Path()
     self.path.code = os.getcwd()
+    self.path.archive = ''
     self.host = []
     self._settingEncoding = {}
     self._archivePath = ''
@@ -238,7 +239,7 @@ class Experiment():
         elif isinstance(self.__getattribute__(atr), str) or isinstance(self.__getattribute__(atr), list):
           description+=atr+': '+str(self.__getattribute__(atr))+'\r\n'
         else:
-          description+=atr+': \r\n'+str(self.__getattribute__(atr))#+'\r\n'
+          description+=atr+': \r\n'+str(self.__getattribute__(atr))+'\r\n'
     if format == 'html':
       description = '<div>'+description.replace('\r\n', '</div><div>').replace('\t', '&emsp;')+'</div>'
     return description

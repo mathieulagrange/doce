@@ -6,7 +6,7 @@ import numpy as np
 from pathlib import Path
 
 if __name__ == "__main__":
-  el.experiment.run()
+  el.run.run()
 
 # use case where:
 #   - the results are stored on disk using npy files
@@ -22,12 +22,10 @@ def set(args):
   experiment.project.version = '0.1'
 
   experiment.path.output = '/tmp/'+experiment.project.name+'/'
+  experiment.path.archive = '/tmp/archive/'+experiment.project.name+'/'
   experiment.path.code = '~/tools/explanes.py/demonstrations/'
   experiment.setPath()
-
-  experiment._settingEncoding = {'format': 'hash'}
-  experiment._archivePath = '/tmp'
-
+  
   experiment.host = ['pc-lagrange.irccyn.ec-nantes.fr']
 
   experiment.factor.dataType = ['float', 'double']
