@@ -216,7 +216,6 @@ optional arguments:
       selectDisplay = ast.literal_eval(args.display)
     elif ',' in args.display:
       s = args.display.split(',')
-      print('pass')
       selectDisplay = [int(s[0])]
       selectFactor = s[1]
     else:
@@ -251,13 +250,13 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   mask = experiment.mask
   ma=copy.deepcopy(mask)
   if selectFactor:
-    print('pass')
+    # print('pass')
     # print(experiment.factor.factors())
     fi = experiment.factor.factors().index(selectFactor)
     mask = el.util.expandMask(mask, selectFactor, experiment.factor)
     ma=copy.deepcopy(mask)
     ma[fi]=mask[fi][0]
-    print(ma)
+    # print(ma)
 
   (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.mask(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
 
