@@ -15,11 +15,11 @@ def set(args):
   experiment.project.name = os.path.basename(__file__)[:-3]
   experiment.path.output = '/tmp/'+experiment.project.name+'/'
   experiment.setPath()
-
-  experiment.factor.xp1 = el.factor.Factor()
+  print(type(experiment.factor))
+  experiment.factor.xp1 = el.Factor()
   experiment.factor.xp1.method = ['methodOne']
   experiment.factor.xp1.parameterMethodOne = ['modalityOne', 'modalityTwo']
-  experiment.factor.xp2 = el.factor.Factor()
+  experiment.factor.xp2 = el.Factor()
   experiment.factor.xp2.method = ['methodTwo']
   experiment.factor.xp2.parameterMethodTwo = np.arange(5)
 
