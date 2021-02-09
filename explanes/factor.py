@@ -547,6 +547,8 @@ class Factor():
       self._changed = True
     if name[0] != '_' and type(value) in {list, np.ndarray} and len(value)>1 and name not in self._nonSingleton:
       self._nonSingleton.append(name)
+    if name[0] != '_' and type(value) not in {list, np.ndarray}:
+       value = [value]
     return object.__setattr__(self, name, value)
 
   def __delattr__(
