@@ -250,6 +250,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   mask = experiment.mask
   ma=copy.deepcopy(mask)
   if selectFactor:
+    # print(experiment.factor.factors())
     fi = experiment.factor.factors().index(selectFactor)
     mask = el.util.expandMask(mask, selectFactor, experiment.factor)
     ma=copy.deepcopy(mask)
