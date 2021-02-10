@@ -380,6 +380,7 @@ class Experiment():
     mask=[],
     reverse=False,
     force=False,
+    keep=False,
     selector='*',
     settingEncoding={},
     archivePath = None
@@ -517,49 +518,48 @@ class Experiment():
 
     Here, the same operations are conducted on a h5 file.
     """
-    if not archivePath:
-      archivePath=self._archivePath
+    print(path)
     if '/' not in path and '\\' not in path:
       path = self.__getattribute__('path').__getattribute__(path)
     if path:
-      self.factor.mask(mask).cleanDataSink(path, reverse, force, selector, settingEncoding, archivePath)
+      self.factor.mask(mask).cleanDataSink(path, reverse=reverse, force=force, keep=keep, selector=selector, settingEncoding=settingEncoding, archivePath=archivePath)
 
-  def clean(
-    self,
-    mask=[],
-    reverse=False,
-    force=False,
-    selector='*',
-    settingEncoding={},
-    archivePath = None
-    ):
-    """Clean all relevant directories specified in the NameSpace explanes.Experiment.experiment.path.
-
-    Apply :meth:`explanes.experiment.Experiment.cleanDataSink` on each relevant directories specified in the NameSpace explanes.experiment.Experiment.path.
-
-    See Also
-    --------
-
-    explanes.experiment.Experiment.cleanDataSink
-
-    Examples
-    --------
-
-    >>> import explanes as el
-    >>> e=el.experiment.Experiment()
-    >>> e.path.output = '/tmp/test'
-    >>> e.setPath()
-    >>> e.clean()
-    checking input path
-    checking processing path
-    checking storage path
-    checking output path
-
-    """
-    for sns in self.__getattribute__('path').__dict__.keys():
-      print('checking '+sns+' path')
-      self.cleanDataSink(sns, mask, reverse, force, selector, settingEncoding,
-      archivePath)
+  # def clean(
+  #   self,
+  #   mask=[],
+  #   reverse=False,
+  #   force=False,
+  #   selector='*',
+  #   settingEncoding={},
+  #   archivePath = None
+  #   ):
+  #   """Clean all relevant directories specified in the NameSpace explanes.Experiment.experiment.path.
+  #
+  #   Apply :meth:`explanes.experiment.Experiment.cleanDataSink` on each relevant directories specified in the NameSpace explanes.experiment.Experiment.path.
+  #
+  #   See Also
+  #   --------
+  #
+  #   explanes.experiment.Experiment.cleanDataSink
+  #
+  #   Examples
+  #   --------
+  #
+  #   >>> import explanes as el
+  #   >>> e=el.experiment.Experiment()
+  #   >>> e.path.output = '/tmp/test'
+  #   >>> e.setPath()
+  #   >>> e.clean()
+  #   checking input path
+  #   checking processing path
+  #   checking storage path
+  #   checking output path
+  #
+  #   """
+  #   for sns in self.__getattribute__('path').__dict__.keys():
+  #     print('checking '+sns+' path')
+  #     self.cleanDataSink(sns, mask, reverse, force, selector, settingEncoding,
+  #     archivePath)
 
 class Path:
     def __setattr__(

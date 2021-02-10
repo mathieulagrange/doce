@@ -106,8 +106,9 @@ optional arguments:
   parser.add_argument('-D', '--debug', help='debug mode', action='store_true')
   parser.add_argument('-v', '--version', help='print version', action='store_true')
   parser.add_argument('-P', '--progress', help='display progress bar', action='store_true')
-  parser.add_argument('-R', '--remove', type=str, help='remove the selected  settings from a given path (all paths of the experiment by default, if the argument does not have / or \, the argument is interpreted as a member of the experiments path)', nargs='?', const='all')
-  parser.add_argument('-K', '--keep', type=str, help='keep only the selected settings from a given path (all paths of the experiment by default, if the argument does not have / or \, the argument is interpreted as a member of the experiments path)', nargs='?', const='all')
+  parser.add_argument('-R', '--remove', type=str, help='remove the selected  settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. Unwanted files are moved to the path experiment.path.archive if set, deleted otherwise.', nargs='?', const='')
+  parser.add_argument('-A', '--archive', type=str, help='archive the selected  settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. The files are copied to the path experiment.path.archive if set.', nargs='?', const='')
+  parser.add_argument('-K', '--keep', type=str, help='keep only the selected settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. Unwanted files are moved to the path experiment.path.archive if set, deleted otherwise.', nargs='?', const='')
   parser.add_argument('-p', '--parameter', type=str, help='a dict specified as str (for example, \'{\"test\": 1}\') that will be available in Experiment.parameter (parameter.test 1)', default='{}')
 
   args = parser.parse_args()
@@ -162,18 +163,15 @@ optional arguments:
     experiment.do(experiment.mask, progress=False)
 
   if args.remove:
-    path2clean = args.remove
-    if path2clean == 'all':
-      experiment.clean(experiment.mask, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive)
-    else:
-      experiment.cleanDataSink(path2clean, experiment.mask, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive)
+    experiment.cleanDataSink(args.remove, experiment.mask, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive)
 
   if args.keep:
-    path2clean = args.keep
-    if path2clean == 'all':
-      experiment.clean(experiment.mask, reverse=True, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive)
+    experiment.cleanDataSink(args.keep, experiment.mask, reverse=True, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive)
+  if args.archive:
+    if experiment.path.archive:
+      experiment.cleanDataSink(args.archive, experiment.mask, keep=True, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive)
     else:
-      experiment.cleanDataSink(path2clean, experiment.mask, reverse=True, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive)
+      print('Please set the path.archive path before issuing an archive command.')
 
   logFileName = ''
   if args.server>-2:

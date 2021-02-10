@@ -1,4 +1,5 @@
 import os
+import shutil as sh
 import inspect
 import types
 import numpy as np
@@ -395,6 +396,7 @@ class Factor():
     path,
     reverse=False,
     force=False,
+    keep=False,
     selector='*',
     settingEncoding={},
     archivePath=''
@@ -424,13 +426,20 @@ class Factor():
       print(fileNames)
       # print(len(fileNames))
       if archivePath:
-        destination = 'move to '+archivePath+' '
+        if keep:
+          destination = 'copy'
+        else:
+          destination = 'move'
+        destination+= ' to '+archivePath+' '
       else:
         destination = 'remove '
       if len(fileNames) and (force or eu.query_yes_no('About to '+destination+str(len(fileNames))+' files from '+path+' \n Proceed ?')):
         for f in fileNames:
           if archivePath:
-            os.rename(f, archivePath+'/'+os.path.basename(f))
+            if keep:
+              sh.copyfile(f, archivePath+'/'+os.path.basename(f))
+            else:
+              os.rename(f, archivePath+'/'+os.path.basename(f))
           else:
             os.remove(f)
 
