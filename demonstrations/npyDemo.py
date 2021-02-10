@@ -22,10 +22,10 @@ def set(args):
   experiment.project.version = '0.1'
 
   experiment.path.output = '/tmp/'+experiment.project.name+'/'
-  experiment.path.archive = '/tmp/archive/'+experiment.project.name+'/'
+  # experiment.path.archive = '/tmp/archive/'+experiment.project.name+'/'
   experiment.path.code = '~/tools/explanes.py/demonstrations/'
   experiment.setPath()
-  
+
   experiment.host = ['pc-lagrange.irccyn.ec-nantes.fr']
 
   experiment.factor.dataType = ['float', 'double']

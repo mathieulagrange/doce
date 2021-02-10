@@ -399,7 +399,8 @@ class Factor():
     keep=False,
     selector='*',
     settingEncoding={},
-    archivePath=''
+    archivePath='',
+    debug=False
     ):
     """clean a data sink by considering the settings set.
 
@@ -412,7 +413,8 @@ class Factor():
     else:
       fileNames = []
       for setting in self:
-        print(path+'/'+setting.id(**settingEncoding)+selector)
+        if debug:
+          print('search path: '+path+'/'+setting.id(**settingEncoding)+selector)
         for f in glob.glob(path+'/'+setting.id(**settingEncoding)+selector):
             fileNames.append(f)
       if reverse:
@@ -423,26 +425,31 @@ class Factor():
         fileNames = [i for i in complete if i not in fileNames]
       #   print(complete)
       fileNames = set(fileNames)
-      print(fileNames)
+      if debug:
+        print('Selected files')
+        print(fileNames)
       # print(len(fileNames))
       if archivePath:
         if keep:
-          destination = 'copy'
+          action = 'copy '
         else:
-          destination = 'move'
-        destination+= ' to '+archivePath+' '
+          action = 'move '
+        destination = ' to '+archivePath+' '
       else:
-        destination = 'remove '
-      if len(fileNames) and (force or eu.query_yes_no('About to '+destination+str(len(fileNames))+' files from '+path+' \n Proceed ?')):
-        for f in fileNames:
-          if archivePath:
-            if keep:
-              sh.copyfile(f, archivePath+'/'+os.path.basename(f))
+        destination = ''
+        action = 'remove '
+      if len(fileNames):
+        if force or eu.query_yes_no('About to '+action+str(len(fileNames))+' files from '+path+destination+' \n Proceed ?'):
+          for f in fileNames:
+            if archivePath:
+              if keep:
+                sh.copyfile(f, archivePath+'/'+os.path.basename(f))
+              else:
+                os.rename(f, archivePath+'/'+os.path.basename(f))
             else:
-              os.rename(f, archivePath+'/'+os.path.basename(f))
-          else:
-            os.remove(f)
-
+              os.remove(f)
+      else:
+        print('no files found.')
   def merge(self):
     # build temporary factor
     tmp = Factor()

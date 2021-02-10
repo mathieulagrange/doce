@@ -383,7 +383,8 @@ class Experiment():
     keep=False,
     selector='*',
     settingEncoding={},
-    archivePath = None
+    archivePath = None,
+    debug=False
     ):
     """ Perform a cleaning of a data sink (directory or h5 file).
 
@@ -518,11 +519,11 @@ class Experiment():
 
     Here, the same operations are conducted on a h5 file.
     """
-    print(path)
+
     if '/' not in path and '\\' not in path:
       path = self.__getattribute__('path').__getattribute__(path)
     if path:
-      self.factor.mask(mask).cleanDataSink(path, reverse=reverse, force=force, keep=keep, selector=selector, settingEncoding=settingEncoding, archivePath=archivePath)
+      self.factor.mask(mask).cleanDataSink(path, reverse=reverse, force=force, keep=keep, selector=selector, settingEncoding=settingEncoding, archivePath=archivePath, debug=debug)
 
   # def clean(
   #   self,

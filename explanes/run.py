@@ -163,13 +163,12 @@ optional arguments:
     experiment.do(experiment.mask, progress=False)
 
   if args.remove:
-    experiment.cleanDataSink(args.remove, experiment.mask, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive)
-
+    experiment.cleanDataSink(args.remove, experiment.mask, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive, debug=experiment.status.debug)
   if args.keep:
-    experiment.cleanDataSink(args.keep, experiment.mask, reverse=True, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive)
+    experiment.cleanDataSink(args.keep, experiment.mask, reverse=True, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive, debug=experiment.status.debug)
   if args.archive:
     if experiment.path.archive:
-      experiment.cleanDataSink(args.archive, experiment.mask, keep=True, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive)
+      experiment.cleanDataSink(args.archive, experiment.mask, keep=True, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive, debug=experiment.status.debug)
     else:
       print('Please set the path.archive path before issuing an archive command.')
 
