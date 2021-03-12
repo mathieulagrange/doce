@@ -1,4 +1,4 @@
-import explanes as el
+import doce
 from time import sleep
 from pandas import DataFrame
 import time
@@ -6,7 +6,7 @@ import numpy as np
 from pathlib import Path
 
 if __name__ == "__main__":
-  el.run.run()
+  docerun.run()
 
 # use case where:
 #   - the results are stored on disk using npy files
@@ -14,7 +14,7 @@ if __name__ == "__main__":
 #   - the metrics does not operate on the same data, resulting on result vectors with different sizes per metric
 
 def set(args):
-  experiment = el.experiment.Experiment()
+  experiment = doce.experiment.Experiment()
   experiment.project.name = 'npyDemo'
   experiment.project.description = 'demonstration of npy storage of metrics'
   experiment.project.author = 'mathieu Lagrange'

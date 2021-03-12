@@ -57,7 +57,7 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
     the number of columns corresponding to factors (default 0).
 
   factorDisplay:
-    type of description of the factors (default 'long'), see :meth:`explanes.util.compressDescription` for reference.
+    type of description of the factors (default 'long'), see :meth:`doce.util.compressDescription` for reference.
 
 	Returns
 	-------

@@ -7,8 +7,8 @@ import tables as tb
 import pandas as pd
 import copy
 import glob
-import explanes.util as eu
-import explanes.setting as es
+import doce.util as eu
+import doce.setting as es
 import logging
 from joblib import Parallel, delayed
 from subprocess import call
@@ -81,7 +81,7 @@ class Factor():
   	See Also
   	--------
 
-    explanes.factor.Factor.id
+    doce.factor.Factor.id
 
   	Examples
   	--------
@@ -134,16 +134,16 @@ class Factor():
     mailInterval=0):
     """iterate over the setting set and run the function given as parameter.
 
-    This function is wrapped by :meth:`explanes.experiment.Experiment.do`, which should be more convenient to use. Please refer to this method for usage.
+    This function is wrapped by :meth:`doce.experiment.Experiment.do`, which should be more convenient to use. Please refer to this method for usage.
 
     Parameters
     ----------
 
-    function : function(:class:`~explanes.factor.Factor`, :class:`~explanes.experiment.Experiment`, \*parameters)
+    function : function(:class:`~doce.factor.Factor`, :class:`~doce.experiment.Experiment`, \*parameters)
       operates on a given setting within the experiment environnment with optional parameters.
 
     experiment:
-      an :class:`~explanes.experiment.Experiment` object
+      an :class:`~doce.experiment.Experiment` object
 
     *parameters : any type (optional)
       parameters to be given to the function.
@@ -172,7 +172,7 @@ class Factor():
     See Also
     --------
 
-    explanes.experiment.Experiment.do
+    doce.experiment.Experiment.do
 
     """
     nbFailed = 0
@@ -365,7 +365,7 @@ class Factor():
   def cleanH5(self, path, reverse=False, force=False, settingEncoding={}):
     """clean a h5 data sink by considering the settings set.
 
-  	This method is more conveniently used by considering the method :meth:`explanes.experiment.Experiment.cleanDataSink, please see its documentation for usage.
+  	This method is more conveniently used by considering the method :meth:`doce.experiment.Experiment.cleanDataSink, please see its documentation for usage.
     """
     h5 = tb.open_file(path, mode='a')
     if reverse:
@@ -404,7 +404,7 @@ class Factor():
     ):
     """clean a data sink by considering the settings set.
 
-  	This method is more conveniently used by considering the method :meth:`explanes.experiment.Experiment.cleanDataSink, please see its documentation for usage.
+  	This method is more conveniently used by considering the method :meth:`doce.experiment.Experiment.cleanDataSink, please see its documentation for usage.
     """
 
     path = os.path.expanduser(path)

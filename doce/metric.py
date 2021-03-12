@@ -3,7 +3,7 @@ import inspect
 import types
 import numpy as np
 import tables as tb
-import explanes.util as eu
+import doce.util as eu
 import copy
 from itertools import compress
 import time
@@ -11,7 +11,7 @@ import time
 class Metric():
   """Stores information about the way evaluation metrics are stored and manipulated.
 
-  Stores information about the way evaluation metrics are stored and manipulated. Each member of this class describes an evaluation metric and the way it may be abstracted. Two NameSpaces (explanes.metric.Metric._unit, explanes.metric.Metric._description) are available to respectively provide information about the unit of the metric and its semantic.
+  Stores information about the way evaluation metrics are stored and manipulated. Each member of this class describes an evaluation metric and the way it may be abstracted. Two NameSpaces (doce.metric.Metric._unit, doce.metric.Metric._description) are available to respectively provide information about the unit of the metric and its semantic.
 
   Each metric may be reduced by any mathematical operation that operate on a vector made available by the numpy library with default parameters.
 
@@ -64,12 +64,12 @@ class Metric():
 
     The method handles the reduction of the metrics when considering numpy storage. For each metric, a .npy file is assumed to be available which the following naming convention: <id_of_setting>_<metricName>.npy.
 
-    The method :meth:`explanes.metric.Metric.reduce` wraps this method and should be considered as the main user interface, please see its documentation for usage.
+    The method :meth:`doce.metric.Metric.reduce` wraps this method and should be considered as the main user interface, please see its documentation for usage.
 
     See Also
     --------
 
-    explanes.metric.Metric.reduce
+    doce.metric.Metric.reduce
 
     """
     table = []
@@ -119,12 +119,12 @@ class Metric():
 
     The method handles the reduction of the metrics when considering h5 storage.
 
-    The method :meth:`explanes.metric.Metric.reduce` wraps this method and should be considered as the main user interface, please see its documentation for usage.
+    The method :meth:`doce.metric.Metric.reduce` wraps this method and should be considered as the main user interface, please see its documentation for usage.
 
     See Also
     --------
 
-    explanes.metric.Metric.reduce
+    doce.metric.Metric.reduce
 
     """
     table = []
@@ -262,29 +262,29 @@ class Metric():
     expandFactor=None,
     metricSelector=None
     ):
-    """Apply the reduction directives described in each members of explanes.metric.Metric objects for the settings given as parameters.
+    """Apply the reduction directives described in each members of doce.metric.Metric objects for the settings given as parameters.
 
-    For each setting in the iterable settings, available data corresponding to the metrics specified as members of the explanes.metric.Metric object are reduced using specified reduction methods.
+    For each setting in the iterable settings, available data corresponding to the metrics specified as members of the doce.metric.Metric object are reduced using specified reduction methods.
 
     Parameters
     ----------
 
-    settings: explanes.factor.Factor
+    settings: doce.factor.Factor
       iterable settings.
 
     dataLocation: str
       In the case of .npy storage, a valid path to the main directory. In the case of .h5 storage, a valid path to an .h5 file.
 
     settingEncoding : dict
-      Encoding of the setting. See explanes.factor.Factor.id for references.
+      Encoding of the setting. See doce.factor.Factor.id for references.
 
     reducedMetricDisplay : str (optional)
       If set to 'capitalize' (default), the description of the reduced metric is done in a Camel case fashion: metricReduction.
 
       If set to 'underscore', the description of the reduced metric is done in a Python case fashion: metric_reduction.
 
-    factor : explanes.factor.Factor
-      The explanes.factor.Factor describing the factors of the experiment.
+    factor : doce.factor.Factor
+      The doce.factor.Factor describing the factors of the experiment.
 
     factorDisplay : str (optional)
       The expected format of the display of factors. 'long' (default) do not lead to any reduction. If factorDisplay contains 'short', a reduction of each word is performed. 'shortUnderscore' assumes pythonCase delimitation. 'shortCapital' assumes camelCase delimitation. 'short' attempts to perform reduction by guessing the type of delimitation.
@@ -439,16 +439,16 @@ class Metric():
     ----------
 
     metric: str
-      The name of the metric. Must be a member of the explanes.metric.Metric object.
+      The name of the metric. Must be a member of the doce.metric.Metric object.
 
-    settings: explanes.factor.Factor
+    settings: doce.factor.Factor
       Iterable settings.
 
     dataLocation: str
       In the case of .npy storage, a valid path to the main directory. In the case of .h5 storage, a valid path to an .h5 file.
 
     settingEncoding : dict
-      Encoding of the setting. See explanes.factor.Factor.id for references.
+      Encoding of the setting. See doce.factor.Factor.id for references.
 
     verbose : bool
       In the case of .npy metric storage, if verbose is set to True, print the fileName seeked for the metric.
@@ -553,14 +553,14 @@ class Metric():
     fileId: PyTables file Object
     a valid PyTables file Object, leading to an .h5 file opened with writing permission.
 
-    setting: :class:`explanes.factor.Factor`
+    setting: :class:`doce.factor.Factor`
     an instantiated Factor object describing a setting.
 
     metricDimension: dict
     for metrics for which the dimensionality of the storage vector is known, each key of the dict is a valid metric name and each conresponding value is the size of the storage vector.
 
     settingEncoding : dict
-    Encoding of the setting. See explanes.factor.Factor.id for references.
+    Encoding of the setting. See doce.factor.Factor.id for references.
 
     Returns
     -------
@@ -657,13 +657,13 @@ class Metric():
     ):
     """Builds the column header of the reduction settingDescription.
 
-    This method builds the column header of the reduction settingDescription by formating the Factor names from the explanes.factor.Factor class and by describing the reduced metrics.
+    This method builds the column header of the reduction settingDescription by formating the Factor names from the doce.factor.Factor class and by describing the reduced metrics.
 
     Parameters
     ----------
 
-    factor : explanes.factor.Factor
-      The explanes.factor.Factor describing the factors of the experiment.
+    factor : doce.factor.Factor
+      The doce.factor.Factor describing the factors of the experiment.
 
     factorDisplay : str (optional)
       The expected format of the display of factors. 'long' (default) do not lead to any reduction. If factorDisplay contains 'short', a reduction of each word is performed. 'shortUnderscore' assumes pythonCase delimitation. 'shortCapital' assumes camelCase delimitation. 'short' attempts to perform reduction by guessing the type of delimitation.
@@ -672,7 +672,7 @@ class Metric():
       If factorDisplay has 'short', factorDisplayLength specifies the maximal length of each word of the description of the factor.
 
     metricHasData : list of bool
-      Specify for each metric described in the explanes.metric.Metric object, whether data has been loaded or not.
+      Specify for each metric described in the doce.metric.Metric object, whether data has been loaded or not.
 
     reducedMetricDisplay : str (optional)
       If set to 'capitalize' (default), the description of the reduced metric is done in a Camel case fashion: metricReduction.
@@ -682,7 +682,7 @@ class Metric():
     See Also
     --------
 
-    explanes.util.compressDescription
+    doce.util.compressDescription
     """
     # print(factorDisplay)
     columnHeader = []
@@ -706,7 +706,7 @@ class Metric():
     ):
     """Returns a list of str with the names of the metrics.
 
-    Returns a list of str with the names of the metricsdefined as members of the explanes.metric.Metric object.
+    Returns a list of str with the names of the metricsdefined as members of the doce.metric.Metric object.
 
     Examples
     --------
@@ -725,7 +725,7 @@ class Metric():
     ):
     """Returns the number of metrics.
 
-    Returns the number of metrics defined as members of the explanes.metric.Metric object.
+    Returns the number of metrics defined as members of the doce.metric.Metric object.
 
     Examples
     --------
@@ -742,9 +742,9 @@ class Metric():
   def __str__(
     self
     ):
-    """Returns a str describing the explanes.metric.Metric.
+    """Returns a str describing the doce.metric.Metric.
 
-    Returns a str describing the explanes.metric.Metric by listing each member of the object.
+    Returns a str describing the doce.metric.Metric by listing each member of the object.
 
     Examples
     --------

@@ -4,7 +4,7 @@ import inspect
 import os
 import time
 import datetime
-import explanes as el
+import doce
 
 class Experiment():
   """Stores high level information about the experiment and tools to control the processing and storage of data.
@@ -14,13 +14,13 @@ class Experiment():
   See Also
   --------
 
-  explanes.factor.Factor, explanes.metric.Metric
+  doce.factor.Factor, doce.metric.Metric
 
   Examples
   --------
 
   >>> import explanes as el
-  >>> e=el.experiment.Experiment()
+  >>> e=doce.experiment.Experiment()
   >>> e.project.name='myExperiment'
   >>> e.project.author='Mathieu Lagrange'
   >>> e.project.address='mathieu.lagrange@ls2n.fr'
@@ -87,9 +87,9 @@ class Experiment():
     self.status.runId = str(int((time.time()-datetime.datetime(2020,1,1,0,0).timestamp())/60))
     self.status.debug = False
 
-    self.factor = el.Factor()
+    self.factor = doce.Factor()
     self.parameter = types.SimpleNamespace()
-    self.metric = el.Metric()
+    self.metric = doce.Metric()
     self.path = Path()
     self.path.code = os.getcwd()
     self.path.archive = ''
@@ -131,7 +131,7 @@ class Experiment():
   #
   #   >>> import explanes as el
   #   >>> import os
-  #   >>> e=el.Experiment()
+  #   >>> e=doce.Experiment()
   #   >>> e.project.name = 'experiment'
   #   >>> e.path.processing = '/tmp/'+e.project.name+'/processing'
   #   >>> e.path.output = '/tmp/'+e.project.name+'/output'
@@ -163,7 +163,7 @@ class Experiment():
 
     >>> import explanes as el
     >>> import os
-    >>> e=el.Experiment()
+    >>> e=doce.Experiment()
     >>> e.project.name = 'experiment'
     >>> e.path.processing = '/tmp/'+e.project.name+'/processing'
     >>> e.path.output = '/tmp/'+e.project.name+'/output'
@@ -177,7 +177,7 @@ class Experiment():
         if path.endswith('.h5'):
           path = os.path.dirname(os.path.abspath(path))
         if not os.path.exists(path):
-          if force or el.util.query_yes_no('The '+sns+' path: '+path+' does not exist. Do you want to create it ?'):
+          if force or doce.util.query_yes_no('The '+sns+' path: '+path+' does not exist. Do you want to create it ?'):
             os.makedirs(path)
             if not force:
               print('Path succesfully created.')
@@ -208,7 +208,7 @@ class Experiment():
   	--------
 
     >>> import explanes as el
-    >>> print(el.Experiment())
+    >>> print(doce.Experiment())
     project:
       name:
       description:
@@ -226,7 +226,7 @@ class Experiment():
     host: []
 
     >>> import explanes as el
-    >>> el.Experiment().__str__(format='html')
+    >>> doce.Experiment().__str__(format='html')
     '<div>project: </div><div>  name: </div><div>  description: </div><div>  author: no name</div><div>  address: noname@noorg.org</div><div>  runId: ...</div><div>factor: </div><div>parameter: </div><div>metric: </div><div>path: </div><div>  input: </div><div>  processing: </div><div>  storage: </div><div>  output: </div><div>host: []</div><div></div>'
     """
     description = ''
@@ -264,7 +264,7 @@ class Experiment():
     Examples
     --------
     >>> import explanes as el
-    >>> e=el.experiment.Experiment()
+    >>> e=doce.experiment.Experiment()
     >>> e.project.address = 'mathieu.lagrange@cnrs.fr'
     >>> e.sendMail('hello', '<div> good day </div>')
     Sent message entitled: [explanes]  id ... hello ...
@@ -293,7 +293,7 @@ class Experiment():
 
     Operate a given function on the setting set generated using mask. The setting set can be browsed in parallel by setting nbJobs>1. If logFileName is not empty, a faulty setting do not stop the execution, the error is stored and another setting is executed. If progress is set to True, a graphical display of the progress through the setting set is displayed.
 
-    This function is essentially a wrapper to the function :meth:`explanes.factor.Factor.do`.
+    This function is essentially a wrapper to the function :meth:`doce.factor.Factor.do`.
 
     Parameters
     ----------
@@ -301,7 +301,7 @@ class Experiment():
     mask : a list of literals or a list of lists of literals
       :term:`mask` used to specify the :term:`settings<setting>` set
 
-    function : function(:class:`~explanes.factor.Factor`, :class:`~explanes.experiment.Experiment`, \*parameters) (optional)
+    function : function(:class:`~doce.factor.Factor`, :class:`~doce.experiment.Experiment`, \*parameters) (optional)
       A function that operates on a given setting within the experiment environnment with optional parameters.
 
       If None, a description of the given setting is shown.
@@ -340,7 +340,7 @@ class Experiment():
     See Also
     --------
 
-    explanes.factor.Factor.do
+    doce.factor.Factor.do
 
     Examples
     --------
@@ -349,7 +349,7 @@ class Experiment():
     >>> import random
     >>> import explanes as el
 
-    >>> e=el.experiment.Experiment()
+    >>> e=doce.experiment.Experiment()
     >>> e.factor.factor1=[1, 3]
     >>> e.factor.factor2=[2, 5]
 
@@ -388,7 +388,7 @@ class Experiment():
     ):
     """ Perform a cleaning of a data sink (directory or h5 file).
 
-    This method is essentially a wrapper to :meth:`explanes.factor.Factor.cleanDataSink`.
+    This method is essentially a wrapper to :meth:`doce.factor.Factor.cleanDataSink`.
 
     Parameters
     ----------
@@ -415,17 +415,17 @@ class Experiment():
       end of the wildcard used to select the entries to remove or to keep (default: '*').
 
     settingEncoding : dict (optional)
-      format of the id describing the :term:`setting`. Please refer to :meth:`explanes.factor.Factor.id` for further information.
+      format of the id describing the :term:`setting`. Please refer to :meth:`doce.factor.Factor.id` for further information.
 
     archivePath : str (optional)
       If not None, specify an existing directory where the specified data will be moved.
 
-      If None, the path explanes.experiment.Experiment._archivePath is used (default).
+      If None, the path doce.experiment.Experiment._archivePath is used (default).
 
     See Also
     --------
 
-    explanes.factor.Factor.cleanDataSink, explanes.factor.Factor.id
+    doce.factor.Factor.cleanDataSink, doce.factor.Factor.id
 
     Examples
     --------
@@ -433,7 +433,7 @@ class Experiment():
     >>> import explanes as el
     >>> import numpy as np
     >>> import os
-    >>> e=el.experiment.Experiment()
+    >>> e=doce.experiment.Experiment()
     >>> e.path.output = '/tmp/test'
     >>> e.setPath()
     >>> e.factor.factor1=[1, 3]
@@ -457,7 +457,7 @@ class Experiment():
 
     >>> import explanes as el
     >>> import tables as tb
-    >>> e=el.experiment.Experiment()
+    >>> e=doce.experiment.Experiment()
     >>> e.path.output = '/tmp/test.h5'
     >>> e.factor.factor1=[1, 3]
     >>> e.factor.factor2=[2, 4]
@@ -534,20 +534,20 @@ class Experiment():
   #   settingEncoding={},
   #   archivePath = None
   #   ):
-  #   """Clean all relevant directories specified in the NameSpace explanes.Experiment.experiment.path.
+  #   """Clean all relevant directories specified in the NameSpace doce.Experiment.experiment.path.
   #
-  #   Apply :meth:`explanes.experiment.Experiment.cleanDataSink` on each relevant directories specified in the NameSpace explanes.experiment.Experiment.path.
+  #   Apply :meth:`doce.experiment.Experiment.cleanDataSink` on each relevant directories specified in the NameSpace doce.experiment.Experiment.path.
   #
   #   See Also
   #   --------
   #
-  #   explanes.experiment.Experiment.cleanDataSink
+  #   doce.experiment.Experiment.cleanDataSink
   #
   #   Examples
   #   --------
   #
   #   >>> import explanes as el
-  #   >>> e=el.experiment.Experiment()
+  #   >>> e=doce.experiment.Experiment()
   #   >>> e.path.output = '/tmp/test'
   #   >>> e.setPath()
   #   >>> e.clean()

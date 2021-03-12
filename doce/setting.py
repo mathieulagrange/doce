@@ -1,4 +1,4 @@
-import explanes.util as eu
+import doce.util as eu
 import hashlib
 import copy
 import logging
@@ -72,9 +72,9 @@ class Setting():
 
 
   def id(self, format='long', sort=True, separator='_', singleton=True, default=False, hide=[]):
-    """return a one-liner str or a list of str that describes a setting or a :class:`~explanes.factor.Factor` object.
+    """return a one-liner str or a list of str that describes a setting or a :class:`~doce.factor.Factor` object.
 
-  	Return a one-liner str or a list of str that describes a setting or a :class:`~explanes.factor.Factor` object with a high degree of flexibility.
+  	Return a one-liner str or a list of str that describes a setting or a :class:`~doce.factor.Factor` object with a high degree of flexibility.
 
   	Parameters
   	----------
@@ -98,7 +98,7 @@ class Setting():
       if False, consider factors with only one modality (default).
 
     default: bool (optional)
-      also consider couple of factor/modality where the modality is explicitly set to be a default value for this factor using :meth:`explanes.factor.Factors.default`.
+      also consider couple of factor/modality where the modality is explicitly set to be a default value for this factor using :meth:`doce.factor.Factors.default`.
 
     hide: list of str
       list the factors that should not be considered. The list is empty by default.
@@ -109,9 +109,9 @@ class Setting():
   	See Also
   	--------
 
-    explanes.factor.Factor.default
+    doce.factor.Factor.default
 
-    explanes.util.compressName
+    doce.util.compressName
 
   	Examples
   	--------
@@ -214,9 +214,9 @@ class Setting():
     return id
 
   def replace(self, factor, value=None, positional=0, relative=0):
-    """returns a new explanes.factor.Factor object with one factor with modified modality.
+    """returns a new doce.factor.Factor object with one factor with modified modality.
 
-    Returns a new explanes.factor.Factor object with with one factor with modified modality. The value of the requested new modality can requested by 3 exclusive means: its value, its position in the modality array, or its relative position in the array with respect to the position of the current modality.
+    Returns a new doce.factor.Factor object with with one factor with modified modality. The value of the requested new modality can requested by 3 exclusive means: its value, its position in the modality array, or its relative position in the array with respect to the position of the current modality.
 
     Parameters
     ----------
@@ -298,12 +298,12 @@ class Setting():
     ):
     """run the function given as parameter for the setting.
 
-  	Helper function for the method :meth:`~explanes.factor.Factor.do`.
+  	Helper function for the method :meth:`~doce.factor.Factor.do`.
 
   	See Also
   	--------
 
-    explanes.factor.Factor.do
+    doce.factor.Factor.do
 
     """
     failed = 0
