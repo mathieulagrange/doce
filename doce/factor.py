@@ -543,12 +543,12 @@ class Factor():
       columns.append(il)
     return pd.DataFrame(table, columns=columns)
 
-  def constantFactors(mask):
-    cf = []
-    for m in mask
-    for fi, f in enumerate(self._factors):
-      if m[fi]
-    return cf
+  # def constantFactors(mask):
+  #   cf = []
+  #   for m in mask
+  #   for fi, f in enumerate(self._factors):
+  #     if m[fi]
+  #   return cf
 
   def __str__(self):
     cString = ''
