@@ -1,2 +1,2 @@
-# explanes.py
-expLanes will help you handling the complexity of rich computational experiments.
+# DOCE: Design Of Computational Experiments
+Doce is a python library designed to help you handling the complexity of computational experiments.
