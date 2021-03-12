@@ -21,9 +21,9 @@ def constantColumn(
 
 	Examples
 	--------
-  >>> import explanes as el
+  >>> import doce
   >>> table = [['a', 'b', 1, 2], ['a', 'c', 2, 2], ['a', 'b', 2, 2]]
-  >>> el.util.constantColumn(table)
+  >>> doce.util.constantColumn(table)
   ['a', None, None, 2]
   """
 
@@ -76,11 +76,11 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
 
 	Examples
 	--------
-  >>> import explanes as el
+  >>> import doce
 
   >>> header = ['factor_1', 'factor_2', 'metric_1', 'metric_2']
   >>> table = [['a', 'b', 1, 2], ['a', 'c', 2, 2], ['a', 'b', 2, 2]]
-  >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = el.util.pruneSettingDescription(table, header, 2)
+  >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = doce.util.pruneSettingDescription(table, header, 2)
   >>> print(nbColumnFactor)
   1
   >>> print(constantSettingDescription)
@@ -140,10 +140,10 @@ def compressDescription(
 	Examples
 	--------
 
-  >>> import explanes as el
-  >>> el.util.compressDescription('myVeryLongParameter', format='short')
+  >>> import doce
+  >>> doce.util.compressDescription('myVeryLongParameter', format='short')
   'myvelopa'
-  >>> el.util.compressDescription('that_very_long_parameter', format='short', atomLength=3)
+  >>> doce.util.compressDescription('that_very_long_parameter', format='short', atomLength=3)
   'thaverlonpar'
   """
 

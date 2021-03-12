@@ -22,8 +22,8 @@ class Metric():
   Examples
   --------
 
-  >>> import explanes as el
-  >>> m = el.metric.Metric()
+  >>> import doce
+  >>> m = doce.metric.Metric()
   >>> m.duration = ['mean', 'std']
   >>> m._unit.duration = 'second'
   >>> m._description = 'duration of the processing'
@@ -177,12 +177,12 @@ class Metric():
     Examples
     --------
 
-    >>> import explanes as el
+    >>> import doce
     >>> import numpy as np
     >>> data = np.linspace(1, 10, num=10)
     >>> print(data)
     [ 1.  2.  3.  4.  5.  6.  7.  8.  9. 10.]
-    >>> m  =el.metric.Metric()
+    >>> m  =doce.metric.Metric()
     >>> m.reduceMetric(data, 0)
     1.0
     >>> m.reduceMetric(data, 8)
@@ -317,12 +317,12 @@ class Metric():
 
     explanes supports metrics storage using an .npy file per metric per setting.
 
-    >>> import explanes as el
+    >>> import doce
     >>> import numpy as np
     >>> import pandas as pd
     >>> np.random.seed(0)
 
-    >>> experiment = el.experiment.Experiment()
+    >>> experiment = doce.experiment.Experiment()
     >>> experiment.project.name = 'example'
     >>> experiment.path.output = '/tmp/'+experiment.project.name+'/'
     >>> experiment.factor.f1 = [1, 2]
@@ -350,13 +350,13 @@ class Metric():
 
     explanes also supports metrics storage using one .h5 file sink structured with settings as groups et metrics as leaf nodes.
 
-    >>> import explanes as el
+    >>> import doce
     >>> import numpy as np
     >>> import tables as tb
     >>> import pandas as pd
     >>> np.random.seed(0)
 
-    >>> experiment = el.experiment.Experiment()
+    >>> experiment = doce.experiment.Experiment()
     >>> experiment.project.name = 'example'
     >>> experiment.path.output = '/tmp/'+experiment.project.name+'.h5'
     >>> experiment.factor.f1 = [1, 2]
@@ -470,11 +470,11 @@ class Metric():
     Examples
     --------
 
-    >>> import explanes as el
+    >>> import doce
     >>> import numpy as np
     >>> import pandas as pd
 
-    >>> experiment = el.experiment.Experiment()
+    >>> experiment = doce.experiment.Experiment()
     >>> experiment.project.name = 'example'
     >>> experiment.path.output = '/tmp/'+experiment.project.name+'/'
     >>> experiment.factor.f1 = [1, 2]
@@ -571,11 +571,11 @@ class Metric():
     Examples
     --------
 
-    >>> import explanes as el
+    >>> import doce
     >>> import numpy as np
     >>> import tables as tb
 
-    >>> experiment = el.experiment.Experiment()
+    >>> experiment = doce.experiment.Experiment()
     >>> experiment.project.name = 'example'
     >>> experiment.path.output = '/tmp/'+experiment.project.name+'.h5'
     >>> experiment.factor.f1 = [1, 2]
@@ -711,8 +711,8 @@ class Metric():
     Examples
     --------
 
-    >>> import explanes as el
-    >>> m = el.metric.Metric()
+    >>> import doce
+    >>> m = doce.metric.Metric()
     >>> m.duration = ['mean']
     >>> m.mse = ['mean']
     >>> m.name()
@@ -730,8 +730,8 @@ class Metric():
     Examples
     --------
 
-    >>> import explanes as el
-    >>> m = el.metric.Metric()
+    >>> import doce
+    >>> m = doce.metric.Metric()
     >>> m.duration = ['mean']
     >>> m.mse = ['mean']
     >>> len(m)
@@ -749,9 +749,9 @@ class Metric():
     Examples
     --------
 
-    >>> import explanes as el
+    >>> import doce
     >>> import numpy as np
-    >>> m = el.metric.Metric()
+    >>> m = doce.metric.Metric()
     >>> m.duration = ['mean']
     >>> m._unit.duration = 'seconds'
     >>> m._description.duration = 'duration of the trial'

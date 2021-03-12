@@ -1,4 +1,4 @@
-import explanes as el
+import doce
 import sys
 import pandas as pd
 import argparse
@@ -20,9 +20,9 @@ def run():
 
   Assuming that the file experiment_run.py contains:
 
-  >>> import explanes as el
+  >>> import doce
   >>> if __name__ == "__main__":
-  ...   el.experiment.run() # doctest: +SKIP
+  ...   doce.experiment.run() # doctest: +SKIP
   >>> def set(experiment, args=None):
   ...   experiment.factor.factor1=[1, 3]
   ...   experiment.factor.factor2=[2, 4]
@@ -134,7 +134,7 @@ optional arguments:
    print('Please provide a valid project name')
    raise ValueError
 
-  experiment = el.experiment.Experiment()
+  experiment = doce.experiment.Experiment()
   if isinstance(parameter, dict):
     experiment.parameter = parameter
 
@@ -147,7 +147,7 @@ optional arguments:
       experiment.factor = getattr(experiment.factor, args.experiment)
     else:
       print('Unrecognized experiment: '+args.experiment)
-  elif len(experiment.factor.factors())>0 and isinstance(getattr(experiment.factor, experiment.factor.factors()[0]), el.factor.Factor):
+  elif len(experiment.factor.factors())>0 and isinstance(getattr(experiment.factor, experiment.factor.factors()[0]), doce.factor.Factor):
     experiment.factor = experiment.factor.merge()
   if args.serverDefault:
     args.serverDefault = False
@@ -160,6 +160,7 @@ optional arguments:
   if args.factor:
       print(experiment.factor.asPandaFrame())
   if args.list:
+    print(experiment.factor.constantFactors(experiment.mask))
     experiment.do(experiment.mask, progress=False)
 
   if args.remove:
@@ -250,7 +251,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
     # print('pass')
     # print(experiment.factor.factors())
     fi = experiment.factor.factors().index(selectFactor)
-    mask = el.util.expandMask(mask, selectFactor, experiment.factor)
+    mask = doce.util.expandMask(mask, selectFactor, experiment.factor)
     ma=copy.deepcopy(mask)
     ma[fi]=mask[fi][0]
     # print(ma)

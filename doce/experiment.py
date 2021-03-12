@@ -19,7 +19,7 @@ class Experiment():
   Examples
   --------
 
-  >>> import explanes as el
+  >>> import doce
   >>> e=doce.experiment.Experiment()
   >>> e.project.name='myExperiment'
   >>> e.project.author='Mathieu Lagrange'
@@ -129,7 +129,7 @@ class Experiment():
   #   Examples
   #   --------
   #
-  #   >>> import explanes as el
+  #   >>> import doce
   #   >>> import os
   #   >>> e=doce.Experiment()
   #   >>> e.project.name = 'experiment'
@@ -161,7 +161,7 @@ class Experiment():
     Examples
     --------
 
-    >>> import explanes as el
+    >>> import doce
     >>> import os
     >>> e=doce.Experiment()
     >>> e.project.name = 'experiment'
@@ -207,7 +207,7 @@ class Experiment():
   	Examples
   	--------
 
-    >>> import explanes as el
+    >>> import doce
     >>> print(doce.Experiment())
     project:
       name:
@@ -225,7 +225,7 @@ class Experiment():
       output:
     host: []
 
-    >>> import explanes as el
+    >>> import doce
     >>> doce.Experiment().__str__(format='html')
     '<div>project: </div><div>  name: </div><div>  description: </div><div>  author: no name</div><div>  address: noname@noorg.org</div><div>  runId: ...</div><div>factor: </div><div>parameter: </div><div>metric: </div><div>path: </div><div>  input: </div><div>  processing: </div><div>  storage: </div><div>  output: </div><div>host: []</div><div></div>'
     """
@@ -263,7 +263,7 @@ class Experiment():
 
     Examples
     --------
-    >>> import explanes as el
+    >>> import doce
     >>> e=doce.experiment.Experiment()
     >>> e.project.address = 'mathieu.lagrange@cnrs.fr'
     >>> e.sendMail('hello', '<div> good day </div>')
@@ -347,7 +347,7 @@ class Experiment():
 
     >>> import time
     >>> import random
-    >>> import explanes as el
+    >>> import doce
 
     >>> e=doce.experiment.Experiment()
     >>> e.factor.factor1=[1, 3]
@@ -430,7 +430,7 @@ class Experiment():
     Examples
     --------
 
-    >>> import explanes as el
+    >>> import doce
     >>> import numpy as np
     >>> import os
     >>> e=doce.experiment.Experiment()
@@ -455,7 +455,7 @@ class Experiment():
 
     Here, we remove all the files that match the wildcard *mult* in the directory /tmp/test that do not correspond to the settings that have the first factor set to the second modality and the second factor set to the second modality.
 
-    >>> import explanes as el
+    >>> import doce
     >>> import tables as tb
     >>> e=doce.experiment.Experiment()
     >>> e.path.output = '/tmp/test.h5'
@@ -546,7 +546,7 @@ class Experiment():
   #   Examples
   #   --------
   #
-  #   >>> import explanes as el
+  #   >>> import doce
   #   >>> e=doce.experiment.Experiment()
   #   >>> e.path.output = '/tmp/test'
   #   >>> e.setPath()

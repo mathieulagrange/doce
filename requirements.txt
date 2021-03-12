@@ -1,4 +1,3 @@
-numpydoc
 tables
 pandas
 argunparse

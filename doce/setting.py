@@ -12,9 +12,9 @@ class Setting():
   Examples
   --------
 
-  >>> import explanes as el
+  >>> import doce
 
-  >>> f = el.factor.Factor()
+  >>> f = doce.factor.Factor()
   >>> f.f1=['a', 'b']
   >>> f.f2=[1, 2]
 
@@ -51,9 +51,9 @@ class Setting():
   	Examples
   	--------
 
-    >>> import explanes as el
+    >>> import doce
 
-    >>> f = el.factor.Factor()
+    >>> f = doce.factor.Factor()
     >>> f.one = ['a', 'b']
     >>> f.two = [1, 2]
 
@@ -116,9 +116,9 @@ class Setting():
   	Examples
   	--------
 
-    >>> import explanes as el
+    >>> import doce
 
-    >>> f = el.factor.Factor()
+    >>> f = doce.factor.Factor()
     >>> f.one = ['a', 'b']
     >>> f.two = [0, 1]
     >>> f.three = ['none', 'c']
@@ -242,9 +242,9 @@ class Setting():
     Examples
     --------
 
-    >>> import explanes as el
+    >>> import doce
 
-    >>> f = el.factor.Factor()
+    >>> f = doce.factor.Factor()
     >>> f.one = ['a', 'b', 'c']
     >>> f.two = [1, 2, 3]
 

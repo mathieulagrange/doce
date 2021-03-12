@@ -29,9 +29,9 @@ class Factor():
   Examples
   --------
 
-  >>> import explanes as el
+  >>> import doce
 
-  >>> f = el.factor.Factor()
+  >>> f = doce.factor.Factor()
   >>> f.factor1=[1, 3]
   >>> f.factor2=[2, 4]
 
@@ -86,9 +86,9 @@ class Factor():
   	Examples
   	--------
 
-    >>> import explanes as el
+    >>> import doce
 
-    f = el.Factor()
+    f = doce.Factor()
 
     f.f1 = ['a', 'b']
     f.f2 = [1, 2, 3]
@@ -232,9 +232,9 @@ class Factor():
   	Examples
   	--------
 
-    >>> import explanes as el
+    >>> import doce
 
-    >>> f = el.factor.Factor()
+    >>> f = doce.factor.Factor()
     >>> f.f1=['a', 'b', 'c']
     >>> f.f2=[1, 2, 3]
 
@@ -316,9 +316,9 @@ class Factor():
   	Examples
   	--------
 
-    >>> import explanes as el
+    >>> import doce
 
-    >>> f = el.factor.Factor()
+    >>> f = doce.factor.Factor()
     >>> f.f1=['a', 'b']
     >>> f.f2=[1, 2]
     >>> f.f3=[0, 1]
@@ -347,9 +347,9 @@ class Factor():
   	Examples
   	--------
 
-    >>> import explanes as el
+    >>> import doce
 
-    >>> f = el.factor.Factor()
+    >>> f = doce.factor.Factor()
     >>> f.one = ['a', 'b']
     >>> f.two = list(range(10))
 
@@ -501,9 +501,9 @@ class Factor():
   	Examples
   	--------
 
-    >>> import explanes as el
+    >>> import doce
 
-    >>> f = el.factor.Factor()
+    >>> f = doce.factor.Factor()
     >>> f.one = ['a', 'b']
     >>> f.two = list(range(10))
 
@@ -542,6 +542,13 @@ class Factor():
     for il in range(l):
       columns.append(il)
     return pd.DataFrame(table, columns=columns)
+
+  def constantFactors(mask):
+    cf = []
+    for m in mask
+    for fi, f in enumerate(self._factors):
+      if m[fi]
+    return cf
 
   def __str__(self):
     cString = ''
