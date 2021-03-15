@@ -679,6 +679,10 @@ class Factor():
         for il, l in enumerate(m):
             if not isinstance(l, list) and l > -1:
                 mask[im][il] = [l]
+      # prune repeated entries
+      for im, m in enumerate(mask):
+        for il, l in enumerate(m):
+          print(l)
       self._expandedMask = mask
       for m in mask:
         # handle -1 in mask
