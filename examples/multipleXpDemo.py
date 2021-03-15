@@ -1,4 +1,4 @@
-import explanes as el
+import doce
 from time import sleep
 from pandas import DataFrame
 import time
@@ -7,23 +7,23 @@ from pathlib import Path
 import os
 
 if __name__ == "__main__":
-  el.run.run()
+  doce.run.run()
 
 
 def set(args):
-  experiment = el.experiment.Experiment()
+  experiment = doce.experiment.Experiment()
   experiment.project.name = os.path.basename(__file__)[:-3]
   experiment.path.output = '/tmp/'+experiment.project.name+'/'
   experiment.setPath()
-  print(type(experiment.factor))
-  experiment.factor.xp1 = el.Factor()
+
+  experiment.factor.xp1 = doce.Factor()
   experiment.factor.xp1.method = ['methodOne']
   experiment.factor.xp1.parameterMethodOne = ['modalityOne', 'modalityTwo']
-  experiment.factor.xp2 = el.Factor()
+  experiment.factor.xp2 = doce.Factor()
   experiment.factor.xp2.method = ['methodTwo']
   experiment.factor.xp2.parameterMethodTwo = np.arange(5)
 
-  # experiment.factor.truc = el.factor.Factor() #['machin', 'bidule']
+  # experiment.factor.truc = doce.factor.Factor() #['machin', 'bidule']
 
   experiment.metric.m = ['mean']
 

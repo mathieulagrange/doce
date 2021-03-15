@@ -91,7 +91,7 @@ optional arguments:
   """
 
   parser = argparse.ArgumentParser()
-  parser.add_argument('-e', '--experiment', type=str, help='select experiment', default='all')
+  parser.add_argument('-e', '--experiment', type=str, help='select experiment. List experiments if empty.', nargs='?', default='all')
   parser.add_argument('-i', '--information', help='show information about the experiment', action='store_true')
   parser.add_argument('-f', '--factor', help='show the factors of the experiment', action='store_true')
   parser.add_argument('-l', '--list', help='list settings', action='store_true')
@@ -143,7 +143,15 @@ optional arguments:
   experiment.status.debug = args.debug
 
   if args.experiment != 'all':
-    if hasattr(experiment.factor, args.experiment):
+    if args.experiment is None:
+      for e in experiment.factor.factors():
+        if isinstance(e, doce.Factor):
+          print('Experiment '+e+': ')
+          print(getattr(experiment.factor, e))
+        else:
+          print('There is only one experiment. Please do not consider the -e (--experiment) option and use -i for information about the factors.')
+          break
+    elif hasattr(experiment.factor, args.experiment):
       experiment.factor = getattr(experiment.factor, args.experiment)
     else:
       print('Unrecognized experiment: '+args.experiment)
@@ -402,3 +410,15 @@ def exportDataFrame(experiment, args, df, styler):
 
   if 'html' not in args.export and 'all' != args.export:
     os.remove(exportFileName+'.html')
+
+# find which line of code is printing
+# import sys
+# import traceback
+# class TracePrints(object):
+#   def __init__(self):
+#     self.stdout = sys.stdout
+#   def flush(self): pass
+#   def write(self, s):
+#     self.stdout.write("Writing %r\n" % s)
+#     traceback.print_stack(file=self.stdout)
+# sys.stdout = TracePrints()

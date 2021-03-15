@@ -1,4 +1,4 @@
-import explanes as el
+import doce
 from time import sleep
 from pandas import DataFrame
 import time
@@ -7,10 +7,10 @@ from pathlib import Path
 import copy
 
 if __name__ == "__main__":
-  el.run.run()
+  doce.run.run()
 
 def set(args):
-  experiment = el.experiment.Experiment()
+  experiment = doce.experiment.Experiment()
   experiment.project.name = 'npyDemo'
   experiment.project.description = 'demonstration of the expand display technique'
   experiment.project.author = 'mathieu Lagrange'

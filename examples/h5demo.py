@@ -1,10 +1,10 @@
-import explanes as el
+import doce
 import numpy as np
 import tables as tb
 import time
 
 if __name__ == "__main__":
-  el.experiment.run()
+  doce.experiment.run()
 
 # use case where:
 #   - the results are stored on disk in a h5 sink
@@ -13,7 +13,7 @@ if __name__ == "__main__":
 #   - thank to the description capabilities of the h5 file format, some information about the metric can be stored
 
 def set(args):
-    experiment = el.experiment.Experiment()
+    experiment = doce.experiment.Experiment()
     experiment.project.name = 'demoH5'
     experiment.project.description = 'demonstration of explanes using H5'
     experiment.project.author = 'mathieu Lagrange'
