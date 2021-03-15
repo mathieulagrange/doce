@@ -125,6 +125,7 @@ optional arguments:
     args.export = 'all'
 
   mask = ast.literal_eval(args.mask)
+
   parameter = ast.literal_eval(args.parameter)
 
   module = sys.argv[0][:-3]
@@ -140,6 +141,9 @@ optional arguments:
 
   experiment = config.set(experiment)
   experiment.mask = mask
+  if len(experiment.mask):
+    print(experiment.factor.constantFactors(experiment.mask))
+
   experiment.status.debug = args.debug
 
   if args.experiment != 'all':
@@ -168,7 +172,6 @@ optional arguments:
   if args.factor:
       print(experiment.factor.asPandaFrame())
   if args.list:
-    print(experiment.factor.constantFactors(experiment.mask))
     experiment.do(experiment.mask, progress=False)
 
   if args.remove:

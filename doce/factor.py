@@ -52,6 +52,7 @@ class Factor():
       self._currentSetting = 0
       self._settings = []
       self._mask = None
+      self._expandedMask = None
       self._nonSingleton = []
       self._factors = []
       self._default = types.SimpleNamespace()
@@ -543,12 +544,25 @@ class Factor():
       columns.append(il)
     return pd.DataFrame(table, columns=columns)
 
-  # def constantFactors(mask):
-  #   cf = []
-  #   for m in mask
-  #   for fi, f in enumerate(self._factors):
-  #     if m[fi]
-  #   return cf
+  def constantFactors(self, mask):
+    self.mask(mask)
+    message = str(len(self))+' settings'
+    # print(self._mask)
+    # print(self._expandedMask)
+    cf = [ [] for _ in range(len(self._factors)) ]
+    for m in self._expandedMask:
+      for fi, f in enumerate(self._factors):
+        if m[fi]:
+          cf[fi] = list(set(cf[fi]) | set(m[fi]))
+
+    cst = ''
+    for fi, f in enumerate(self._factors):
+      if len(cf[fi]) == 1:
+        cst+=f+', '
+    if cst:
+      message += ' with constant factors : '
+      message += cst[:-2]
+    return message
 
   def __str__(self):
     cString = ''
@@ -665,7 +679,7 @@ class Factor():
         for il, l in enumerate(m):
             if not isinstance(l, list) and l > -1:
                 mask[im][il] = [l]
-
+      self._expandedMask = mask
       for m in mask:
         # handle -1 in mask
         for mfi, mf in enumerate(m):
