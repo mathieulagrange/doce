@@ -13,6 +13,7 @@ import logging
 from joblib import Parallel, delayed
 from subprocess import call
 import time
+from itertools import groupby
 
 if eu.inNotebook():
     from tqdm.notebook import tqdm as tqdm
@@ -681,9 +682,12 @@ class Factor():
                 mask[im][il] = [l]
       # prune repeated entries
       for im, m in enumerate(mask):
-        for il, l in enumerate(m):
-          print(l)
+        if isinstance(m, list):
+          for il, l in enumerate(m):
+            if isinstance(l, list):
+              m[il] = list(dict.fromkeys(l))
       self._expandedMask = mask
+
       for m in mask:
         # handle -1 in mask
         for mfi, mf in enumerate(m):
@@ -703,6 +707,7 @@ class Factor():
             settings.append(ss)
         else:
           settings.append(s)
+      settings = [k for k,v in groupby(sorted(settings))]  
       self._changed = False
       self._settings = settings
 
