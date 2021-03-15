@@ -354,8 +354,8 @@ def highlightMin(s):
 
 
 def exportDataFrame(experiment, args, df, styler):
-  if not os.path.exists('export'):
-    os.makedirs('export')
+  if not os.path.exists(experiment.path.export):
+    os.makedirs(experiment.path.export)
   if args.export == 'all':
     exportFileName = experiment.project.name
   else:
@@ -369,7 +369,7 @@ def exportDataFrame(experiment, args, df, styler):
       args.export = '.'+a[1]
     else:
       args.export = 'all'
-  exportFileName = 'export/'+exportFileName
+  exportFileName = experiment.path.export+exportFileName
   reloadHeader =  '<script> window.onblur= function() {window.onfocus= function () {location.reload(true)}}; </script>'
   with open(exportFileName+'.html', "w") as outFile:
     outFile.write(reloadHeader)

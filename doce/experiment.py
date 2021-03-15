@@ -93,6 +93,7 @@ class Experiment():
     self.path = Path()
     self.path.code = os.getcwd()
     self.path.archive = ''
+    self.path.export = 'export'
     self.host = []
     self._settingEncoding = {}
     self._archivePath = ''
