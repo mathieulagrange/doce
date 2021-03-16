@@ -441,9 +441,12 @@ class Factor():
           action = 'move '
         destination = ' to '+archivePath+' '
       else:
+        print('INFORMATION: setting path.archive allows you to move the unwanted files to the archive path and not delete them.')
         destination = ''
         action = 'remove '
       if len(fileNames):
+        if not force and eu.query_yes_no('List the '+str(len(fileNames))+' files ?'):
+          print("\n".join(fileNames))
         if force or eu.query_yes_no('About to '+action+str(len(fileNames))+' files from '+path+destination+' \n Proceed ?'):
           for f in fileNames:
             if archivePath:
