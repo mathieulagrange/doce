@@ -4,7 +4,7 @@ import tables as tb
 import time
 
 if __name__ == "__main__":
-  doce.experiment.run()
+  doce.run.run()
 
 # use case where:
 #   - the results are stored on disk in a h5 sink
@@ -19,8 +19,6 @@ def set(args):
     experiment.project.author = 'mathieu Lagrange'
     experiment.project.address = 'mathieu.lagrange@ls2n.fr'
     experiment.path.output = '/tmp/results.h5'
-
-    experiment._settingEncoding = {'format': 'shortCapital'}
 
     experiment.factor.dataType = ['float', 'double']
     experiment.factor.datasetSize = 1000*np.array([1, 2, 4, 8])
@@ -39,7 +37,7 @@ def set(args):
 
 def step(setting, experiment):
   h5 = tb.open_file(experiment.path.output, mode='a')
-  sg = experiment.metric.addSettingGroup(h5, setting, metricDimensions = {'mae':setting.nbRuns, 'duration':1}, settingEncoding = experiment._settingEncoding)
+  sg = experiment.metric.addSettingGroup(h5, setting, metricDimension = {'mae':setting.nbRuns, 'duration':1}, settingEncoding = experiment._settingEncoding)
 
   tic = time.time()
   for r in range(setting.nbRuns):
@@ -54,7 +52,9 @@ def step(setting, experiment):
     elif setting.dataType == 'double':
       estimate =  np.var(data, dtype=np.float64)
 
-    sg.mae.append([abs(reference - estimate)])
+    # write to statically allocated array
+    sg.mae[r] = [abs(reference - estimate)]
+    # write to dynamically allocated array
     sg.mse.append([np.square(reference - estimate)])
 
   duration = time.time()-tic

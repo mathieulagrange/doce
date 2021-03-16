@@ -138,6 +138,8 @@ def run():
 
   if args.export is None:
     args.export = 'all'
+  if args.progress is None:
+    args.progress = 'd'
 
   mask = ast.literal_eval(args.mask)
 
@@ -251,8 +253,9 @@ def run():
       getattr(config, displayMethod)(experiment, experiment.factor.mask(experiment.mask))
     else:
       (df, header, styler) = dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor)
-      print(header)
-      print(df)
+      if df is not None:
+        print(header)
+        print(df)
       if args.export != 'none':
         exportDataFrame(experiment, args, df, styler)
       if args.mail>-1:
@@ -284,6 +287,8 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 
   (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.mask(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
 
+  if len(table) == 0:
+      return (None, None, None)
 
   if selectFactor:
     modalities = getattr(experiment.factor, selectFactor)
@@ -387,7 +392,7 @@ def exportDataFrame(experiment, args, df, styler):
       args.export = '.'+a[1]
     else:
       args.export = 'all'
-  exportFileName = experiment.path.export+exportFileName
+  exportFileName = experiment.path.export+'/'+exportFileName
   reloadHeader =  '<script> window.onblur= function() {window.onfocus= function () {location.reload(true)}}; </script>'
   with open(exportFileName+'.html', "w") as outFile:
     outFile.write(reloadHeader)

@@ -546,7 +546,7 @@ class Metric():
     ):
     """adds a group to the root of a valid PyTables Object in order to store the metrics corresponding to the specified setting.
 
-    adds a group to the root of a valid PyTables Object in order to store the metrics corresponding to the specified setting. The encoding of the setting is used to set the name of the group. For each metric, a Floating point Pytable Array is created. For any metric, ff no dimension is provided in the metricDimension dict, an expandable array is instantiated. If a dimension is available, a static size array is instantiated.
+    adds a group to the root of a valid PyTables Object in order to store the metrics corresponding to the specified setting. The encoding of the setting is used to set the name of the group. For each metric, a Floating point Pytable Array is created. For any metric, if no dimension is provided in the metricDimension dict, an expandable array is instantiated. If a dimension is available, a static size array is instantiated.
 
     Parameters
     ----------
@@ -567,7 +567,7 @@ class Metric():
     -------
 
     settingGroup: a Pytables Group
-    a Pytables Group where to store metrics corresponding to the specified setting.
+      where metrics corresponding to the specified setting are stored.
 
     Examples
     --------
