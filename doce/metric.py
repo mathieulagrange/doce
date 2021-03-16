@@ -73,6 +73,7 @@ class Metric():
 
     """
     table = []
+    modificationTimeStamp = []
     metricHasData = [False] * len(self.name())
     nbReducedMetrics = 0
     for mIndex, metric in enumerate(self.name()):
@@ -85,8 +86,10 @@ class Metric():
       for mIndex, metric in enumerate(self.name()):
         fileName = dataLocation+setting.id(**settingEncoding)+'_'+metric+'.npy'
         if os.path.exists(fileName):
+          mod = os.path.getmtime(fileName)
+          modificationTimeStamp.append(mod)
           if verbose:
-            print('Found '+fileName+', last modified '+time.ctime(os.path.getmtime(fileName)))
+            print('Found '+fileName+', last modified '+time.ctime(mod))
           metricHasData[mIndex] = True
           data = np.load(fileName)
           for reductionType in self.__getattribute__(metric):
@@ -106,7 +109,7 @@ class Metric():
     nbFactors = len(settings.factors())
     for ir, row in enumerate(table):
       table[ir] = row[:nbFactors]+list(compress(row[nbFactors:], reducedMetrics))
-    return (table, metricHasData)
+    return (table, metricHasData, modificationTimeStamp)
 
   def reduceFromH5(
     self,
@@ -129,6 +132,7 @@ class Metric():
 
     """
     table = []
+    modificationTimeStamp = os.path.getmtime(dataLocation)
     h5 = tb.open_file(dataLocation, mode='r')
     metricHasData = [False] * len(self.name())
     for sIndex, setting in enumerate(settings):
@@ -151,7 +155,7 @@ class Metric():
             row.insert(0, setting.__getattribute__(factorName))
         table.append(row)
     h5.close()
-    return (table, metricHasData)
+    return (table, metricHasData, modificationTimeStamp)
 
   def reduceMetric(
     self,
@@ -413,16 +417,16 @@ class Metric():
 
 
     if dataLocation.endswith('.h5'):
-      (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule)
+      (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, modificationTimeStamp)
     else:
-      (settingDescription, metricHasData) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule)
+      (settingDescription, metricHasData, modificationTimeStamp) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule)
 
     columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricDisplay, metricDisplayLength, metricHasData, reducedMetricDisplay)
     nbColumnFactor = len(settings.factors())
-    print(columnHeader)
+
     (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = eu.pruneSettingDescription(settingDescription, columnHeader, nbColumnFactor, factorDisplay)
 
-    return (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor)
+    return (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor, modificationTimeStamp)
 
   def get(
     self,

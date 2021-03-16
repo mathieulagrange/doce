@@ -10,6 +10,7 @@ import copy
 import subprocess
 import numpy as np
 import shutil
+import time
 
 def run():
   """This method shall be called from the main script of the experiment to control the experiment using the command line.
@@ -139,7 +140,7 @@ def run():
   if args.export is None:
     args.export = 'all'
   if args.progress is None:
-    args.progress = 'd'
+    args.progress = ''
 
   mask = ast.literal_eval(args.mask)
 
@@ -285,7 +286,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
     ma[fi]=mask[fi][0]
     # print(ma)
 
-  (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.mask(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
+  (table, columns, header, nbFactorColumns, modificationTimeStamp) = experiment.metric.reduce(experiment.factor.mask(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
 
   if len(table) == 0:
       return (None, None, None)
@@ -297,14 +298,15 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 
     for m in range(1, len(mask[fi])):
       ma[fi]=mask[fi][m]
-      (sd, ch, csd, nb)  = experiment.metric.reduce(experiment.factor.mask(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
+      (sd, ch, csd, nb, md)  = experiment.metric.reduce(experiment.factor.mask(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
       columns.append(modalities[ma[fi]])
+      modificationTimeStamp.append(md)
       for s in range(len(sd)):
         table[s].append(sd[s][-1])
     #
     # (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.mask(experiment.mask), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
 
-
+  print('Displayed data generated from '+ time.ctime(min(modificationTimeStamp))+' to '+ time.ctime(max(modificationTimeStamp)))
   df = pd.DataFrame(table, columns=columns).fillna('')
   # df[columns[nbFactorColumns+2:]] = df[columns[nbFactorColumns+2:]].round(experiment._display.metricPrecision)
   # pd.set_option('precision', experiment._display.metricPrecision)
