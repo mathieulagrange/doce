@@ -98,7 +98,9 @@ class Setting():
       if False, consider factors with only one modality (default).
 
     default: bool (optional)
-      also consider couple of factor/modality where the modality is explicitly set to be a default value for this factor using :meth:`doce.factor.Factors.default`.
+      if True, also consider couple of factor/modality where the modality is explicitly set to be a default value for this factor using :meth:`doce.factor.Factors.default`.
+
+      if False, do not show them (default).
 
     hide: list of str
       list the factors that should not be considered. The list is empty by default.
@@ -128,7 +130,7 @@ class Setting():
       0  one: ['a', 'b']
       1  two: [0, 1]
       2  three: ['none', 'c']
-      3  four: d
+      3  four: ['d']
 
     >>> for setting in f.mask([0, 1, 1]):
     ...   # default display
@@ -155,7 +157,7 @@ class Setting():
     >>> delattr(f, 'four')
     >>> for setting in f.mask([0, 0, 0]):
     ...   print(setting.id())
-    one_a
+    one_a_three_none_two_0
 
     >>> # set the default value of factor one to a
     >>> f.default('one', 'a')
@@ -163,7 +165,7 @@ class Setting():
     ...   print(setting.id())
     three_c_two_1
     >>> # do not hide the default value in the description
-    >>> print(setting.id(default=False))
+    >>> print(setting.id(default=True))
     one_a_three_c_two_1
 
     >>> f.optional_parameter = ['value_one', 'value_two']

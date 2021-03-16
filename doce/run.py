@@ -42,51 +42,67 @@ def run():
 
   $ python experiment_run.py -h
 
-  usage: experiment_run.py [-h] [-i] [-f] [-l] [-m MASK] [-M [MAIL]] [-C] [-S]
-                         [-s SERVER] [-d [DISPLAY]] [-r [RUN]] [-D] [-v] [-P]
-                         [-R [REMOVE]] [-K [KEEP]]
+    usage: npyDemo.py [-h] [-A [ARCHIVE]] [-C] [-d [DISPLAY]] [-D] [-e [EXPERIMENT]] [-E [EXPORT]]
+                    [-f] [-i] [-K [KEEP]] [-l] [-m MASK] [-M [MAIL]] [-p PARAMETER] [-P [PROGRESS]]
+                    [-r [RUN]] [-R [REMOVE]] [-s SERVER] [-S] [-v]
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -i, --information     show information about the experiment
-  -f, --factor          show the factors of the experiment
-  -l, --list            list settings
-  -m MASK, --mask MASK  mask of the experiment to run
-  -M [MAIL], --mail [MAIL]
-                        send email at the beginning and end of the
-                        computation. If a positive integer value x is
-                        provided, additional emails are sent every x hours.
-  -C, --copy            copy codebase to server defined by -s argument
-  -S, --serverDefault   augment the command line with the content of the dict
-                        experiment._defaultServerRunArgument
-  -s SERVER, --server SERVER
-                        running server side. Integer defines the index in the
-                        host array of config. -2 (default) runs attached on
-                        the local host, -1 runs detached on the local host, -3
-                        is a flag meaning that the experiment runs serverside
-  -d [DISPLAY], --display [DISPLAY]
-                        display metrics. If no parameter is given, consider
-                        the default display and show all metrics. If the str
-                        parameter contain a list of integers, use the default
-                        display and show only the selected metrics defined by
-                        the integer list. If the str parameter contain a name,
-                        run the display method with this name.
-  -r [RUN], --run [RUN]
-                        perform computation. Integer parameter sets the number
-                        of jobs computed in parallel (default to one core).
-  -D, --debug           debug mode
-  -v, --version         print version
-  -P, --progress        display progress bar
-  -R [REMOVE], --remove [REMOVE]
-                        remove the selected settings from a given path (all
-                        paths of the experiment by default, if the argument
-                        does not have / or \, the argument is interpreted as a
-                        member of the experiments path)
-  -K [KEEP], --keep [KEEP]
-                        keep only the selected settings from a given path (all
-                        paths of the experiment by default, if the argument
-                        does not have / or \, the argument is interpreted as a
-                        member of the experiments path)
+  optional arguments:
+    -h, --help            show this help message and exit
+    -A [ARCHIVE], --archive [ARCHIVE]
+                          archive the selected settings from a given path. If the argument does not
+                          have / or \, the argument is interpreted as a member of the experiments
+                          path. The files are copied to the path experiment.path.archive if set.
+    -C, --copy            copy codebase to server defined by the server (-s) argument
+    -d [DISPLAY], --display [DISPLAY]
+                          display metrics. If no parameter is given, consider the default display
+                          and show all metrics. If the str parameter contain a list of integers, use
+                          the default display and show only the selected metrics defined by the
+                          integer list. If the str parameter contain a name, run the display method
+                          with this name.
+    -D, --debug           debug mode
+    -e [EXPERIMENT], --experiment [EXPERIMENT]
+                          select experiment. List experiments if empty.
+    -E [EXPORT], --export [EXPORT]
+                          Export the display of reduced metrics among different file types (html,
+                          png, pdf). If parameter is empty, all exports are made. If parameter has a
+                          dot, interpreted as a filename which should be of support type. If
+                          parameter has nothing before the dot, interpreted as file type, and
+                          experiment.project.name is used. If parameter has no dot, interpreted as
+                          file name with no extension, and all exports are made
+    -f, --factor          show the factors of the experiment
+    -i, --information     show information about the experiment
+    -K [KEEP], --keep [KEEP]
+                          keep only the selected settings from a given path. If the argument does
+                          not have / or \, the argument is interpreted as a member of the
+                          experiments path. Unwanted files are moved to the path
+                          experiment.path.archive if set, deleted otherwise.
+    -l, --list            list settings
+    -m MASK, --mask MASK  mask of the experiment to run
+    -M [MAIL], --mail [MAIL]
+                          send email at the beginning and end of the computation. If a positive
+                          integer value x is provided, additional emails are sent every x hours.
+    -p PARAMETER, --parameter PARAMETER
+                          a dict specified as str (for example, '{"test": 1}') that will be
+                          available in Experiment.parameter (parameter.test 1)
+    -P [PROGRESS], --progress [PROGRESS]
+                          display progress bar. Argument controls the display of the current
+                          setting: d alphanumeric description, m mask, dm combination of both
+                          (default d).
+    -r [RUN], --run [RUN]
+                          perform computation. Integer parameter sets the number of jobs computed in
+                          parallel (default to one core).
+    -R [REMOVE], --remove [REMOVE]
+                          remove the selected settings from a given path. If the argument does not
+                          have / or \, the argument is interpreted as a member of the experiments
+                          path. Unwanted files are moved to the path experiment.path.archive if set,
+                          deleted otherwise.
+    -s SERVER, --server SERVER
+                          running server side. Integer defines the index in the host array of
+                          config. -2 (default) runs attached on the local host, -1 runs detached on
+                          the local host, -3 is a flag meaning that the experiment runs serverside
+    -S, --serverDefault   augment the command line with the content of the dict
+                          experiment._defaultServerRunArgument
+    -v, --version         print version
 
   """
 
@@ -110,7 +126,6 @@ optional arguments:
   parser.add_argument('-s', '--server', type=int, help='running server side. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside', default=-2)
   parser.add_argument('-S', '--serverDefault', help='augment the command line with the content of the dict experiment._defaultServerRunArgument', action='store_true')
   parser.add_argument('-v', '--version', help='print version', action='store_true')
-  
   args = parser.parse_args()
 
   if args.version:
@@ -172,7 +187,7 @@ optional arguments:
   if args.factor:
       print(experiment.factor.asPandaFrame())
   if args.list:
-    experiment.do(experiment.mask, progress=False)
+    experiment.do(experiment.mask, progress='')
 
   if args.remove:
     experiment.cleanDataSink(args.remove, experiment.mask, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive, debug=experiment.status.debug)
@@ -413,7 +428,9 @@ def exportDataFrame(experiment, args, df, styler):
   if 'html' not in args.export and 'all' != args.export:
     os.remove(exportFileName+'.html')
 
-
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
 
 # find which line of code is printing
 # import sys

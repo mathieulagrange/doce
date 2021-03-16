@@ -31,16 +31,23 @@ class Experiment():
     description:
     author: Mathieu Lagrange
     address: mathieu.lagrange@ls2n.fr
+  status:
     runId: ...
-  factor:
-  parameter:
-  metric:
+    debug: False
+  factor
+  parameter
+  metric
   path:
-    input:
+    code_raw: ...
+    code: ...
+    archive_raw:
+    archive:
+    export_raw: export
+    export: export
+    processing_raw: /tmp
     processing: /tmp
-    storage:
-    output:
   host: []
+
 
   Each level can be complemented with new members to store specific information:
 
@@ -50,20 +57,26 @@ class Experiment():
   >>> e.myData.info1= 1
   >>> e.myData.info2= 2
   >>> print(e)
-   project:
+  project:
     name: myExperiment
     description:
     author: Mathieu Lagrange
     address: mathieu.lagrange@ls2n.fr
+  status:
     runId: ...
-  factor:
-  parameter:
-  metric:
+    debug: False
+  factor
+  parameter
+  metric
   path:
-    input:
+    code_raw: ...
+    code: ...
+    archive_raw:
+    archive:
+    export_raw: export
+    export: export
+    processing_raw: /tmp
     processing: /tmp
-    storage:
-    output:
   host: []
   specificInfo: stuff
   myData:
@@ -215,32 +228,45 @@ class Experiment():
       description:
       author: no name
       address: noname@noorg.org
+    status:
       runId: ...
-    factor:
-    parameter:
-    metric:
+      debug: False
+    factor
+    parameter
+    metric
     path:
-      input:
-      processing:
-      storage:
-      output:
+      code_raw: /Users/lagrange/tools/doce/doce
+      code: /Users/lagrange/tools/doce/doce
+      archive_raw:
+      archive:
+      export_raw: export
+      export: export
     host: []
 
     >>> import doce
     >>> doce.Experiment().__str__(format='html')
-    '<div>project: </div><div>  name: </div><div>  description: </div><div>  author: no name</div><div>  address: noname@noorg.org</div><div>  runId: ...</div><div>factor: </div><div>parameter: </div><div>metric: </div><div>path: </div><div>  input: </div><div>  processing: </div><div>  storage: </div><div>  output: </div><div>host: []</div><div></div>'
+    '<div>project:</div><div>  name: </div><div>  description: </div><div>  author: no name</div><div>  address: noname@noorg.org</div><div>status:</div><div>  runId: ...</div><div>  debug: False</div><div>factor</div><div>parameter</div><div>metric</div><div>path:</div><div>  code_raw: /Users/lagrange/tools/doce/doce</div><div>  code: /Users/lagrange/tools/doce/doce</div><div>  archive_raw: </div><div>  archive: </div><div>  export_raw: export</div><div>  export: export</div><div>host: []</div><div></div>'
     """
     description = ''
     for atr in self._atrs:
       if type(inspect.getattr_static(self, atr)) != types.FunctionType:
         if type(self.__getattribute__(atr)) in [types.SimpleNamespace, Path]:
-          description += atr+': \r\n'
+          description += atr
+          if len(self.__getattribute__(atr).__dict__.keys()):
+            description+=':'
+          description+='\r\n'
           for sns in self.__getattribute__(atr).__dict__.keys():
             description+='  '+sns+': '+str(self.__getattribute__(atr).__getattribute__(sns))+'\r\n'
         elif isinstance(self.__getattribute__(atr), str) or isinstance(self.__getattribute__(atr), list):
-          description+=atr+': '+str(self.__getattribute__(atr))+'\r\n'
+          description+=atr
+          if len(str(self.__getattribute__(atr))):
+            description +=': '+str(self.__getattribute__(atr))
+          description += '\r\n'
         else:
-          description+=atr+': \r\n'+str(self.__getattribute__(atr))+'\r\n'
+          description+=atr
+          if len(str(self.__getattribute__(atr))):
+            description +=': \r\n'+str(self.__getattribute__(atr))
+          description += '\r\n'
     if format == 'html':
       description = '<div>'+description.replace('\r\n', '</div><div>').replace('\t', '&emsp;')+'</div>'
     return description
@@ -286,7 +312,7 @@ class Experiment():
     function=None,
     *parameters,
     nbJobs=1,
-    progress=True,
+    progress='d',
     logFileName='',
     mailInterval=0
     ):
@@ -317,12 +343,11 @@ class Experiment():
 
       If nbJobs > 1, the settings set is browsed randomly, and settings are distributed over the different processes.
 
-    progress : bool (optional)
+    progress : str (optional)
       display progress of scheduling the setting set.
 
-      If True, use tqdm to display progress (default).
-
-      If False, do not display progress.
+      If str has an m, show the mask of the current setting.
+      If str has an d, show a textual description of the current setting (default).
 
     logFileName : str (optional)
       path to a file where potential errors will be logged.
@@ -360,13 +385,13 @@ class Experiment():
     ...  print('{}+{}={}'.format(setting.factor1, setting.factor2, setting.factor1+setting.factor2))
 
     >>> # sequential execution of settings
-    >>> nbFailed = e.do([], myFunction, nbJobs=1, progress=False)
+    >>> nbFailed = e.do([], myFunction, nbJobs=1, progress='')
     1+2=3
     1+5=6
     3+2=5
     3+5=8
     >>> # arbitrary order execution of settings due to the parallelization
-    >>> nbFailed = e.do([], myFunction, nbJobs=3, progress=False) # doctest: +SKIP
+    >>> nbFailed = e.do([], myFunction, nbJobs=3, progress='') # doctest: +SKIP
     3+2=5
     1+5=6
     1+2=3
@@ -436,13 +461,13 @@ class Experiment():
     >>> import os
     >>> e=doce.experiment.Experiment()
     >>> e.path.output = '/tmp/test'
-    >>> e.setPath()
+    >>> e.setPath(force=True)
     >>> e.factor.factor1=[1, 3]
     >>> e.factor.factor2=[2, 4]
     >>> def myFunction(setting, experiment):
     ...   np.save(experiment.path.output+'/'+setting.id()+'_sum.npy', setting.factor1+setting.factor2)
     ...   np.save(experiment.path.output+'/'+setting.id()+'_mult.npy', setting.factor1*setting.factor2)
-    >>> nbFailed = e.do([], myFunction, progress=False)
+    >>> nbFailed = e.do([], myFunction, progress='')
     >>> os.listdir(e.path.output)
     ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_2_mult.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_1_factor2_2_sum.npy', 'factor1_1_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy', 'factor1_1_factor2_2_mult.npy', 'factor1_1_factor2_4_sum.npy']
 
@@ -470,7 +495,7 @@ class Experiment():
     ...   sg.sum[0] = setting.factor1+setting.factor2
     ...   sg.mult[0] = setting.factor1*setting.factor2
     ...   h5.close()
-    >>> nbFailed = e.do([], myFunction, progress=False)
+    >>> nbFailed = e.do([], myFunction, progress='')
     >>> h5 = tb.open_file(e.path.output, mode='r')
     >>> print(h5)
     /tmp/test.h5 (File) ''
@@ -576,4 +601,4 @@ class Path:
 if __name__ == '__main__':
     import doctest
     doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
-    #doctest.run_docstring_examples(run, globals(), optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.REPORT_ONLY_FIRST_FAILURE)
+    # doctest.run_docstring_examples(doce.Experiment, globals(), optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.REPORT_ONLY_FIRST_FAILURE)

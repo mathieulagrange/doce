@@ -113,7 +113,8 @@ class Metric():
     settings,
     dataLocation,
     settingEncoding={},
-    verbose = False
+    verbose = False,
+    reductionDirectiveModule = None
     ):
     """Handle reduction of the metrics when considering numpy storage.
 
@@ -144,7 +145,7 @@ class Metric():
             if settingGroup.__contains__(metric):
               metricHasData[mIndex] = True
               data = settingGroup._f_get_child(metric)
-            row.append(self.reduceMetric(data, reductionType, reductionDirectiveModule))
+            row.append(self.reduceMetric(np.array(data), reductionType, reductionDirectiveModule))
         if len(row) and not all(np.isnan(c) for c in row):
           for factorName in reversed(settings.factors()):
             row.insert(0, setting.__getattribute__(factorName))
@@ -203,9 +204,12 @@ class Metric():
     reductionTypeDirective = reductionType
     indexPercent = -1
     if isinstance(reductionType, str):
-      reductionTypeDirective = reductionType.replace('%', '').split('-')[0]
+      split = reductionType.replace('%', '').split('-')
+      reductionTypeDirective = split[0]
+      ignore = ''
+      if len(split)>1:
+        ignore = split[1]
       indexPercent = reductionType.find('%')
-      # print(reductionTypeDirective)
 
     if isinstance(reductionTypeDirective, int) or not reductionDirectiveModule or not hasattr(reductionDirectiveModule, reductionTypeDirective):
       reductionDirectiveModule = np
@@ -221,20 +225,17 @@ class Metric():
           value = float(data[reductionTypeDirective])
         else:
           value = float(data)
-      elif isinstance(reductionTypeDirective, str):
-        ags = reductionTypeDirective.split('-')
-        if len(ags)>1:
-          ignore = int(ags[1])
-          if ignore == 0:
-            value = getattr(reductionDirectiveModule, reductionTypeDirective)(data[1:])
-          elif ignore == 1:
-            value = getattr(reductionDirectiveModule, reductionTypeDirective)(data[::2])
-          elif ignore == 2:
-            value = getattr(reductionDirectiveModule, reductionTypeDirective)(data[1::2])
-          else:
-            print('Unrecognized pruning directive')
-            raise ValueError
-        else :
+      elif ignore:
+        if ignore == '0':
+          value = getattr(reductionDirectiveModule, reductionTypeDirective)(data[1:])
+        elif ignore == '1':
+          value = getattr(reductionDirectiveModule, reductionTypeDirective)(data[::2])
+        elif ignore == '2':
+          value = getattr(reductionDirectiveModule, reductionTypeDirective)(data[1::2])
+        else:
+          print('Unrecognized pruning directive')
+          raise ValueError
+      else :
           value = getattr(reductionDirectiveModule, reductionTypeDirective)(data)
     else:
       if not isinstance(data, np.ndarray):
@@ -335,7 +336,7 @@ class Metric():
     ...   np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
     ...   np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
     >>> experiment.setPath()
-    >>> nbFailed = experiment.do([], process, progress=False)
+    >>> nbFailed = experiment.do([], process, progress='')
     >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = experiment.metric.reduce(experiment.factor.mask([1]), experiment.path.output)
 
     >>> df = pd.DataFrame(settingDescription, columns=columnHeader)
@@ -370,7 +371,7 @@ class Metric():
     ...   settingGroup.m2[:] = setting.f1*setting.f2*np.random.randn(100)
     ...   h5.close()
     >>> experiment.setPath()
-    >>> nbFailed = experiment.do([], process, progress=False)
+    >>> nbFailed = experiment.do([], process, progress='')
     >>> h5 = tb.open_file(experiment.path.output, mode='r')
     >>> print(h5)
     /tmp/example.h5 (File) ''
@@ -488,7 +489,7 @@ class Metric():
     ...  np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
     ...  np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
     >>> experiment.setPath()
-    >>> nbFailed = experiment.do([], process, progress=False)
+    >>> nbFailed = experiment.do([], process, progress='')
 
     >>> (settingMetric, settingDescription, constantSettingDescription) = experiment.metric.get('m1', experiment.factor.mask([1]), experiment.path.output)
     >>> print(constantSettingDescription)
@@ -591,7 +592,7 @@ class Metric():
     ...  h5.close()
 
     >>> experiment.setPath()
-    >>> nbFailed = experiment.do([], process, progress=False)
+    >>> nbFailed = experiment.do([], process, progress='')
 
     >>> h5 = tb.open_file(experiment.path.output, mode='r')
     >>> print(h5)

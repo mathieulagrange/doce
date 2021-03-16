@@ -131,7 +131,7 @@ class Factor():
     experiment,
     *parameters,
     nbJobs=1,
-    progress=True,
+    progress='d',
     logFileName='',
     mailInterval=0):
     """iterate over the setting set and run the function given as parameter.
@@ -157,12 +157,11 @@ class Factor():
 
       If nbJobs > 1, the settings set is browsed randomly, and settings are distributed over the different processes.
 
-    progress : bool (optional)
+    progress : str (optional)
       display progress of scheduling the setting set.
 
-      If True, use tqdm to display progress (default).
-
-      If False, do not display progress.
+      If str has an m, show the mask of the current setting.
+      If str has an d, show a textual description of the current setting (default).
 
     logFileName : str (optional)
       path to a file where potential errors will be logged.
@@ -440,7 +439,7 @@ class Factor():
         else:
           action = 'move '
         destination = ' to '+archivePath+' '
-      else:
+      elif not force:
         print('INFORMATION: setting path.archive allows you to move the unwanted files to the archive path and not delete them.')
         destination = ''
         action = 'remove '
