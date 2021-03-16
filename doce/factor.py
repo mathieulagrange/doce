@@ -191,12 +191,15 @@ class Factor():
     else:
       startTime = time.time()
       stepTime = startTime
-      with tqdm(total=len(self), disable= not progress) as t:
+      with tqdm(total=len(self), disable = progress == '') as t:
         for iSetting, setting in enumerate(self):
             description = ''
             if nbFailed:
                 description = '[failed: '+str(nbFailed)+']'
-            description += str(setting)
+            if 'm' in progress:
+              description += str(self._settings[iSetting])+' '
+            if 'd' in progress:
+              description += str(setting)
             t.set_description(description)
             if function:
               nbFailed += setting.do(function, experiment, logFileName, *parameters)
@@ -707,7 +710,7 @@ class Factor():
             settings.append(ss)
         else:
           settings.append(s)
-      settings = [k for k,v in groupby(sorted(settings))]  
+      settings = [k for k,v in groupby(sorted(settings))]
       self._changed = False
       self._settings = settings
 

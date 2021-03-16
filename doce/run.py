@@ -105,7 +105,7 @@ optional arguments:
   parser.add_argument('-r', '--run', type=int, help='perform computation. Integer parameter sets the number of jobs computed in parallel (default to one core).', nargs='?', const=1)
   parser.add_argument('-D', '--debug', help='debug mode', action='store_true')
   parser.add_argument('-v', '--version', help='print version', action='store_true')
-  parser.add_argument('-P', '--progress', help='display progress bar', action='store_true')
+  parser.add_argument('-P', '--progress', help='display progress bar. Argument controls the display of the current setting: d alphanumeric description, m mask, dm combination of both (default d).', nargs='?', const='d')
   parser.add_argument('-R', '--remove', type=str, help='remove the selected  settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. Unwanted files are moved to the path experiment.path.archive if set, deleted otherwise.', nargs='?', const='')
   parser.add_argument('-A', '--archive', type=str, help='archive the selected  settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. The files are copied to the path experiment.path.archive if set.', nargs='?', const='')
   parser.add_argument('-K', '--keep', type=str, help='keep only the selected settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. Unwanted files are moved to the path experiment.path.archive if set, deleted otherwise.', nargs='?', const='')
