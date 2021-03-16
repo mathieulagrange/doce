@@ -33,9 +33,10 @@ def set(args):
   experiment.factor.meanOffset = 10**np.array([0, 1, 2, 3, 4])
   experiment.factor.nbRuns = [2000, 4000]
 
-  experiment.metric.mae = ['mean-0', 'std-0']
-  experiment.metric.mse = ['mean-2%', 'std-2']
+  experiment.metric.mae = ['mean-0', 'std%']
+  experiment.metric.mse = ['mean', 'std%']
   experiment.metric.duration = ['mean']
+  experiment._display.metricPrecision = 20
   return experiment
 
 def step(setting, experiment):
@@ -56,6 +57,7 @@ def step(setting, experiment):
         estimate = np.var(data)
     elif setting.dataType == 'double':
         estimate =  np.var(data, dtype=np.float64)
+
     settingMse[r] = abs(reference - estimate)
     settingMae[r] = np.square(reference - estimate)
 

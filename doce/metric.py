@@ -419,7 +419,7 @@ class Metric():
 
     columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricDisplay, metricDisplayLength, metricHasData, reducedMetricDisplay)
     nbColumnFactor = len(settings.factors())
-
+    print(columnHeader)
     (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = eu.pruneSettingDescription(settingDescription, columnHeader, nbColumnFactor, factorDisplay)
 
     return (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor)

@@ -289,7 +289,6 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 
   if len(table) == 0:
       return (None, None, None)
-
   if selectFactor:
     modalities = getattr(experiment.factor, selectFactor)
     header = 'metric: '+columns.pop()+' '+header.replace(selectFactor+': '+str(modalities[0])+' ', '')
@@ -309,7 +308,6 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   df = pd.DataFrame(table, columns=columns).fillna('')
   # df[columns[nbFactorColumns+2:]] = df[columns[nbFactorColumns+2:]].round(experiment._display.metricPrecision)
   # pd.set_option('precision', experiment._display.metricPrecision)
-
   if selectDisplay and not selectFactor and  len(columns)>=max(selectDisplay)+nbFactorColumns:
     selector = [columns[i] for i in [*range(nbFactorColumns)]+[s+nbFactorColumns for s in selectDisplay]]
     df = df[selector]
@@ -331,7 +329,8 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
       else:
         precisionFormat[c] = '{0:.'+str(experiment._display.metricPrecision)+'f}'
         cNoPercent.append(c)
-      if '-' in c:
+      if c[-1] == '-' :
+        print('pass')
         cMinus.append(c)
       else:
         cNoMinus.append(c)

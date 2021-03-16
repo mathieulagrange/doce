@@ -160,9 +160,9 @@ def compressDescription(
     compressedDescription = ''.join([itf[0:atomLength] for itf in description.split('_')])
   if 'shortCapital' in format:
     compressedDescription = description[0:atomLength]+''.join([itf[0:atomLength] for itf in re.findall('[A-Z][^A-Z]*', description)]).lower()
-  if '%' in description:
+  if '%' in description and not '%' in compressedDescription :
     compressedDescription += '%'
-  if '-' in description:
+  if description[-1] == '-' and not compressedDescription[-1] == '-':
     compressedDescription += '-'
   return compressedDescription
 
