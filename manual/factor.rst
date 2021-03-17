@@ -3,5 +3,5 @@ Factor
 
 .. _factor:
 
-.. automodule:: explanes.factor
+.. automodule:: doce.factor
   :members:

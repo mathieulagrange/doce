@@ -3,5 +3,5 @@ Util
 
 .. _util:
 
-.. automodule:: explanes.util
+.. automodule:: doce.util
   :members:

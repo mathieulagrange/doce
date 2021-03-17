@@ -3,6 +3,6 @@ Experiment
 
 .. _experiment:
 
-.. automodule:: explanes.experiment
+.. automodule:: doce.experiment
   :members:
   :special-members: __str__

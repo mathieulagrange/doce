@@ -3,5 +3,5 @@ Setting
 
 .. _setting:
 
-.. automodule:: explanes.setting
+.. automodule:: doce.setting
   :members:

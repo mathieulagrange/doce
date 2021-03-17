@@ -3,5 +3,5 @@ Metric
 
 .. _metric:
 
-.. automodule:: explanes.metric
+.. automodule:: doce.metric
   :members:

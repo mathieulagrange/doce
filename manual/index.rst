@@ -1,10 +1,10 @@
 
 ********
-explanes
+doce
 ********
-`explanes` is a python package for handling numerical experiments using a design-of-experiment (DOE) approach. It is geared towards research in machine learning and data science but also be useful for other fields.
+`doce` is a python package for handling numerical experiments using a design-of-experiment (DOE) approach. It is geared towards research in machine learning and data science but also be useful for other fields.
 
-For a quick introduction to using explanes, please refer to the :doc:`tutorial`.
+For a quick introduction to using doce, please refer to the :doc:`tutorial`.
 
 .. toctree::
   :caption: Getting started
@@ -17,7 +17,6 @@ For a quick introduction to using explanes, please refer to the :doc:`tutorial`.
   :caption: API documentation
   :maxdepth: 1
 
-  explanes
   experiment
   factor
   setting
