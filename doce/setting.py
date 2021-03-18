@@ -320,11 +320,19 @@ class Setting():
         raise e
     return failed
 
-  def remove(self, factor):
-    delattr(self, factor)
-    print(': '+factor)
-    # print(self)
-    return self
+  def removeFactor(self, factor):
+    """returns a copy of the setting where the specified factor is removed.
+
+    Parameters
+    ----------
+
+    factor: str
+      the name of the factor.
+
+    """
+    s = copy.deepcopy(self)
+    delattr(s, factor)
+    return s
 
 
 if __name__ == '__main__':

@@ -31,7 +31,7 @@ def run():
   >>> def step(setting, experiment):
   ...   print(setting.id())
 
-  Executing this file with the --run option gives::
+  Executing this file with the --run option gives:
 
   $ python experiment_run.py -r
    factor1_1_factor2_2
@@ -39,93 +39,74 @@ def run():
    factor1_3_factor2_2
    factor1_3_factor2_4
 
-  Executing this file with the --help option gives::
+  Executing this file with the --help option gives:
 
   $ python experiment_run.py -h
 
-    usage: npyDemo.py [-h] [-A [ARCHIVE]] [-C] [-d [DISPLAY]] [-D] [-e [EXPERIMENT]] [-E [EXPORT]]
-                    [-f] [-i] [-K [KEEP]] [-l] [-m MASK] [-M [MAIL]] [-p PARAMETER] [-P [PROGRESS]]
-                    [-r [RUN]] [-R [REMOVE]] [-s SERVER] [-S] [-v]
+    usage: npyDemo.py [-h] [-A [ARCHIVE]] [-C] [-d [DISPLAY]] [-D] [-e [EXPERIMENT]] [-E [EXPORT]] [-f] [-i] [-K [KEEP]] [-l] [-m MASK] [-M [MAIL]] [-p PARAMETER] [-P [PROGRESS]] [-r [RUN]] [-R [REMOVE]] [-s SERVER] [-S] [-v]
 
   optional arguments:
-    -h, --help            show this help message and exit
+    -h, --help
+      show this help message and exit.
     -A [ARCHIVE], --archive [ARCHIVE]
-                          archive the selected settings from a given path. If the argument does not
-                          have / or \, the argument is interpreted as a member of the experiments
-                          path. The files are copied to the path experiment.path.archive if set.
-    -C, --copy            copy codebase to server defined by the server (-s) argument
+      archive the selected settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. The files are copied to the path experiment.path.archive if set.
+    -C, --copy
+      copy codebase to server defined by the server (-s) argument.
     -d [DISPLAY], --display [DISPLAY]
-                          display metrics. If no parameter is given, consider the default display
-                          and show all metrics. If the str parameter contain a list of integers, use
-                          the default display and show only the selected metrics defined by the
-                          integer list. If the str parameter contain a name, run the display method
-                          with this name.
-    -D, --debug           debug mode
+      display metrics. If no parameter is given, consider the default display and show all metrics. If the str parameter contain a list of integers, use the default display and show only the selected metrics defined by the integer list. If the str parameter contain a name, run the display method with this name.
+    -D, --debug
+      debug mode.
     -e [EXPERIMENT], --experiment [EXPERIMENT]
-                          select experiment. List experiments if empty.
+        select experiment. List experiments if empty.
     -E [EXPORT], --export [EXPORT]
-                          Export the display of reduced metrics among different file types (html,
-                          png, pdf). If parameter is empty, all exports are made. If parameter has a
-                          dot, interpreted as a filename which should be of support type. If
-                          parameter has nothing before the dot, interpreted as file type, and
-                          experiment.project.name is used. If parameter has no dot, interpreted as
-                          file name with no extension, and all exports are made
-    -f, --factor          show the factors of the experiment
-    -i, --information     show information about the experiment
+        export the display of reduced metrics among different file types (html, png, pdf). If parameter is empty, all exports are made. If parameter has a dot, interpreted as a filename which should be of support type. If parameter has nothing before the dot, interpreted as file type, and experiment.project.name is used. If parameter has no dot, interpreted as file name with no extension, and all exports are made.
+    -f, --factor
+      show the factors of the experiment.
+    -i, --information
+      show information about the experiment.
     -K [KEEP], --keep [KEEP]
-                          keep only the selected settings from a given path. If the argument does
-                          not have / or \, the argument is interpreted as a member of the
-                          experiments path. Unwanted files are moved to the path
-                          experiment.path.archive if set, deleted otherwise.
-    -l, --list            list settings
-    -m MASK, --mask MASK  mask of the experiment to run
+      keep only the selected settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. Unwanted files are moved to the path experiment.path.archive if set, deleted otherwise.
+    -l, --list
+      list settings.
+    -m MASK, --mask MASK
+      mask of the experiment to run.
     -M [MAIL], --mail [MAIL]
-                          send email at the beginning and end of the computation. If a positive
-                          integer value x is provided, additional emails are sent every x hours.
+      send email at the beginning and end of the computation. If a positive integer value x is provided, additional emails are sent every x hours.
     -p PARAMETER, --parameter PARAMETER
-                          a dict specified as str (for example, '{"test": 1}') that will be
-                          available in Experiment.parameter (parameter.test 1)
+      a dict specified as str (for example, '{"test": 1}') that will be available in Experiment.parameter (parameter.test 1).
     -P [PROGRESS], --progress [PROGRESS]
-                          display progress bar. Argument controls the display of the current
-                          setting: d alphanumeric description, m mask, dm combination of both
-                          (default d).
+      display progress bar. Argument controls the display of the current setting: d alphanumeric description, m mask, dm combination of both (default d).
     -r [RUN], --run [RUN]
-                          perform computation. Integer parameter sets the number of jobs computed in
-                          parallel (default to one core).
+      perform computation. Integer parameter sets the number of jobs computed in parallel (default to one core).
     -R [REMOVE], --remove [REMOVE]
-                          remove the selected settings from a given path. If the argument does not
-                          have / or \, the argument is interpreted as a member of the experiments
-                          path. Unwanted files are moved to the path experiment.path.archive if set,
-                          deleted otherwise.
+      remove the selected settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. Unwanted files are moved to the path experiment.path.archive if set, deleted otherwise.
     -s SERVER, --server SERVER
-                          running server side. Integer defines the index in the host array of
-                          config. -2 (default) runs attached on the local host, -1 runs detached on
-                          the local host, -3 is a flag meaning that the experiment runs serverside
-    -S, --serverDefault   augment the command line with the content of the dict
-                          experiment._defaultServerRunArgument
-    -v, --version         print version
-
+      running server side. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside.
+    -S, --serverDefault
+      augment the command line with the content of the dict experiment._defaultServerRunArgument.
+    -v, --version
+      print version.
   """
 
   parser = argparse.ArgumentParser()
   parser.add_argument('-A', '--archive', type=str, help='archive the selected  settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. The files are copied to the path experiment.path.archive if set.', nargs='?', const='')
-  parser.add_argument('-C', '--copy', help='copy codebase to server defined by the server (-s) argument', action='store_true')
+  parser.add_argument('-C', '--copy', help='copy codebase to server defined by the server (-s) argument.', action='store_true')
   parser.add_argument('-d', '--display', type=str, help='display metrics. If no parameter is given, consider the default display and show all metrics. If the str parameter contain a list of integers, use the default display and show only the selected metrics defined by the integer list. If the str parameter contain a name, run the display method with this name.', nargs='?', default='-1')
-  parser.add_argument('-D', '--debug', help='debug mode', action='store_true')
+  parser.add_argument('-D', '--debug', help='debug mode.', action='store_true')
   parser.add_argument('-e', '--experiment', type=str, help='select experiment. List experiments if empty.', nargs='?', default='all')
-  parser.add_argument('-E', '--export', type=str, help='Export the display of reduced metrics among different file types (html, png, pdf). If parameter is empty, all exports are made. If parameter has a dot, interpreted as a filename which should be of support type. If parameter has nothing before the dot, interpreted as file type, and experiment.project.name is used. If parameter has no dot, interpreted as file name with no extension, and all exports are made', nargs='?', default='none')
-  parser.add_argument('-f', '--factor', help='show the factors of the experiment', action='store_true')
-  parser.add_argument('-i', '--information', help='show information about the experiment', action='store_true')
+  parser.add_argument('-E', '--export', type=str, help='Export the display of reduced metrics among different file types (html, png, pdf). If parameter is empty, all exports are made. If parameter has a dot, interpreted as a filename which should be of support type. If parameter has nothing before the dot, interpreted as file type, and experiment.project.name is used. If parameter has no dot, interpreted as file name with no extension, and all exports are made.', nargs='?', default='none')
+  parser.add_argument('-f', '--factor', help='show the factors of the experiment.', action='store_true')
+  parser.add_argument('-i', '--information', help='show information about the experiment.', action='store_true')
   parser.add_argument('-K', '--keep', type=str, help='keep only the selected settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. Unwanted files are moved to the path experiment.path.archive if set, deleted otherwise.', nargs='?', const='')
-  parser.add_argument('-l', '--list', help='list settings', action='store_true')
+  parser.add_argument('-l', '--list', help='list settings.', action='store_true')
   parser.add_argument('-m', '--mask', type=str, help='mask of the experiment to run', default='[]')
   parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation. If a positive integer value x is provided, additional emails are sent every x hours.', nargs='?', default='-1')
-  parser.add_argument('-p', '--parameter', type=str, help='a dict specified as str (for example, \'{\"test\": 1}\') that will be available in Experiment.parameter (parameter.test 1)', default='{}')
+  parser.add_argument('-p', '--parameter', type=str, help='a dict specified as str (for example, \'{\"test\": 1}\') that will be available in Experiment.parameter (parameter.test 1).', default='{}')
   parser.add_argument('-P', '--progress', help='display progress bar. Argument controls the display of the current setting: d alphanumeric description, m mask, dm combination of both (default d).', nargs='?', const='d')
   parser.add_argument('-r', '--run', type=int, help='perform computation. Integer parameter sets the number of jobs computed in parallel (default to one core).', nargs='?', const=1)
   parser.add_argument('-R', '--remove', type=str, help='remove the selected  settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. Unwanted files are moved to the path experiment.path.archive if set, deleted otherwise.', nargs='?', const='')
-  parser.add_argument('-s', '--server', type=int, help='running server side. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside', default=-2)
-  parser.add_argument('-S', '--serverDefault', help='augment the command line with the content of the dict experiment._defaultServerRunArgument', action='store_true')
+  parser.add_argument('-s', '--server', type=int, help='running server side. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside.', default=-2)
+  parser.add_argument('-S', '--serverDefault', help='augment the command line with the content of the dict experiment._defaultServerRunArgument.', action='store_true')
   parser.add_argument('-v', '--version', help='print version', action='store_true')
   args = parser.parse_args()
 

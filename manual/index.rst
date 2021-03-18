@@ -17,6 +17,7 @@ For a quick introduction to using doce, please refer to the :doc:`tutorial`.
   :caption: API documentation
   :maxdepth: 1
 
+  run
   experiment
   factor
   setting
