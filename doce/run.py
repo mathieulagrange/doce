@@ -15,7 +15,7 @@ import time
 def run():
   """This method shall be called from the main script of the experiment to control the experiment using the command line.
 
-  This method provides a front-end for running an explanes experiment. It should be called from the main script of the experiment. The main script must define a **set** function that will be called before processing and a **step** function that will be processed for each setting. It may also define a **display** function that will used to monitor the results.
+  This method provides a front-end for running an explanes experiment. It should be called from the main script of the experiment. The main script must define a **set** function that will be called before processing and a **step** function that will be processed for each setting. It may also define a **display** function that will used to monitor the results. This main script can define any functions that can be used within the **set**, **step**, and **display** functions.
 
   Examples
 
