@@ -225,7 +225,7 @@ class Factor():
   	Parameters
   	----------
 
-    mask: list of list of int or list of int
+    mask: list of list of int or list of int or list of dict
      a :term:`mask
 
     volatile: bool
@@ -242,16 +242,23 @@ class Factor():
     >>> f.f1=['a', 'b', 'c']
     >>> f.f2=[1, 2, 3]
 
-    >>> # select the settings with the second modality of the first factor, and with the first modality of the second factor
-    >>> for setting in f.mask([1, 0]):
-    ...  print(setting)
-    f1 b f2 1
-    >>> # select the settings with the second modality of the first factor, and all the modalities of the second factor
-    >>> for setting in f.mask([1, -1]):
+    >>> # doce allows two ways of defining the mask. The first one is dict based:
+    >>> for setting in f.mask([{'f1':'b', 'f2':[1, 2]}, {'f1':'c', 'f2':[3]}]):
     ...  print(setting)
     f1 b f2 1
     f1 b f2 2
-    f1 b f2 3
+    f1 c f2 3
+
+    >>> # The second one is list based. In this exmaple, we select the settings with the second modality of the first factor, and with the first modality of the second factor
+    >>> for setting in f.mask([1, 0]):
+    ...  print(setting)
+    f1 b f2 1
+    >>> # select the settings with all the modalities of the first factor, and the second modality of the second factor
+    >>> for setting in f.mask([-1, 1]):
+    ...  print(setting)
+    f1 a f2 2
+    f1 b f2 2
+    f1 c f2 2
     >>> # the selection of all the modalities of the remaining factors can be conveniently expressed
     >>> for setting in f.mask([1]):
     ...  print(setting)
@@ -306,7 +313,7 @@ class Factor():
     f1 c f2 3
     """
 
-    if any(isinstance(val, dict) for val in mask):
+    if mask and any(isinstance(val, dict) for val in mask):
       mask = self._dict2list(mask)
 
     self._mask = mask
@@ -590,7 +597,6 @@ class Factor():
               else:
                 print('Warning: '+str(dmkl)+' is not a modality of factor '+dmk+'.')
             m[self._factors.index(dmk)] = mm
-            print('pass')
           else:
             if dm[dmk] in getattr(self, dmk):
               m[self._factors.index(dmk)] = getattr(self, dmk).index(dm[dmk])
