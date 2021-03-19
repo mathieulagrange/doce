@@ -306,6 +306,9 @@ class Factor():
     f1 c f2 3
     """
 
+    if any(isinstance(val, dict) for val in mask):
+      mask = self._dict2list(mask)
+
     self._mask = mask
     self._maskVolatile = volatile
     return self
@@ -569,6 +572,32 @@ class Factor():
       message += ' with constant factors : '
       message += cst[:-2]
     return message
+
+  def _dict2list(self, dictMask):
+    """convert dict based mask to list based mask
+
+    """
+    mask = []
+    for dm in dictMask:
+      m = [-1]*len(self._factors)
+      for dmk in dm.keys():
+        if dmk in self._factors:
+          if isinstance(dm[dmk], list):
+            mm = []
+            for dmkl in dm[dmk]:
+              if dmkl in getattr(self, dmk):
+                 mm.append(getattr(self, dmk).index(dmkl))
+              else:
+                print('Warning: '+str(dmkl)+' is not a modality of factor '+dmk+'.')
+            m[self._factors.index(dmk)] = mm
+            print('pass')
+          else:
+            if dm[dmk] in getattr(self, dmk):
+              m[self._factors.index(dmk)] = getattr(self, dmk).index(dm[dmk])
+        else:
+          print('Warning: '+dmk+' is not a factor.')
+      mask.append(m)
+    return mask
 
   def __str__(self):
     cString = ''
