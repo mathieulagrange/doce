@@ -33,7 +33,7 @@ class Experiment():
     address: mathieu.lagrange@ls2n.fr
   status:
     runId: ...
-    debug: False
+    verbose: 0
   factor
   parameter
   metric
@@ -64,7 +64,7 @@ class Experiment():
     address: mathieu.lagrange@ls2n.fr
   status:
     runId: ...
-    debug: False
+    verbose: 0
   factor
   parameter
   metric
@@ -98,7 +98,7 @@ class Experiment():
 
     self.status = types.SimpleNamespace()
     self.status.runId = str(int((time.time()-datetime.datetime(2020,1,1,0,0).timestamp())/60))
-    self.status.debug = False
+    self.status.verbose = 0
 
     self.factor = doce.Factor()
     self.parameter = types.SimpleNamespace()
@@ -230,7 +230,7 @@ class Experiment():
       address: noname@noorg.org
     status:
       runId: ...
-      debug: False
+      verbose: 0
     factor
     parameter
     metric
@@ -245,7 +245,7 @@ class Experiment():
 
     >>> import doce
     >>> doce.Experiment().__str__(format='html')
-    '<div>project:</div><div>  name: </div><div>  description: </div><div>  author: no name</div><div>  address: noname@noorg.org</div><div>status:</div><div>  runId: ...</div><div>  debug: False</div><div>factor</div><div>parameter</div><div>metric</div><div>path:</div><div>  code_raw: /Users/lagrange/tools/doce/doce</div><div>  code: /Users/lagrange/tools/doce/doce</div><div>  archive_raw: </div><div>  archive: </div><div>  export_raw: export</div><div>  export: export</div><div>host: []</div><div></div>'
+    '<div>project:</div><div>  name: </div><div>  description: </div><div>  author: no name</div><div>  address: noname@noorg.org</div><div>status:</div><div>  runId: ...</div><div>  verbose: 0</div><div>factor</div><div>parameter</div><div>metric</div><div>path:</div><div>  code_raw: /Users/lagrange/tools/doce/doce</div><div>  code: /Users/lagrange/tools/doce/doce</div><div>  archive_raw: </div><div>  archive: </div><div>  export_raw: export</div><div>  export: export</div><div>host: []</div><div></div>'
     """
     description = ''
     for atr in self._atrs:
@@ -410,7 +410,7 @@ class Experiment():
     selector='*',
     settingEncoding={},
     archivePath = None,
-    debug=False
+    verbose=0
     ):
     """ Perform a cleaning of a data sink (directory or h5 file).
 
@@ -549,7 +549,7 @@ class Experiment():
     if '/' not in path and '\\' not in path:
       path = self.__getattribute__('path').__getattribute__(path)
     if path:
-      self.factor.mask(mask).cleanDataSink(path, reverse=reverse, force=force, keep=keep, selector=selector, settingEncoding=settingEncoding, archivePath=archivePath, debug=debug)
+      self.factor.mask(mask).cleanDataSink(path, reverse=reverse, force=force, keep=keep, selector=selector, settingEncoding=settingEncoding, archivePath=archivePath, verbose=verbose)
 
   # def clean(
   #   self,

@@ -54,8 +54,6 @@ def run():
       copy codebase to server defined by the server (-s) argument.
     -d [DISPLAY], --display [DISPLAY]
       display metrics. If no parameter is given, consider the default display and show all metrics. If the str parameter contain a list of integers, use the default display and show only the selected metrics defined by the integer list. If the str parameter contain a name, run the display method with this name.
-    -D, --debug
-      debug mode.
     -e [EXPERIMENT], --experiment [EXPERIMENT]
         select experiment. List experiments if empty.
     -E [EXPORT], --export [EXPORT]
@@ -86,13 +84,14 @@ def run():
       augment the command line with the content of the dict experiment._defaultServerRunArgument.
     -v, --version
       print version.
+    -V, --verbose
+      level of verbosity (default 0: silent).
   """
 
   parser = argparse.ArgumentParser()
   parser.add_argument('-A', '--archive', type=str, help='archive the selected  settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. The files are copied to the path experiment.path.archive if set.', nargs='?', const='')
   parser.add_argument('-C', '--copy', help='copy codebase to server defined by the server (-s) argument.', action='store_true')
   parser.add_argument('-d', '--display', type=str, help='display metrics. If no parameter is given, consider the default display and show all metrics. If the str parameter contain a list of integers, use the default display and show only the selected metrics defined by the integer list. If the str parameter contain a name, run the display method with this name.', nargs='?', default='-1')
-  parser.add_argument('-D', '--debug', help='debug mode.', action='store_true')
   parser.add_argument('-e', '--experiment', type=str, help='select experiment. List experiments if empty.', nargs='?', default='all')
   parser.add_argument('-E', '--export', type=str, help='Export the display of reduced metrics among different file types (html, png, pdf). If parameter is empty, all exports are made. If parameter has a dot, interpreted as a filename which should be of support type. If parameter has nothing before the dot, interpreted as file type, and experiment.project.name is used. If parameter has no dot, interpreted as file name with no extension, and all exports are made.', nargs='?', default='none')
   parser.add_argument('-f', '--factor', help='show the factors of the experiment.', action='store_true')
@@ -108,6 +107,7 @@ def run():
   parser.add_argument('-s', '--server', type=int, help='running server side. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside.', default=-2)
   parser.add_argument('-S', '--serverDefault', help='augment the command line with the content of the dict experiment._defaultServerRunArgument.', action='store_true')
   parser.add_argument('-v', '--version', help='print version', action='store_true')
+  parser.add_argument('-V', '--verbose', help='level of verbosity (default 0: silent).', action='store_true')
   args = parser.parse_args()
 
   if args.version:
@@ -143,7 +143,7 @@ def run():
   if len(experiment.mask):
     print(experiment.factor.constantFactors(experiment.mask))
 
-  experiment.status.debug = args.debug
+  experiment.status.verbose = args.verbose
 
   if args.experiment != 'all':
     if args.experiment is None:
@@ -174,12 +174,12 @@ def run():
     experiment.do(experiment.mask, progress='')
 
   if args.remove:
-    experiment.cleanDataSink(args.remove, experiment.mask, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive, debug=experiment.status.debug)
+    experiment.cleanDataSink(args.remove, experiment.mask, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive, verbose=experiment.status.verbose)
   if args.keep:
-    experiment.cleanDataSink(args.keep, experiment.mask, reverse=True, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive, debug=experiment.status.debug)
+    experiment.cleanDataSink(args.keep, experiment.mask, reverse=True, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive, verbose=experiment.status.verbose)
   if args.archive:
     if experiment.path.archive:
-      experiment.cleanDataSink(args.archive, experiment.mask, keep=True, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive, debug=experiment.status.debug)
+      experiment.cleanDataSink(args.archive, experiment.mask, keep=True, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive, verbose=experiment.status.verbose)
     else:
       print('Please set the path.archive path before issuing an archive command.')
 
@@ -189,7 +189,7 @@ def run():
     kwargs = copy.deepcopy(vars(args))
     kwargs['server'] = -3
     command = unparser.unparse(**kwargs).replace('\'', '\"').replace('\"', '\\\"')
-    if args.debug:
+    if args.verbose:
       command += '; bash '
     command = 'screen -dm bash -c \'python3 '+experiment.project.name+'.py '+command+'\''
     message = 'experiment launched on local host'
@@ -267,7 +267,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
     ma[fi]=mask[fi][0]
     # print(ma)
 
-  (table, columns, header, nbFactorColumns, modificationTimeStamp) = experiment.metric.reduce(experiment.factor.mask(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
+  (table, columns, header, nbFactorColumns, modificationTimeStamp) = experiment.metric.reduce(experiment.factor.mask(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.verbose, reductionDirectiveModule=config)
 
   if len(table) == 0:
       return (None, None, None)
@@ -279,13 +279,13 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 
     for m in range(1, len(mask[fi])):
       ma[fi]=mask[fi][m]
-      (sd, ch, csd, nb, md)  = experiment.metric.reduce(experiment.factor.mask(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
+      (sd, ch, csd, nb, md)  = experiment.metric.reduce(experiment.factor.mask(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.verbose, reductionDirectiveModule=config)
       columns.append(modalities[ma[fi]])
       modificationTimeStamp.append(md)
       for s in range(len(sd)):
         table[s].append(sd[s][-1])
     #
-    # (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.mask(experiment.mask), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.debug, reductionDirectiveModule=config)
+    # (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.mask(experiment.mask), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.verbose, reductionDirectiveModule=config)
 
   print('Displayed data generated from '+ time.ctime(min(modificationTimeStamp))+' to '+ time.ctime(max(modificationTimeStamp)))
   df = pd.DataFrame(table, columns=columns).fillna('')

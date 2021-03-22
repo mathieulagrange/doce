@@ -376,11 +376,26 @@ class Factor():
       factor = self.factors()[factor]
     return len(object.__getattribute__(self, factor))
 
-  def cleanH5(self, path, reverse=False, force=False, settingEncoding={}):
+  def cleanH5(
+    self,
+    path,
+    reverse=False,
+    force=False,
+    settingEncoding={},
+    archivePath='',
+    verbose=0):
     """clean a h5 data sink by considering the settings set.
 
   	This method is more conveniently used by considering the method :meth:`doce.experiment.Experiment.cleanDataSink, please see its documentation for usage.
     """
+    if archivePath:
+      self.cleanH5(
+        path=archivePath+name,
+        reverse = not reverse,
+        force=True,
+        settingEncoding=settingEncoding,
+        archivePath='',
+        verbose=0)
     h5 = tb.open_file(path, mode='a')
     if reverse:
       ids = [setting.id(**settingEncoding) for setting in self]
@@ -397,11 +412,13 @@ class Factor():
     # repack
     outfilename = path+'Tmp'
     command = ["ptrepack", "-o", "--chunkshape=auto", "--propindexes", path, outfilename]
-    # print('Original size is %.2fMiB' % (float(os.stat(path).st_size)/1024**2))
+    if verbose:
+      print('Original size is %.2fMiB' % (float(os.stat(path).st_size)/1024**2))
     if call(command) != 0:
       print('Unable to repack. Is ptrepack installed ?')
     else:
-      # print('Repacked size is %.2fMiB' % (float(os.stat(outfilename).st_size)/1024**2))
+      if verbose:
+        print('Repacked size is %.2fMiB' % (float(os.stat(outfilename).st_size)/1024**2))
       os.rename(outfilename, path)
 
 
@@ -414,7 +431,7 @@ class Factor():
     selector='*',
     settingEncoding={},
     archivePath='',
-    debug=False
+    verbose=0
     ):
     """clean a data sink by considering the settings set.
 
@@ -423,11 +440,11 @@ class Factor():
 
     path = os.path.expanduser(path)
     if path.endswith('.h5'):
-      self.cleanH5(path, reverse, force, settingEncoding)
+      self.cleanH5(path, reverse, force, settingEncoding, archivePath, verbose)
     else:
       fileNames = []
       for setting in self:
-        if debug:
+        if verbose:
           print('search path: '+path+'/'+setting.id(**settingEncoding)+selector)
         for f in glob.glob(path+'/'+setting.id(**settingEncoding)+selector):
             fileNames.append(f)
@@ -439,7 +456,7 @@ class Factor():
         fileNames = [i for i in complete if i not in fileNames]
       #   print(complete)
       fileNames = set(fileNames)
-      if debug:
+      if verbose:
         print('Selected files')
         print(fileNames)
       # print(len(fileNames))
