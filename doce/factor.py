@@ -312,8 +312,11 @@ class Factor():
     f1 c f2 2
     f1 c f2 3
     """
-
-    if mask and any(isinstance(val, dict) for val in mask):
+    if mask and isinstance(mask, str):
+      mask = [mask]
+    if mask and any(isinstance(val, str) for val in mask):
+      mask = self._str2list(mask)
+    elif mask and any(isinstance(val, dict) for val in mask):
       mask = self._dict2list(mask)
 
     self._mask = mask
@@ -610,13 +613,42 @@ class Factor():
             mm = []
             for dmkl in dm[dmk]:
               if dmkl in getattr(self, dmk):
-                 mm.append(getattr(self, dmk).index(dmkl))
+                 mm.append(list(getattr(self, dmk)).index(dmkl))
               else:
                 print('Warning: '+str(dmkl)+' is not a modality of factor '+dmk+'.')
             m[self._factors.index(dmk)] = mm
           else:
             if dm[dmk] in getattr(self, dmk):
-              m[self._factors.index(dmk)] = getattr(self, dmk).index(dm[dmk])
+              m[self._factors.index(dmk)] = list(getattr(self, dmk)).index(dm[dmk])
+        else:
+          print('Warning: '+dmk+' is not a factor.')
+      mask.append(m)
+    return mask
+
+  def _str2list(self, strMask):
+    """convert dict based mask to list based mask
+
+    """
+    mask = []
+    for dm in strMask:
+      m = [-1]*len(self._factors)
+      sp = dm.split('_')
+      factors = sp[0::2]
+      modalities = sp[1::2]
+      for dmki, dmk in enumerate(factors):
+        if dmk in self._factors:
+            # print(list(getattr(self, dmk)))
+            mod = modalities[dmki]
+            if str(getattr(self, dmk).dtype)[0:3] == 'int':
+              mod = int(mod)
+            elif str(getattr(self, dmk).dtype)[0:3] == 'flo':
+              mod = float(mod)
+            # print(type(mod))
+            # print(getattr(self, dmk).dtype)
+            if mod in getattr(self, dmk):
+              m[self._factors.index(dmk)] = list(getattr(self, dmk)).index(mod)
+            else:
+              print('Warning: '+modalities[dmki]+' is not a modality of factor '+dmk+'.')
         else:
           print('Warning: '+dmk+' is not a factor.')
       mask.append(m)
@@ -642,8 +674,8 @@ class Factor():
       self._changed = True
     if name[0] != '_' and type(value) in {list, np.ndarray} and len(value)>1 and name not in self._nonSingleton:
       self._nonSingleton.append(name)
-    if name[0] != '_' and type(value) not in {list, np.ndarray, Factor}:
-       value = [value]
+    if name[0] != '_' and type(value) not in {np.array, Factor}:
+      value = np.array(value)
     return object.__setattr__(self, name, value)
 
   def __delattr__(

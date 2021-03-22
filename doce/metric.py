@@ -132,7 +132,6 @@ class Metric():
 
     """
     table = []
-    modificationTimeStamp = os.path.getmtime(dataLocation)
     h5 = tb.open_file(dataLocation, mode='r')
     metricHasData = [False] * len(self.name())
     for sIndex, setting in enumerate(settings):
@@ -155,7 +154,7 @@ class Metric():
             row.insert(0, setting.__getattribute__(factorName))
         table.append(row)
     h5.close()
-    return (table, metricHasData, modificationTimeStamp)
+    return (table, metricHasData)
 
   def reduceMetric(
     self,
@@ -417,7 +416,8 @@ class Metric():
 
 
     if dataLocation.endswith('.h5'):
-      (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, modificationTimeStamp)
+      modificationTimeStamp = []
+      (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule)
     else:
       (settingDescription, metricHasData, modificationTimeStamp) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule)
 

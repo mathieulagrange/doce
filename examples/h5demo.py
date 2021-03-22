@@ -22,8 +22,8 @@ def set(args):
 
     experiment.factor.dataType = ['float', 'double']
     experiment.factor.datasetSize = 1000*np.array([1, 2, 4, 8])
-    experiment.factor.meanOffset = 10**np.array([0, 1, 2, 3, 4])
-    experiment.factor.nbRuns = [20, 40]
+    experiment.factor.meanOffset = 10**np.array([0.0, 1, 2, 3, 4])
+    experiment.factor.nbRuns = np.array([20, 40])
 
     experiment.metric.mae = ['mean', 'std']
     experiment.metric._description.mae = 'Mean absolute error'

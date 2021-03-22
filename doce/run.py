@@ -123,7 +123,10 @@ def run():
   if args.progress is None:
     args.progress = ''
 
-  mask = ast.literal_eval(args.mask)
+  try:
+    mask = ast.literal_eval(args.mask)
+  except:
+    mask = args.mask
 
   parameter = ast.literal_eval(args.parameter)
 
@@ -287,7 +290,8 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
     #
     # (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.mask(experiment.mask), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.verbose, reductionDirectiveModule=config)
 
-  print('Displayed data generated from '+ time.ctime(min(modificationTimeStamp))+' to '+ time.ctime(max(modificationTimeStamp)))
+  if modificationTimeStamp:
+    print('Displayed data generated from '+ time.ctime(min(modificationTimeStamp))+' to '+ time.ctime(max(modificationTimeStamp)))
   df = pd.DataFrame(table, columns=columns).fillna('')
   # df[columns[nbFactorColumns+2:]] = df[columns[nbFactorColumns+2:]].round(experiment._display.metricPrecision)
   # pd.set_option('precision', experiment._display.metricPrecision)
