@@ -384,6 +384,7 @@ class Factor():
     path,
     reverse=False,
     force=False,
+    keep=False,
     settingEncoding={},
     archivePath='',
     verbose=0):
@@ -392,37 +393,42 @@ class Factor():
   	This method is more conveniently used by considering the method :meth:`doce.experiment.Experiment.cleanDataSink, please see its documentation for usage.
     """
     if archivePath:
+      print(path)
+      print(archivePath)
+      sh.copyfile(path, archivePath)
       self.cleanH5(
         path=archivePath,
         reverse = not reverse,
         force=True,
+        keep=False,
         settingEncoding=settingEncoding,
         archivePath='',
-        verbose=0)
-    h5 = tb.open_file(path, mode='a')
-    if reverse:
-      ids = [setting.id(**settingEncoding) for setting in self]
-      for g in h5.iter_nodes('/'):
-        if g._v_name not in ids:
-          h5.remove_node(h5.root, g._v_name, recursive=True)
-    else:
-      for setting in self:
-        groupName = setting.id(**settingEncoding)
-        if h5.root.__contains__(groupName):
-          h5.remove_node(h5.root, groupName, recursive=True)
-    h5.close()
-
-    # repack
-    outfilename = path+'Tmp'
-    command = ["ptrepack", "-o", "--chunkshape=auto", "--propindexes", path, outfilename]
-    if verbose:
-      print('Original size is %.2fMiB' % (float(os.stat(path).st_size)/1024**2))
-    if call(command) != 0:
-      print('Unable to repack. Is ptrepack installed ?')
-    else:
+        verbose=verbose)
+    if not keep:
+      h5 = tb.open_file(path, mode='a')
+      if reverse:
+        ids = [setting.id(**settingEncoding) for setting in self]
+        for g in h5.iter_nodes('/'):
+          if g._v_name not in ids:
+            h5.remove_node(h5.root, g._v_name, recursive=True)
+      else:
+        for setting in self:
+          groupName = setting.id(**settingEncoding)
+          if h5.root.__contains__(groupName):
+            h5.remove_node(h5.root, groupName, recursive=True)
+      h5.close()
+      print('repack')
+      # repack
+      outfilename = path+'Tmp'
+      command = ["ptrepack", "-o", "--chunkshape=auto", "--propindexes", path, outfilename]
       if verbose:
-        print('Repacked size is %.2fMiB' % (float(os.stat(outfilename).st_size)/1024**2))
-      os.rename(outfilename, path)
+        print('Original size is %.2fMiB' % (float(os.stat(path).st_size)/1024**2))
+      if call(command) != 0:
+        print('Unable to repack. Is ptrepack installed ?')
+      else:
+        if verbose:
+          print('Repacked size is %.2fMiB' % (float(os.stat(outfilename).st_size)/1024**2))
+        os.rename(outfilename, path)
 
 
   def cleanDataSink(
@@ -443,7 +449,7 @@ class Factor():
 
     path = os.path.expanduser(path)
     if path.endswith('.h5'):
-      self.cleanH5(path, reverse, force, settingEncoding, archivePath, verbose)
+      self.cleanH5(path, reverse, force, keep, settingEncoding, archivePath, verbose)
     else:
       fileNames = []
       for setting in self:
