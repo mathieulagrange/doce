@@ -208,7 +208,8 @@ class Setting():
       if f[0] != '_' and getattr(self, f) is not None and f not in hide:
         if (singleton or f in self._factor._nonSingleton) and (default or not hasattr(self._factor._default, f) or (not default and hasattr(self._factor._default, f) and getattr(self._factor._default, f) != getattr(self, f))):
           id.append(eu.compressDescription(f, format))
-          id.append(eu.compressDescription(str(getattr(self, f)), format))
+          modality = eu.specialCaracterNaturalNaming(str(getattr(self, f)))
+          id.append(eu.compressDescription(modality, format))
     if 'list' not in format:
       id = separator.join(id)
       if format == 'hash':
