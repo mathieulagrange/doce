@@ -3,44 +3,44 @@ import re
 import copy
 
 def specialCaracterNaturalNaming(modality):
-  modifier = {' ': 'Space',
-              '!': 'ExclamationMark',
-              '"': 'DoubleQuote',
-              '#': 'Sharp',
-              '$': 'Dollar',
-              '%': 'Percent',
-              '&': 'Ampersand',
-              '\'': 'SimpleQuote',
-              '(': 'LeftParenthesis',
-              ')': 'RightParenthesis',
-              '*': 'Asterisk',
-              '+': 'Plus',
-              ',': 'Comma',
-              '-': 'Dash',
-              '.': 'Dot',
-              '/': 'Slash',
-              ':': 'Colon',
-              ';': 'Semicolon',
-              '<': 'Less',
-              '=': 'Equal',
-              '>': 'Greater',
-              '?': 'QuestionMark',
-              '@': 'Arobace',
-              '[': 'LeftBracket',
-              '\\': 'Backslash',
-              ']': 'RightBracket',
-              '^': 'Caret',
-              '_': 'Underscore',
-              '`': 'Acute',
-              '{': 'LeftBrace',
-              '|': 'Pipe',
-              '}': 'RightBrace',
-              '~': 'Tilde'
+  modifier = {' ': 'space',
+              '!': 'exclamationmark',
+              '"': 'doublequote',
+              '#': 'sharp',
+              '$': 'dollar',
+              '%': 'percent',
+              '&': 'ampersand',
+              '\'': 'simplequote',
+              '(': 'leftparenthesis',
+              ')': 'rightparenthesis',
+              '*': 'asterisk',
+              '+': 'plus',
+              ',': 'comma',
+              '-': 'dash',
+              '.': 'dot',
+              '/': 'slash',
+              ':': 'colon',
+              ';': 'semicolon',
+              '<': 'less',
+              '=': 'equal',
+              '>': 'greater',
+              '?': 'questionmark',
+              '@': 'arobace',
+              '[': 'leftbracket',
+              '\\': 'backslash',
+              ']': 'rightbracket',
+              '^': 'caret',
+              '_': 'underscore',
+              '`': 'acute',
+              '{': 'leftbrace',
+              '|': 'pipe',
+              '}': 'rightbrace',
+              '~': 'tilde'
               }
   for key, value in modifier.items():
     modality = modality.replace(key, value)
   return modality
-  
+
 def constantColumn(
   table=None
 ):

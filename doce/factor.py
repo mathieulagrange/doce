@@ -312,7 +312,7 @@ class Factor():
     f1 c f2 2
     f1 c f2 3
     """
-    if mask and isinstance(mask, str):
+    if mask and (isinstance(mask, str) or isinstance(mask, dict)):
       mask = [mask]
     if mask and any(isinstance(val, str) for val in mask):
       mask = self._str2list(mask)
@@ -393,7 +393,7 @@ class Factor():
     """
     if archivePath:
       self.cleanH5(
-        path=archivePath+name,
+        path=archivePath,
         reverse = not reverse,
         force=True,
         settingEncoding=settingEncoding,
@@ -626,7 +626,7 @@ class Factor():
     return mask
 
   def _str2list(self, strMask):
-    """convert dict based mask to list based mask
+    """convert string based mask to list based mask
 
     """
     mask = []
@@ -637,7 +637,7 @@ class Factor():
       modalities = sp[1::2]
       for dmki, dmk in enumerate(factors):
         if dmk in self._factors:
-            # print(list(getattr(self, dmk)))
+            print(list(getattr(self, dmk)))
             mod = modalities[dmki]
             if str(getattr(self, dmk).dtype)[0:3] == 'int':
               mod = int(mod)
