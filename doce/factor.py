@@ -198,7 +198,7 @@ class Factor():
             if 'm' in progress:
               description += str(self._settings[iSetting])+' '
             if 'd' in progress:
-              description += str(setting)
+              description += setting.id()
             t.set_description(description)
             if function:
               nbFailed += setting.do(function, experiment, logFileName, *parameters)
@@ -643,16 +643,19 @@ class Factor():
       modalities = sp[1::2]
       for dmki, dmk in enumerate(factors):
         if dmk in self._factors:
-            print(list(getattr(self, dmk)))
+            # print(list(getattr(self, dmk)))
             mod = modalities[dmki]
-            if str(getattr(self, dmk).dtype)[0:3] == 'int':
-              mod = int(mod)
-            elif str(getattr(self, dmk).dtype)[0:3] == 'flo':
-              mod = float(mod)
-            # print(type(mod))
-            # print(getattr(self, dmk).dtype)
-            if mod in getattr(self, dmk):
-              m[self._factors.index(dmk)] = list(getattr(self, dmk)).index(mod)
+            # if str(getattr(self, dmk).dtype)[0:3] == 'int':
+            #   mod = int(mod)
+            # elif str(getattr(self, dmk).dtype)[0:3] == 'flo':
+            #   mod = float(mod)
+            refMod = []
+            for am in list(getattr(self, dmk)):
+              refMod.append(eu.specialCaracterNaturalNaming(str(am)))
+            # print(mod)
+            # print(refMod)
+            if mod in refMod:
+              m[self._factors.index(dmk)] = refMod.index(mod)
             else:
               print('Warning: '+modalities[dmki]+' is not a modality of factor '+dmk+'.')
         else:

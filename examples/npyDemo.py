@@ -65,7 +65,7 @@ def step(setting, experiment):
   np.save(experiment.path.output+baseFileName+'_mae.npy', settingMae)
   np.save(experiment.path.output+baseFileName+'_mse.npy', settingMse)
   duration = time.time()-tic
-  np.save(experiment.path.output+baseFileName+'_duration.npy', duration)
+  np.save(experiment.path.output+baseFileName+'.duration.npy', duration)
 
 # uncomment this method to fine tune display of metrics
 def myDisplay(experiment, settings):
