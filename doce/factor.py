@@ -643,17 +643,10 @@ class Factor():
       modalities = sp[1::2]
       for dmki, dmk in enumerate(factors):
         if dmk in self._factors:
-            # print(list(getattr(self, dmk)))
             mod = modalities[dmki]
-            # if str(getattr(self, dmk).dtype)[0:3] == 'int':
-            #   mod = int(mod)
-            # elif str(getattr(self, dmk).dtype)[0:3] == 'flo':
-            #   mod = float(mod)
             refMod = []
             for am in list(getattr(self, dmk)):
               refMod.append(eu.specialCaracterNaturalNaming(str(am)))
-            # print(mod)
-            # print(refMod)
             if mod in refMod:
               m[self._factors.index(dmk)] = refMod.index(mod)
             else:
