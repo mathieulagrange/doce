@@ -31,3 +31,22 @@ factor: experiment
 project: description
 description: purpose
 metric: sink
+
+experiment -> doce
+factor -> experiment
+metric -> output
+project -> description
+description -> purpose
+
+experiment.metric = NameSpace()
+experiment.metric.mse = []
+experiment.metric['mae'] = []
+
+doce(name='toto', )
+
+init(name):
+  self.name = name
+
+map(f, zip, mask)
+
+reduce()
