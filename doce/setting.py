@@ -3,6 +3,7 @@ import hashlib
 import copy
 import logging
 import traceback
+import numpy as np
 
 class Setting():
   """stores a :term:`setting`, where each member is a factor and the value of the member is a modality.
@@ -277,7 +278,7 @@ class Setting():
     if value is not None:
       factorName = self._factor._factors[factor]
       modalities = self._factor.__getattribute__(factorName)
-      positional = modalities.index(value)
+      positional, = np.where(modalities == value)
 
     sDesc = copy.deepcopy(self._setting)
     if relative:

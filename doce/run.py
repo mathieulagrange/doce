@@ -143,8 +143,8 @@ def run():
 
   experiment = config.set(experiment)
   experiment.mask = mask
-  if len(experiment.mask):
-    print(experiment.factor.constantFactors(experiment.mask))
+  # if len(experiment.mask):
+  #   print(experiment.factor.constantFactors(experiment.mask))
 
   experiment.status.verbose = args.verbose
 
@@ -317,7 +317,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
         precisionFormat[c] = '{0:.'+str(experiment._display.metricPrecision)+'f}'
         cNoPercent.append(c)
       if c[-1] == '-' :
-        print('pass')
+        # print('pass')
         cMinus.append(c)
       else:
         cNoMinus.append(c)
