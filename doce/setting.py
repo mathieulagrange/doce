@@ -279,13 +279,13 @@ class Setting():
       factorName = self._factor._factors[factor]
       modalities = self._factor.__getattribute__(factorName)
       positional, = np.where(modalities == value)
+      positional = positional[0] # assumes no repetion
 
     sDesc = copy.deepcopy(self._setting)
     if relative:
       sDesc[factor] += relative
     else:
       sDesc[factor] = positional
-
     if sDesc[factor]< 0 or sDesc[factor] >= self._factor.nbModalities(factor):
       print('Unable to find the requested modality.')
       return None

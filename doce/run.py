@@ -296,8 +296,8 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   # df[columns[nbFactorColumns+2:]] = df[columns[nbFactorColumns+2:]].round(experiment._display.metricPrecision)
   # pd.set_option('precision', experiment._display.metricPrecision)
   if selectDisplay and not selectFactor and  len(columns)>=max(selectDisplay)+nbFactorColumns:
-    selector = [columns[i] for i in [*range(nbFactorColumns)]+[s+nbFactorColumns for s in selectDisplay]]
-    df = df[selector]
+    columns = [columns[i] for i in [*range(nbFactorColumns)]+[s+nbFactorColumns for s in selectDisplay]]
+    df = df[columns]
 
   d = dict(selector="th", props=[('text-align', 'center'), ('border-bottom', '.1rem solid')])
 
