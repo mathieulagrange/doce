@@ -240,6 +240,7 @@ def run():
       (df, header, styler) = dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor)
       if df is not None:
         print(header)
+        pd.set_option('precision', 2)
         print(df)
       if args.export != 'none':
         exportDataFrame(experiment, args, df, styler)
@@ -331,8 +332,12 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   dPercent = pd.Series([experiment._display.metricPrecision-2]*len(cPercent), index=cPercent)
   dNoPercent = pd.Series([experiment._display.metricPrecision]*len(cNoPercent), index=cNoPercent)
   df=df.round(dPercent).round(dNoPercent)
-  form = '%.'+str(experiment._display.metricPrecision)+'f'
-  # print(form)
+
+  if cNoPercent:
+    form = '%.'+str(experiment._display.metricPrecision)+'f'
+  else:
+    form = '%.'+str(experiment._display.metricPrecision-2)+'f'
+
   pd.set_option('display.float_format', lambda x: '%.0f' % x
                       if (x == x and x*10 % 10 == 0)
                       else form % x)
