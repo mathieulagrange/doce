@@ -510,7 +510,7 @@ class Factor():
     for x in self.factors():
       for f in getattr(self, x).factors():
         for m in getattr(getattr(self, x), f):
-          if m not in getattr(tmp, f):
+          if len(getattr(tmp, f))==0 or m not in getattr(tmp, f):
             setattr(tmp, f, np.append(getattr(tmp, f), m))
     # check if factors are available in every experiment
     have = [True]*len(tmp.factors())
@@ -523,19 +523,18 @@ class Factor():
     factor._default = tmp._default
     for fi, f in enumerate(tmp.factors()):
       m = getattr(tmp, f)
-      print(m)
       setattr(factor, f, m)
       if not have[fi] and not hasattr(tmp._default, f):
         if isinstance(m[0], str):
           if 'none' not in m:
             m = np.insert(m, 0, 'none')
+            setattr(factor, f, m)
           factor.default(f, 'none')
         if not isinstance(m[0], str):
           if 0 not in m:
-            np.insert(m, 0, 0)
+            m = np.insert(m, 0, 0)
+            setattr(factor, f, m)
           factor.default(f, 0)
-      setattr(factor, f, m)
-    print(factor)
     return factor
 
   def asPandaFrame(self):

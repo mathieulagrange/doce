@@ -21,7 +21,7 @@ def set(args):
   experiment.factor.xp1.parameterMethodOne = ['modalityOne', 'modalityTwo']
   experiment.factor.xp2 = doce.Factor()
   experiment.factor.xp2.method = ['methodTwo']
-  experiment.factor.xp2.parameterMethodTwo = np.arange(5)
+  experiment.factor.xp2.parameterMethodTwo = np.arange(5)+1
 
   # experiment.factor.truc = doce.factor.Factor() #['machin', 'bidule']
 
