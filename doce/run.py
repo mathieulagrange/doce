@@ -271,7 +271,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
     ma[fi]=mask[fi][0]
     # print(ma)
 
-  (table, columns, header, nbFactorColumns, modificationTimeStamp) = experiment.metric.reduce(experiment.factor.mask(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.verbose, reductionDirectiveModule=config)
+  (table, columns, header, nbFactorColumns, modificationTimeStamp) = experiment.metric.reduce(experiment.factor.mask(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
 
   if len(table) == 0:
       return (None, None, None)

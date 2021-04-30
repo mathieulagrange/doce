@@ -108,7 +108,6 @@ class Experiment():
     self.path.archive = ''
     self.path.export = 'export'
     self.host = []
-    self._settingEncoding = {}
     self._archivePath = ''
     self._gmailId = 'expcode.mailer'
     self._gmailAppPassword = 'tagsqtlirkznoxro'
