@@ -58,6 +58,7 @@ class Factor():
       self._factors = []
       self._default = types.SimpleNamespace()
       self._maskVolatile = True
+      self._pruneMask = True
 
   def copy(self):
     return copy.deepcopy(self)
@@ -216,7 +217,8 @@ class Factor():
   def mask(
     self,
     mask=None,
-    volatile=False
+    volatile=False,
+    prune=True
     ):
     """set the mask.
 
@@ -321,6 +323,7 @@ class Factor():
 
     self._mask = mask
     self._maskVolatile = volatile
+    self._pruneMask = prune
     return self
 
   def factors(
@@ -803,7 +806,9 @@ class Factor():
             settings.append(ss)
         else:
           settings.append(s)
-      settings = [k for k,v in groupby(sorted(settings))]
+      prunedSettings = [k for k,v in groupby(sorted(settings))]
+      if self._pruneMask and len(prunedSettings) < len(settings):
+        settings = prunedSettings
       self._changed = False
       self._settings = settings
 
@@ -834,6 +839,7 @@ class Factor():
           ss.insert(0, mask[done])
       else:
         settings.insert(0, mask[done])
+    # print(settings)
     return settings
 
 if __name__ == '__main__':
