@@ -72,7 +72,7 @@ class Setting():
     return self.id(sort=False, separator=' ', singleton=True, default=False)
 
 
-  def id(self, format='long', sort=True, separator='_', singleton=True, default=False, hide=[], toInt=False):
+  def id(self, format='long', sort=True, separator='_', singleton=True, default=False, hide=[], toInt=True):
     """return a one-liner str or a list of str that describes a setting or a :class:`~doce.factor.Factor` object.
 
   	Return a one-liner str or a list of str that describes a setting or a :class:`~doce.factor.Factor` object with a high degree of flexibility.

@@ -680,12 +680,14 @@ class Factor():
       self._changed = True
     if name[0] != '_' and type(value) in {list, np.ndarray} and len(value)>1 and name not in self._nonSingleton:
       self._nonSingleton.append(name)
-    if name[0] != '_' and type(value) not in {np.array, Factor}:
-      # print(value)
+    if name[0] != '_' and type(value) not in {np.ndarray, Factor}:
       if len(value) and all(isinstance(x, str) for x in value):
         value = np.array(value)
+      elif len(value) and all(isinstance(x, int) for x in value):
+        value = np.array(value, dtype=np.intc)
       else:
         value = np.array(value, dtype=np.float)
+
     return object.__setattr__(self, name, value)
 
   def __delattr__(

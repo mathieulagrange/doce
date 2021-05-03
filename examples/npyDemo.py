@@ -29,11 +29,11 @@ def set(args):
   experiment.host = ['pc-lagrange.irccyn.ec-nantes.fr']
 
   experiment.factor.dataType = ['float', 'double']
-  experiment.factor.datasetSize = 1000*np.array([1, 2, 4, 8])
-  experiment.factor.meanOffset = 10.0**np.array([0, 1, 2, 3, 4])
-  experiment.factor.nbRuns = [2000, 4000]
+  experiment.factor.datasetSize = 1000*np.array([1, 2, 4, 8], dtype=np.intc)
+  experiment.factor.meanOffset = 10.0**np.array([0, 1, 2])
+  experiment.factor.nbRuns = [2000]
 
-  experiment.metric.mae = ['mean-0', 'std%']
+  experiment.metric.mae = ['sqrt|mean-0', 'std%']
   experiment.metric.mse = ['mean', 'std%']
   experiment.metric.duration = ['mean']
   experiment._display.metricPrecision = 20
@@ -61,11 +61,10 @@ def step(setting, experiment):
     settingMse[r] = abs(reference - estimate)
     settingMae[r] = np.square(reference - estimate)
 
-  baseFileName = setting.id(**experiment._settingEncoding)
-  np.save(experiment.path.output+baseFileName+'_mae.npy', settingMae)
-  np.save(experiment.path.output+baseFileName+'_mse.npy', settingMse)
+  np.save(experiment.path.output+setting.id()+'_mae.npy', settingMae)
+  np.save(experiment.path.output+setting.id()+'_mse.npy', settingMse)
   duration = time.time()-tic
-  np.save(experiment.path.output+baseFileName+'.duration.npy', duration)
+  np.save(experiment.path.output+setting.id()+'.duration.npy', duration)
 
 # uncomment this method to fine tune display of metrics
 def myDisplay(experiment, settings):

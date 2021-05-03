@@ -156,6 +156,25 @@ class Metric():
     h5.close()
     return (table, metricHasData)
 
+  def applyReduction(
+    self,
+    reductionDirectiveModule,
+    reductionTypeDirective,
+    data):
+
+      if '|' in reductionTypeDirective:
+        for r in reversed(reductionTypeDirective.split('|')):
+          data = self.applyReduction(reductionDirectiveModule,
+          r,
+          data)
+        return data
+      else:
+        if reductionTypeDirective and not hasattr(reductionDirectiveModule, reductionTypeDirective):
+          return np.nan
+
+        print(reductionTypeDirective)
+        return getattr(reductionDirectiveModule, reductionTypeDirective)(data)
+
   def reduceMetric(
     self,
     data,
@@ -218,9 +237,6 @@ class Metric():
       reductionDirectiveModule = np
       data = data.flatten()
 
-    if reductionTypeDirective and isinstance(reductionType, str) and not hasattr(reductionDirectiveModule, reductionTypeDirective):
-      return np.nan
-
     # indexPercent=-1
     if reductionTypeDirective:
       if isinstance(reductionTypeDirective, int):
@@ -230,16 +246,16 @@ class Metric():
           value = float(data)
       elif ignore:
         if ignore == '0':
-          value = getattr(reductionDirectiveModule, reductionTypeDirective)(data[1:])
+          value = self.applyReduction(reductionDirectiveModule,reductionTypeDirective,data[1:])
         elif ignore == '1':
-          value = getattr(reductionDirectiveModule, reductionTypeDirective)(data[::2])
+          value = self.applyReduction(reductionDirectiveModule,reductionTypeDirective,data[::2])
         elif ignore == '2':
-          value = getattr(reductionDirectiveModule, reductionTypeDirective)(data[1::2])
+          value = self.applyReduction(reductionDirectiveModule,reductionTypeDirective,data[1::2])
         else:
           print('Unrecognized pruning directive')
           raise ValueError
       else :
-          value = getattr(reductionDirectiveModule, reductionTypeDirective)(data)
+          value = self.applyReduction(reductionDirectiveModule,reductionTypeDirective,data)
     else:
       if not isinstance(data, np.ndarray):
         data = np.array(data)
