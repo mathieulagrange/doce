@@ -171,8 +171,7 @@ class Metric():
       else:
         if reductionTypeDirective and not hasattr(reductionDirectiveModule, reductionTypeDirective):
           return np.nan
-
-        print(reductionTypeDirective)
+        # print(reductionTypeDirective)
         return getattr(reductionDirectiveModule, reductionTypeDirective)(data)
 
   def reduceMetric(
