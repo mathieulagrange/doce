@@ -526,6 +526,10 @@ class Factor():
     factor._default = tmp._default
     for fi, f in enumerate(tmp.factors()):
       m = getattr(tmp, f)
+      # print(m)
+      # print(type(m[0]))
+      if not isinstance(m[0], str) and all(np.array([val.is_integer() for val in m])):
+        m = np.array(m, dtype=np.intc)
       setattr(factor, f, m)
       if not have[fi] and not hasattr(tmp._default, f):
         if isinstance(m[0], str):
@@ -681,6 +685,10 @@ class Factor():
     if name[0] != '_' and type(value) in {list, np.ndarray} and len(value)>1 and name not in self._nonSingleton:
       self._nonSingleton.append(name)
     if name[0] != '_' and type(value) not in {np.ndarray, Factor}:
+      if len(value) and not all(isinstance(x, type(value[0])) for x in value):
+        raise Exception('All the modalities of the factor '+name+' must be of the same type (str, int, or float)')
+      print(type(value))
+      print(type(value[0]))
       if len(value) and all(isinstance(x, str) for x in value):
         value = np.array(value)
       elif len(value) and all(isinstance(x, int) for x in value):
