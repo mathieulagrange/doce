@@ -211,8 +211,6 @@ class Setting():
           id.append(eu.compressDescription(f, format))
           # print(str(getattr(self, f)))
           modality = eu.specialCaracterNaturalNaming(str(getattr(self, f)))
-          if toInt and modality[-4:]=='dot0':
-            modality = modality[:-4]
           id.append(eu.compressDescription(modality, format))
     if 'list' not in format:
       id = separator.join(id)

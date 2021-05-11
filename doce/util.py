@@ -39,6 +39,8 @@ def specialCaracterNaturalNaming(modality):
               }
   for key, value in modifier.items():
     modality = modality.replace(key, value)
+  if modality[-4:]=='dot0':
+    modality = modality[:-4]
   return modality
 
 def constantColumn(

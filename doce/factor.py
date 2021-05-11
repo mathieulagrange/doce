@@ -687,8 +687,8 @@ class Factor():
     if name[0] != '_' and type(value) not in {np.ndarray, Factor}:
       if len(value) and not all(isinstance(x, type(value[0])) for x in value):
         raise Exception('All the modalities of the factor '+name+' must be of the same type (str, int, or float)')
-      print(type(value))
-      print(type(value[0]))
+      # print(type(value))
+      # print(type(value[0]))
       if len(value) and all(isinstance(x, str) for x in value):
         value = np.array(value)
       elif len(value) and all(isinstance(x, int) for x in value):
