@@ -1,4 +1,4 @@
-import os
+select(import os
 import shutil as sh
 import inspect
 import types
@@ -52,13 +52,13 @@ class Factor():
       self._changed = False
       self._currentSetting = 0
       self._settings = []
-      self._mask = None
-      self._expandedMask = None
+      self._selector = None
+      self._expandedSelector = None
       self._nonSingleton = []
       self._factors = []
       self._default = types.SimpleNamespace()
-      self._maskVolatile = True
-      self._pruneMask = True
+      self._selectorVolatile = True
+      self._pruneSelector = True
 
   def copy(self):
     return copy.deepcopy(self)
@@ -97,7 +97,7 @@ class Factor():
     f.f2 = [1, 2, 3]
 
     print(f)
-    for setting in f.mask():
+    for setting in f.select():
       print(setting.id())
 
     f.default('f2', 2)
@@ -161,7 +161,7 @@ class Factor():
     progress : str (optional)
       display progress of scheduling the setting set.
 
-      If str has an m, show the mask of the current setting.
+      If str has an m, show the selector of the current setting.
       If str has an d, show a textual description of the current setting (default).
 
     logFileName : str (optional)
@@ -214,26 +214,26 @@ class Factor():
             t.update(1)
     return nbFailed
 
-  def mask(
+  def select(
     self,
-    mask=None,
+    selector=None,
     volatile=False,
     prune=True
     ):
-    """set the mask.
+    """set the selector.
 
-  	This method sets the internal mask to the mask given as parameter. Once set, iteration over the setting set is limited to the settings that can be reached according to the definition of the mask.
+  	This method sets the internal selector to the selector given as parameter. Once set, iteration over the setting set is limited to the settings that can be reached according to the definition of the selector.
 
   	Parameters
   	----------
 
-    mask: list of list of int or list of int or list of dict
-     a :term:`mask
+    selector: list of list of int or list of int or list of dict
+     a :term:`selector
 
     volatile: bool
-      if True, the mask is disabled after a complete iteration over the setting set.
+      if True, the selector is disabled after a complete iteration over the setting set.
 
-      If False, the mask is saved for further iterations.
+      If False, the selector is saved for further iterations.
 
   	Examples
   	--------
@@ -244,49 +244,49 @@ class Factor():
     >>> f.f1=['a', 'b', 'c']
     >>> f.f2=[1, 2, 3]
 
-    >>> # doce allows two ways of defining the mask. The first one is dict based:
-    >>> for setting in f.mask([{'f1':'b', 'f2':[1, 2]}, {'f1':'c', 'f2':[3]}]):
+    >>> # doce allows two ways of defining the selector. The first one is dict based:
+    >>> for setting in f.select([{'f1':'b', 'f2':[1, 2]}, {'f1':'c', 'f2':[3]}]):
     ...  print(setting)
     f1 b f2 1
     f1 b f2 2
     f1 c f2 3
 
     >>> # The second one is list based. In this exmaple, we select the settings with the second modality of the first factor, and with the first modality of the second factor
-    >>> for setting in f.mask([1, 0]):
+    >>> for setting in f.select([1, 0]):
     ...  print(setting)
     f1 b f2 1
     >>> # select the settings with all the modalities of the first factor, and the second modality of the second factor
-    >>> for setting in f.mask([-1, 1]):
+    >>> for setting in f.select([-1, 1]):
     ...  print(setting)
     f1 a f2 2
     f1 b f2 2
     f1 c f2 2
     >>> # the selection of all the modalities of the remaining factors can be conveniently expressed
-    >>> for setting in f.mask([1]):
+    >>> for setting in f.select([1]):
     ...  print(setting)
     f1 b f2 1
     f1 b f2 2
     f1 b f2 3
-    >>> # select the settings using 2 mask, where the first selects the settings with the first modality of the first factor and with the second modality of the second factor, and the second mask selects the settings with the second modality of the first factor, and with the third modality of the second factor
-    >>> for setting in f.mask([[0, 1], [1, 2]]):
+    >>> # select the settings using 2 selector, where the first selects the settings with the first modality of the first factor and with the second modality of the second factor, and the second selector selects the settings with the second modality of the first factor, and with the third modality of the second factor
+    >>> for setting in f.select([[0, 1], [1, 2]]):
     ...  print(setting)
     f1 a f2 2
     f1 b f2 3
-    >>> # the latter expression may be interpreted as the selection of the settings with the first and second modalities of the first factor and with second and third modalities of the second factor. In that case, one needs to add a -1 at the end the mask (even if by doing so the length of the mask is larger than the number of factors)
-    >>> for setting in f.mask([[0, 1], [1, 2], -1]):
+    >>> # the latter expression may be interpreted as the selection of the settings with the first and second modalities of the first factor and with second and third modalities of the second factor. In that case, one needs to add a -1 at the end the selector (even if by doing so the length of the selector is larger than the number of factors)
+    >>> for setting in f.select([[0, 1], [1, 2], -1]):
     ...  print(setting)
     f1 a f2 2
     f1 a f2 3
     f1 b f2 2
     f1 b f2 3
-    >>> # if volatile is set to False (default) when the mask is set and the setting set iterated, the setting set stays ready for another iteration.
-    >>> for setting in f.mask([0, 1]):
+    >>> # if volatile is set to False (default) when the selector is set and the setting set iterated, the setting set stays ready for another iteration.
+    >>> for setting in f.select([0, 1]):
     ...  pass
     >>> for setting in f:
     ...  print(setting)
     f1 a f2 2
-    >>> # if volatile is set to False (default) when the mask is set and the setting set iterated, the setting set stays ready for another iteration.
-    >>> for setting in f.mask([0, 1], volatile=True):
+    >>> # if volatile is set to False (default) when the selector is set and the setting set iterated, the setting set stays ready for another iteration.
+    >>> for setting in f.select([0, 1], volatile=True):
     ...  pass
     >>> for setting in f:
     ...  print(setting)
@@ -299,10 +299,10 @@ class Factor():
     f1 c f2 1
     f1 c f2 2
     f1 c f2 3
-    >>> # if volatile was set to False (default) when the mask was first set and the setting set iterated, the complete set of settings can be reached by calling mask with no parameters.
-    >>> for setting in f.mask([0, 1]):
+    >>> # if volatile was set to False (default) when the selector was first set and the setting set iterated, the complete set of settings can be reached by calling selector with no parameters.
+    >>> for setting in f.select([0, 1]):
     ...  pass
-    >>> for setting in f.mask():
+    >>> for setting in f.select():
     ...  print(setting)
     f1 a f2 1
     f1 a f2 2
@@ -314,16 +314,16 @@ class Factor():
     f1 c f2 2
     f1 c f2 3
     """
-    if mask and (isinstance(mask, str) or isinstance(mask, dict)):
-      mask = [mask]
-    if mask and any(isinstance(val, str) for val in mask):
-      mask = self._str2list(mask)
-    elif mask and any(isinstance(val, dict) for val in mask):
-      mask = self._dict2list(mask)
+    if selector and (isinstance(selector, str) or isinstance(selector, dict)):
+      selector = [selector]
+    if selector and any(isinstance(val, str) for val in selector):
+      selector = self._str2list(selector)
+    elif selector and any(isinstance(val, dict) for val in selector):
+      selector = self._dict2list(selector)
 
-    self._mask = mask
-    self._maskVolatile = volatile
-    self._pruneMask = prune
+    self._selector = selector
+    self._selectorVolatile = volatile
+    self._pruneSelector = prune
     return self
 
   def factors(
@@ -547,7 +547,7 @@ class Factor():
   def asPandaFrame(self):
     """returns a panda frame that describes the Factor object.
 
-  	Returns a panda frame describing the Factor object. For ease of definition of a mask to select some settings, the columns and the rows of the panda frame are numbered.
+  	Returns a panda frame describing the Factor object. For ease of definition of a selector to select some settings, the columns and the rows of the panda frame are numbered.
 
   	Examples
   	--------
@@ -594,13 +594,13 @@ class Factor():
       columns.append(il)
     return pd.DataFrame(table, columns=columns)
 
-  def constantFactors(self, mask):
-    self.mask(mask)
+  def constantFactors(self, selector):
+    self.select(selector)
     message = str(len(self))+' settings'
-    # print(self._mask)
-    # print(self._expandedMask)
+    # print(self._selector)
+    # print(self._expandedSelector)
     cf = [ [] for _ in range(len(self._factors)) ]
-    for m in self._expandedMask:
+    for m in self._expandedSelector:
       for fi, f in enumerate(self._factors):
         if m[fi]:
           cf[fi] = list(set(cf[fi]) | set(m[fi]))
@@ -614,12 +614,12 @@ class Factor():
       message += cst[:-2]
     return message
 
-  def _dict2list(self, dictMask):
-    """convert dict based mask to list based mask
+  def _dict2list(self, dictSelector):
+    """convert dict based selector to list based selector
 
     """
-    mask = []
-    for dm in dictMask:
+    selector = []
+    for dm in dictSelector:
       m = [-1]*len(self._factors)
       for dmk in dm.keys():
         if dmk in self._factors:
@@ -636,15 +636,15 @@ class Factor():
               m[self._factors.index(dmk)] = list(getattr(self, dmk)).index(dm[dmk])
         else:
           print('Warning: '+dmk+' is not a factor.')
-      mask.append(m)
-    return mask
+      selector.append(m)
+    return selector
 
-  def _str2list(self, strMask):
-    """convert string based mask to list based mask
+  def _str2list(self, strSelector):
+    """convert string based selector to list based selector
 
     """
-    mask = []
-    for dm in strMask:
+    selector = []
+    for dm in strSelector:
       m = [-1]*len(self._factors)
       sp = dm.split('_')
       factors = sp[0::2]
@@ -661,8 +661,8 @@ class Factor():
               print('Warning: '+modalities[dmki]+' is not a modality of factor '+dmk+'.')
         else:
           print('Warning: '+dmk+' is not a factor.')
-      mask.append(m)
-    return mask
+      selector.append(m)
+    return selector
 
   def __str__(self):
     cString = ''
@@ -680,7 +680,7 @@ class Factor():
       self._factors.append(name)
     if hasattr(self, name) and type(inspect.getattr_static(self, name)) == types.FunctionType:
       raise Exception('the attribute '+name+' is shadowing a builtin function')
-    if name == '_mask' or name[0] != '_':
+    if name == '_selector' or name[0] != '_':
       self._changed = True
     if name[0] != '_' and type(value) in {list, np.ndarray} and len(value)>1 and name not in self._nonSingleton:
       self._nonSingleton.append(name)
@@ -742,8 +742,8 @@ class Factor():
     ):
 
     if self._currentSetting == len(self._settings):
-      if self._maskVolatile:
-        self._mask = None
+      if self._selectorVolatile:
+        self._selector = None
       raise StopIteration
     else:
       self._setting = self._settings[self._currentSetting]
@@ -758,7 +758,7 @@ class Factor():
   def __getitem__(self, index):
     # print('get item')
     self.__setSettings__()
-    # print(self._mask)
+    # print(self._selector)
     return  self
 
 
@@ -773,32 +773,32 @@ class Factor():
     ):
     if self._changed:
       settings = []
-      mask = copy.deepcopy(self._mask)
+      selector = copy.deepcopy(self._selector)
       self._setting = None
 
-      mask = copy.deepcopy(mask)
+      selector = copy.deepcopy(selector)
       nbFactors = len(self.factors())
-      if mask is None or len(mask)==0 or (len(mask)==1 and len(mask)==0) :
-         mask = [[-1]*nbFactors]
-      if isinstance(mask, list) and not all(isinstance(x, list) for x in mask):
-          mask = [mask]
+      if selector is None or len(selector)==0 or (len(selector)==1 and len(selector)==0) :
+         selector = [[-1]*nbFactors]
+      if isinstance(selector, list) and not all(isinstance(x, list) for x in selector):
+          selector = [selector]
 
-      for im, m in enumerate(mask):
+      for im, m in enumerate(selector):
         if len(m) < nbFactors:
-          mask[im] = m+[-1]*(nbFactors-len(m))
+          selector[im] = m+[-1]*(nbFactors-len(m))
         for il, l in enumerate(m):
             if not isinstance(l, list) and l > -1:
-                mask[im][il] = [l]
+                selector[im][il] = [l]
       # prune repeated entries
-      for im, m in enumerate(mask):
+      for im, m in enumerate(selector):
         if isinstance(m, list):
           for il, l in enumerate(m):
             if isinstance(l, list):
               m[il] = list(dict.fromkeys(l))
-      self._expandedMask = mask
+      self._expandedSelector = selector
 
-      for m in mask:
-        # handle -1 in mask
+      for m in selector:
+        # handle -1 in selector
         for mfi, mf in enumerate(m):
           if isinstance(mf, int) and mf == -1 and mfi<len(self.factors()):
             attr = self.__getattribute__(self.factors()
@@ -810,26 +810,26 @@ class Factor():
             else:
               m[mfi] = [0]
 
-        s = self.__setSettingsMask__(m, 0)
+        s = self.__setSettingsSelector__(m, 0)
         if all(isinstance(ss, list) for ss in s):
           for ss in s:
             settings.append(ss)
         else:
           settings.append(s)
       prunedSettings = [k for k,v in groupby(sorted(settings))]
-      if self._pruneMask and len(prunedSettings) < len(settings):
+      if self._pruneSelector and len(prunedSettings) < len(settings):
         settings = prunedSettings
       self._changed = False
       self._settings = settings
 
-  def __setSettingsMask__(self, mask, done):
-    if done == len(mask):
+  def __setSettingsSelector__(self, selector, done):
+    if done == len(selector):
       return []
 
-    s = self.__setSettingsMask__(mask, done+1)
-    if isinstance(mask[done], list):
+    s = self.__setSettingsSelector__(selector, done+1)
+    if isinstance(selector[done], list):
       settings = []
-      for mod in mask[done]:
+      for mod in selector[done]:
         if len(s) > 0:
           for ss in s:
             if isinstance(ss, list):
@@ -846,9 +846,9 @@ class Factor():
       settings = s
       if len(settings) > 0 and all(isinstance(ss, list) for ss in settings):
         for ss in settings:
-          ss.insert(0, mask[done])
+          ss.insert(0, selector[done])
       else:
-        settings.insert(0, mask[done])
+        settings.insert(0, selector[done])
     # print(settings)
     return settings
 

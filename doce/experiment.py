@@ -307,7 +307,7 @@ class Experiment():
 
   def do(
     self,
-    mask,
+    selector,
     function=None,
     *parameters,
     nbJobs=1,
@@ -315,17 +315,17 @@ class Experiment():
     logFileName='',
     mailInterval=0
     ):
-    """Operate the function with parameters on the :term:`settings<setting>` set generated using :term:`mask`.
+    """Operate the function with parameters on the :term:`settings<setting>` set generated using :term:`selector`.
 
-    Operate a given function on the setting set generated using mask. The setting set can be browsed in parallel by setting nbJobs>1. If logFileName is not empty, a faulty setting do not stop the execution, the error is stored and another setting is executed. If progress is set to True, a graphical display of the progress through the setting set is displayed.
+    Operate a given function on the setting set generated using selector. The setting set can be browsed in parallel by setting nbJobs>1. If logFileName is not empty, a faulty setting do not stop the execution, the error is stored and another setting is executed. If progress is set to True, a graphical display of the progress through the setting set is displayed.
 
     This function is essentially a wrapper to the function :meth:`doce.factor.Factor.do`.
 
     Parameters
     ----------
 
-    mask : a list of literals or a list of lists of literals
-      :term:`mask` used to specify the :term:`settings<setting>` set
+    selector : a list of literals or a list of lists of literals
+      :term:`selector` used to specify the :term:`settings<setting>` set
 
     function : function(:class:`~doce.factor.Factor`, :class:`~doce.experiment.Experiment`, \*parameters) (optional)
       A function that operates on a given setting within the experiment environnment with optional parameters.
@@ -345,7 +345,7 @@ class Experiment():
     progress : str (optional)
       display progress of scheduling the setting set.
 
-      If str has an m, show the mask of the current setting.
+      If str has an m, show the selector of the current setting.
       If str has an d, show a textual description of the current setting (default).
 
     logFileName : str (optional)
@@ -397,12 +397,12 @@ class Experiment():
     3+5=8
     """
 
-    return self.factor.mask(mask).do(function, self, *parameters, nbJobs=nbJobs, progress=progress, logFileName=logFileName, mailInterval=mailInterval)
+    return self.factor.select(selector).do(function, self, *parameters, nbJobs=nbJobs, progress=progress, logFileName=logFileName, mailInterval=mailInterval)
 
   def cleanDataSink(
     self,
     path,
-    mask=[],
+    selector=[],
     reverse=False,
     force=False,
     keep=False,
@@ -423,8 +423,8 @@ class Experiment():
 
       If has no / or \\\, a member of the NameSpace experiment.path.
 
-    mask : a list of literals or a list of lists of literals (optional)
-      :term:`mask` used to specify the :term:`settings<setting>` set
+    selector : a list of literals or a list of lists of literals (optional)
+      :term:`selector` used to specify the :term:`settings<setting>` set
 
     reverse : bool (optional)
       If False, remove any entry corresponding to the setting set (default).
@@ -548,11 +548,11 @@ class Experiment():
     if '/' not in path and '\\' not in path:
       path = self.__getattribute__('path').__getattribute__(path)
     if path:
-      self.factor.mask(mask).cleanDataSink(path, reverse=reverse, force=force, keep=keep, selector=selector, settingEncoding=settingEncoding, archivePath=archivePath, verbose=verbose)
+      self.factor.select(selector).cleanDataSink(path, reverse=reverse, force=force, keep=keep, selector=selector, settingEncoding=settingEncoding, archivePath=archivePath, verbose=verbose)
 
   # def clean(
   #   self,
-  #   mask=[],
+  #   selector=[],
   #   reverse=False,
   #   force=False,
   #   selector='*',
@@ -584,7 +584,7 @@ class Experiment():
   #   """
   #   for sns in self.__getattribute__('path').__dict__.keys():
   #     print('checking '+sns+' path')
-  #     self.cleanDataSink(sns, mask, reverse, force, selector, settingEncoding,
+  #     self.cleanDataSink(sns, selector, reverse, force, selector, settingEncoding,
   #     archivePath)
 
 class Path:

@@ -133,7 +133,7 @@ class Setting():
       2  three: ['none', 'c']
       3  four: ['d']
 
-    >>> for setting in f.mask([0, 1, 1]):
+    >>> for setting in f.select([0, 1, 1]):
     ...   # default display
     ...   print(setting.id())
     four_d_one_a_three_c_two_1
@@ -156,13 +156,13 @@ class Setting():
     >>> print(setting.id(singleton=False))
     one_a_three_c_two_1
     >>> delattr(f, 'four')
-    >>> for setting in f.mask([0, 0, 0]):
+    >>> for setting in f.select([0, 0, 0]):
     ...   print(setting.id())
     one_a_three_none_two_0
 
     >>> # set the default value of factor one to a
     >>> f.default('one', 'a')
-    >>> for setting in f.mask([0, 1, 1]):
+    >>> for setting in f.select([0, 1, 1]):
     ...   print(setting.id())
     three_c_two_1
     >>> # do not hide the default value in the description
@@ -170,7 +170,7 @@ class Setting():
     one_a_three_c_two_1
 
     >>> f.optional_parameter = ['value_one', 'value_two']
-    >>> for setting in f.mask([0, 1, 1, 0]):
+    >>> for setting in f.select([0, 1, 1, 0]):
     ...   print(setting.id())
     optional_parameter_value_one_three_c_two_1
     >>> # compress the names as pythonCase
@@ -179,7 +179,7 @@ class Setting():
     >>> delattr(f, 'optional_parameter')
 
     >>> f.optionalParameter = ['valueOne', 'valueTwo']
-    >>> for setting in f.mask([0, 1, 1, 0]):
+    >>> for setting in f.select([0, 1, 1, 0]):
     ...   print(setting.id())
     optionalParameter_valueOne_three_c_two_1
     >>> # compress the names as camelCase
@@ -187,7 +187,7 @@ class Setting():
     oppa_vaon_th_c_tw_1
 
     >>> f.optionalParameter = ['value_one', 'value_two']
-    >>> for setting in f.mask([0, 1, 1, 0]):
+    >>> for setting in f.select([0, 1, 1, 0]):
     ...   print(setting.id())
     optionalParameter_value_one_three_c_two_1
     >>> # compress the names with smart detection of the type of case
@@ -253,7 +253,7 @@ class Setting():
     >>> f.one = ['a', 'b', 'c']
     >>> f.two = [1, 2, 3]
 
-    >>> for setting in f.mask([1, 1]):
+    >>> for setting in f.select([1, 1]):
     ...   # the inital setting
     ...   print(setting)
     one b two 2

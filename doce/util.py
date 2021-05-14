@@ -253,16 +253,16 @@ def query_yes_no(
       sys.stdout.write("Please respond with 'yes' or 'no' "
                            "(or 'y' or 'n').\n")
 
-def expandMask(mask, factor, settings):
+def expandsSelector(selector, factor, settings):
 
   fi = settings.factors().index(factor)
 
-  if len(mask)<=fi:
-    for m in range(1+fi-len(mask)):
-      mask.append(-1)
+  if len(selector)<=fi:
+    for m in range(1+fi-len(selector)):
+      selector.append(-1)
 
   nm = []
-  for mi, m in enumerate(mask):
+  for mi, m in enumerate(selector):
     if m==-1:
       nm.append(list(range(len(getattr(settings, settings.factors()[mi])))))
     else:
