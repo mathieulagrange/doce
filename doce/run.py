@@ -124,9 +124,9 @@ def run():
     args.progress = ''
 
   try:
-    selector = ast.literal_eval(args.selector)
+    selector = ast.literal_eval(args.select)
   except:
-    selector = args.selector
+    selector = args.select
 
   parameter = ast.literal_eval(args.parameter)
 
@@ -187,7 +187,7 @@ def run():
       print('Please set the path.archive path before issuing an archive command.')
 
   logFileName = ''
-  if args.server>-2:
+  if args.host>-2:
     unparser = argunparse.ArgumentUnparser()
     kwargs = copy.deepcopy(vars(args))
     kwargs['server'] = -3
@@ -196,22 +196,22 @@ def run():
       command += '; bash '
     command = 'screen -dm bash -c \'python3 '+experiment.project.name+'.py '+command+'\''
     message = 'experiment launched on local host'
-    if args.server>-1:
+    if args.host>-1:
       if args.copy:
-        syncCommand = 'rsync -r '+experiment.path.code+'* '+experiment.host[args.server]+':'+experiment.path.code_raw
+        syncCommand = 'rsync -r '+experiment.path.code+'* '+experiment.host[args.host]+':'+experiment.path.code_raw
         print(syncCommand)
         os.system(syncCommand)
-      command = 'ssh '+experiment.host[args.server]+' "cd '+experiment.path.code_raw+'; '+command+'"'
-      message = 'experiment launched on host: '+experiment.host[args.server]
+      command = 'ssh '+experiment.host[args.host]+' "cd '+experiment.path.code_raw+'; '+command+'"'
+      message = 'experiment launched on host: '+experiment.host[args.host]
     print(command)
     os.system(command)
     print(message)
     exit()
 
-  if args.server == -3:
+  if args.host == -3:
     logFileName = '/tmp/explanes_'+experiment.project.name+'_'+experiment.status.runId+'.txt'
   if args.mail>-1:
-    experiment.sendMail(args.selector+' has started.', '<div> Selector = '+args.selector+'</div>')
+    experiment.sendMail(args.select+' has started.', '<div> Selector = '+args.select+'</div>')
   if args.run and hasattr(config, 'step'):
     experiment.do(selector, config.step, nbJobs=args.run, logFileName=logFileName, progress=args.progress, mailInterval = float(args.mail))
 
@@ -232,7 +232,7 @@ def run():
     else:
       displayMethod = args.display
 
-  body = '<div> Selector = '+args.selector+'</div>'
+  body = '<div> Selector = '+args.select+'</div>'
   if display:
     if hasattr(config, displayMethod):
       getattr(config, displayMethod)(experiment, experiment.factor.select(experiment.selector))
@@ -247,7 +247,7 @@ def run():
       if args.mail>-1:
         body += '<div> '+header+' </div><br>'+styler.render()
 
-  if args.server == -3:
+  if args.host == -3:
     logFileName = '/tmp/explanes_'+experiment.project.name+'_'+experiment.status.runId+'.txt'
     if os.path.exists(logFileName):
       with open(logFileName, 'r') as file:
@@ -256,7 +256,7 @@ def run():
           body+= '<h2> Error log </h2>'+log.replace('\n', '<br>')
 
   if args.mail>-1:
-    experiment.sendMail(args.selector+' is over.', body) #
+    experiment.sendMail(args.select+' is over.', body) #
 
 def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 

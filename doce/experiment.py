@@ -406,7 +406,7 @@ class Experiment():
     reverse=False,
     force=False,
     keep=False,
-    selector='*',
+    wildcard='*',
     settingEncoding={},
     archivePath = None,
     verbose=0
@@ -436,7 +436,7 @@ class Experiment():
 
       If True, do not prompt the user before modifying the data sink.
 
-    selector : str (optional)
+    wildcard : str (optional)
       end of the wildcard used to select the entries to remove or to keep (default: '*').
 
     settingEncoding : dict (optional)
@@ -474,7 +474,7 @@ class Experiment():
     >>> os.listdir(e.path.output)
     ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_2_mult.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy']
 
-    >>> e.cleanDataSink('output', [1, 1], force=True, reverse=True, selector='*mult*')
+    >>> e.cleanDataSink('output', [1, 1], force=True, reverse=True, wildcard='*mult*')
     >>> os.listdir(e.path.output)
     ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy']
 
@@ -530,7 +530,7 @@ class Experiment():
     /factor1_3_factor2_4/sum (Array(1,)) 'sum'
     >>> h5.close()
 
-    >>> e.cleanDataSink('output', [1, 1], force=True, reverse=True, selector='*mult*')
+    >>> e.cleanDataSink('output', [1, 1], force=True, reverse=True, wildcard='*mult*')
     >>> h5 = tb.open_file(e.path.output, mode='r')
     >>> print(h5)
     /tmp/test.h5 (File) ''
@@ -548,14 +548,14 @@ class Experiment():
     if '/' not in path and '\\' not in path:
       path = self.__getattribute__('path').__getattribute__(path)
     if path:
-      self.factor.select(selector).cleanDataSink(path, reverse=reverse, force=force, keep=keep, selector=selector, settingEncoding=settingEncoding, archivePath=archivePath, verbose=verbose)
+      self.factor.select(selector).cleanDataSink(path, reverse=reverse, force=force, keep=keep, wildcard=wildcard, settingEncoding=settingEncoding, archivePath=archivePath, verbose=verbose)
 
   # def clean(
   #   self,
   #   selector=[],
   #   reverse=False,
   #   force=False,
-  #   selector='*',
+  #   wildcard='*',
   #   settingEncoding={},
   #   archivePath = None
   #   ):
@@ -584,7 +584,7 @@ class Experiment():
   #   """
   #   for sns in self.__getattribute__('path').__dict__.keys():
   #     print('checking '+sns+' path')
-  #     self.cleanDataSink(sns, selector, reverse, force, selector, settingEncoding,
+  #     self.cleanDataSink(sns, selector, reverse, force, wildcard, settingEncoding,
   #     archivePath)
 
 class Path:

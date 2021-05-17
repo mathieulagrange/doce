@@ -1,4 +1,4 @@
-select(import os
+import os
 import shutil as sh
 import inspect
 import types
@@ -644,24 +644,32 @@ class Factor():
 
     """
     selector = []
-    for dm in strSelector:
-      m = [-1]*len(self._factors)
-      sp = dm.split('_')
-      factors = sp[0::2]
-      modalities = sp[1::2]
-      for dmki, dmk in enumerate(factors):
-        if dmk in self._factors:
-            mod = modalities[dmki]
-            refMod = []
-            for am in list(getattr(self, dmk)):
-              refMod.append(eu.specialCaracterNaturalNaming(str(am)))
-            if mod in refMod:
-              m[self._factors.index(dmk)] = refMod.index(mod)
-            else:
-              print('Warning: '+modalities[dmki]+' is not a modality of factor '+dmk+'.')
-        else:
-          print('Warning: '+dmk+' is not a factor.')
-      selector.append(m)
+    # print(strSelector)
+    if ',' in strSelector[0]:
+      for ss in strSelector[0].split(','):
+        s = self._str2list([ss])
+        selector.append(s[0])
+    else:
+      for dm in strSelector:
+        m = [-1]*len(self._factors)
+        sp = dm.split('_')
+        factors = sp[0::2]
+        modalities = sp[1::2]
+        for dmki, dmk in enumerate(factors):
+          if dmk in self._factors:
+              mod = modalities[dmki]
+              refMod = []
+              for am in list(getattr(self, dmk)):
+                refMod.append(eu.specialCaracterNaturalNaming(str(am)))
+              if mod in refMod:
+                m[self._factors.index(dmk)] = refMod.index(mod)
+              else:
+                print('Error: '+modalities[dmki]+' is not a modality of factor '+dmk+'.')
+                return [0]
+          else:
+            print('Error: '+dmk+' is not a factor.')
+            return [0]
+        selector.append(m)
     return selector
 
   def __str__(self):
