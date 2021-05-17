@@ -37,8 +37,8 @@ class Factor():
   >>> f.factor2=[2, 4]
 
   >>> print(f)
-    0  factor1: [1, 3]
-    1  factor2: [2, 4]
+    0  factor1: [1 3]
+    1  factor2: [2 4]
 
   >>> for setting in f:
   ...   print(setting)
@@ -285,7 +285,7 @@ class Factor():
     >>> for setting in f:
     ...  print(setting)
     f1 a f2 2
-    >>> # if volatile is set to False (default) when the selector is set and the setting set iterated, the setting set stays ready for another iteration.
+    >>> # if volatile is set to True when the selector is set and the setting set iterated, the setting set is reinitialized at the second iteration.
     >>> for setting in f.select([0, 1], volatile=True):
     ...  pass
     >>> for setting in f:
@@ -420,7 +420,8 @@ class Factor():
           if h5.root.__contains__(groupName):
             h5.remove_node(h5.root, groupName, recursive=True)
       h5.close()
-      print('repack')
+      if verbose:
+        print('repacking')
       # repack
       outfilename = path+'Tmp'
       command = ["ptrepack", "-o", "--chunkshape=auto", "--propindexes", path, outfilename]
@@ -440,7 +441,7 @@ class Factor():
     reverse=False,
     force=False,
     keep=False,
-    selector='*',
+    wildcard='*',
     settingEncoding={},
     archivePath='',
     verbose=0
@@ -457,12 +458,12 @@ class Factor():
       fileNames = []
       for setting in self:
         if verbose:
-          print('search path: '+path+'/'+setting.id(**settingEncoding)+selector)
-        for f in glob.glob(path+'/'+setting.id(**settingEncoding)+selector):
+          print('search path: '+path+'/'+setting.id(**settingEncoding)+wildcard)
+        for f in glob.glob(path+'/'+setting.id(**settingEncoding)+wildcard):
             fileNames.append(f)
       if reverse:
         complete = []
-        for f in glob.glob(path+'/'+selector):
+        for f in glob.glob(path+'/'+wildcard):
           complete.append(f)
         # print(fileNames)
         fileNames = [i for i in complete if i not in fileNames]
@@ -559,8 +560,8 @@ class Factor():
     >>> f.two = list(range(10))
 
     >>> print(f)
-      0  one: ['a', 'b']
-      1  two: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+      0  one: ['a' 'b']
+      1  two: [0 1 2 3 4 5 6 7 8 9]
     >>> print(f.asPandaFrame())
       Factor  0  1  2  3  4  5  6  7  8  9
     0    one  a  b
@@ -674,14 +675,20 @@ class Factor():
 
   def _checkSelector(self, selector):
     check=True
+    # print(selector)
+    # print(self._factors)
     for s in selector:
       for fi, f in enumerate(s):
-        nm = len(getattr(self, self._factors[fi]))
-        if f != -1:
-          for fm in f:
-            if fm+1 > nm:
-              print('Error: factor '+str(self._factors[fi])+' only has '+str(nm)+' modalities. Requested modality '+str(fm))
-              check = False
+        if fi<len(self._factors):
+          # print(type(getattr(self, self._factors[fi])))
+          nm = len(np.atleast_1d(getattr(self, self._factors[fi])))
+          if f != -1:
+            for fm in f:
+              if fm+1 > nm:
+                print('Error: factor '+str(self._factors[fi])+' only has '+str(nm)+' modalities. Requested modality '+str(fm))
+                check = False
+        elif f != -1:
+          print('Warning: the selector is longer than the number of factors. Doce takes this laste element into account only if it is equal to -1 (see the documentation of the Factor.select() method).')
 
     return check
 
@@ -705,6 +712,8 @@ class Factor():
       self._changed = True
     if name[0] != '_' and type(value) in {list, np.ndarray} and len(value)>1 and name not in self._nonSingleton:
       self._nonSingleton.append(name)
+    if name[0] != '_' and type(value) not in {list, np.ndarray} :
+      value = [value]
     if name[0] != '_' and type(value) not in {np.ndarray, Factor}:
       if len(value) and not all(isinstance(x, type(value[0])) for x in value):
         raise Exception('All the modalities of the factor '+name+' must be of the same type (str, int, or float)')
@@ -714,9 +723,9 @@ class Factor():
         value = np.array(value)
       elif len(value) and all(isinstance(x, int) for x in value):
         value = np.array(value, dtype=np.intc)
-      else:
+      elif len(value) and all(isinstance(x, float) for x in value):
         value = np.array(value, dtype=np.float)
-
+    # print(type(value))
     return object.__setattr__(self, name, value)
 
   def __delattr__(
@@ -828,7 +837,7 @@ class Factor():
               # print(attr)
               # print(isinstance(attr, int))
               if isinstance(attr, list) or isinstance(attr, np.ndarray):
-                m[mfi] = list(range(len(attr)))
+                m[mfi] = list(range(len(np.atleast_1d(attr))))
               else:
                 m[mfi] = [0]
 

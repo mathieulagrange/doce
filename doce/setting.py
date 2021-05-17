@@ -59,8 +59,8 @@ class Setting():
     >>> f.two = [1, 2]
 
     >>> print(f)
-      0  one: ['a', 'b']
-      1  two: [1, 2]
+      0  one: ['a' 'b']
+      1  two: [1 2]
 
     >>> for setting in f:
     ...   print(setting)
@@ -82,11 +82,8 @@ class Setting():
 
     format: str (optional)
       'long': (default)
-      'shortUnderscore': pythonCase delimitation
-      'shortCapital': camelCase delimitation
-      'short':
       'list': a list of string alternating factor and the corresponding modality
-      'hash':
+      'hash': a hashed version
 
     sort: bool (optional)
      if True, sorts the factors by name  (default).
@@ -123,14 +120,14 @@ class Setting():
 
     >>> f = doce.factor.Factor()
     >>> f.one = ['a', 'b']
-    >>> f.two = [0, 1]
+    >>> f.two = [0,1]
     >>> f.three = ['none', 'c']
     >>> f.four = 'd'
 
     >>> print(f)
-      0  one: ['a', 'b']
-      1  two: [0, 1]
-      2  three: ['none', 'c']
+      0  one: ['a' 'b']
+      1  two: [0 1]
+      2  three: ['none' 'c']
       3  four: ['d']
 
     >>> for setting in f.select([0, 1, 1]):
@@ -172,27 +169,14 @@ class Setting():
     >>> f.optional_parameter = ['value_one', 'value_two']
     >>> for setting in f.select([0, 1, 1, 0]):
     ...   print(setting.id())
-    optional_parameter_value_one_three_c_two_1
-    >>> # compress the names as pythonCase
-    >>> print(setting.id(format = 'shortUnderscore'))
-    oppa_vaon_th_c_tw_1
+    optional_parameter_valueunderscoreone_three_c_two_1
     >>> delattr(f, 'optional_parameter')
 
     >>> f.optionalParameter = ['valueOne', 'valueTwo']
     >>> for setting in f.select([0, 1, 1, 0]):
     ...   print(setting.id())
     optionalParameter_valueOne_three_c_two_1
-    >>> # compress the names as camelCase
-    >>> print(setting.id(format = 'shortCapital'))
-    oppa_vaon_th_c_tw_1
 
-    >>> f.optionalParameter = ['value_one', 'value_two']
-    >>> for setting in f.select([0, 1, 1, 0]):
-    ...   print(setting.id())
-    optionalParameter_value_one_three_c_two_1
-    >>> # compress the names with smart detection of the type of case
-    >>> print(setting.id(format = 'short'))
-    oppa_vaon_th_c_tw_1
     """
     id = []
     fNames = self._factor._factors
@@ -208,10 +192,10 @@ class Setting():
     for fIndex, f in enumerate(fNames):
       if f[0] != '_' and getattr(self, f) is not None and f not in hide:
         if (singleton or f in self._factor._nonSingleton) and (default or not hasattr(self._factor._default, f) or (not default and hasattr(self._factor._default, f) and getattr(self._factor._default, f) != getattr(self, f))):
-          id.append(eu.compressDescription(f, format))
+          id.append(f)
           # print(str(getattr(self, f)))
           modality = eu.specialCaracterNaturalNaming(str(getattr(self, f)))
-          id.append(eu.compressDescription(modality, format))
+          id.append(modality)
     if 'list' not in format:
       id = separator.join(id)
       if format == 'hash':
@@ -340,5 +324,5 @@ class Setting():
 
 if __name__ == '__main__':
     import doctest
-    doctest.testmod()
+    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
     # doctest.run_docstring_examples(Setting.id, globals())
