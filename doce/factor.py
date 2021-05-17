@@ -629,13 +629,13 @@ class Factor():
               if dmkl in getattr(self, dmk):
                  mm.append(list(getattr(self, dmk)).index(dmkl))
               else:
-                print('Warning: '+str(dmkl)+' is not a modality of factor '+dmk+'.')
+                print('Error: '+str(dmkl)+' is not a modality of factor '+dmk+'.')
             m[self._factors.index(dmk)] = mm
           else:
             if dm[dmk] in getattr(self, dmk):
               m[self._factors.index(dmk)] = list(getattr(self, dmk)).index(dm[dmk])
         else:
-          print('Warning: '+dmk+' is not a factor.')
+          print('Error: '+dmk+' is not a factor.')
       selector.append(m)
     return selector
 
@@ -671,6 +671,19 @@ class Factor():
             return [0]
         selector.append(m)
     return selector
+
+  def _checkSelector(self, selector):
+    check=True
+    for s in selector:
+      for fi, f in enumerate(s):
+        nm = len(getattr(self, self._factors[fi]))
+        if f != -1:
+          for fm in f:
+            if fm+1 > nm:
+              print('Error: factor '+str(self._factors[fi])+' only has '+str(nm)+' modalities. Requested modality '+str(fm))
+              check = False
+
+    return check
 
   def __str__(self):
     cString = ''
@@ -805,30 +818,31 @@ class Factor():
               m[il] = list(dict.fromkeys(l))
       self._expandedSelector = selector
 
-      for m in selector:
-        # handle -1 in selector
-        for mfi, mf in enumerate(m):
-          if isinstance(mf, int) and mf == -1 and mfi<len(self.factors()):
-            attr = self.__getattribute__(self.factors()
-            [mfi])
-            # print(attr)
-            # print(isinstance(attr, int))
-            if isinstance(attr, list) or isinstance(attr, np.ndarray):
-              m[mfi] = list(range(len(attr)))
-            else:
-              m[mfi] = [0]
+      if self._checkSelector(selector):
+        for m in selector:
+          # handle -1 in selector
+          for mfi, mf in enumerate(m):
+            if isinstance(mf, int) and mf == -1 and mfi<len(self.factors()):
+              attr = self.__getattribute__(self.factors()
+              [mfi])
+              # print(attr)
+              # print(isinstance(attr, int))
+              if isinstance(attr, list) or isinstance(attr, np.ndarray):
+                m[mfi] = list(range(len(attr)))
+              else:
+                m[mfi] = [0]
 
-        s = self.__setSettingsSelector__(m, 0)
-        if all(isinstance(ss, list) for ss in s):
-          for ss in s:
-            settings.append(ss)
-        else:
-          settings.append(s)
-      prunedSettings = [k for k,v in groupby(sorted(settings))]
-      if self._pruneSelector and len(prunedSettings) < len(settings):
-        settings = prunedSettings
-      self._changed = False
-      self._settings = settings
+          s = self.__setSettingsSelector__(m, 0)
+          if all(isinstance(ss, list) for ss in s):
+            for ss in s:
+              settings.append(ss)
+          else:
+            settings.append(s)
+        prunedSettings = [k for k,v in groupby(sorted(settings))]
+        if self._pruneSelector and len(prunedSettings) < len(settings):
+          settings = prunedSettings
+        self._changed = False
+        self._settings = settings
 
   def __setSettingsSelector__(self, selector, done):
     if done == len(selector):
