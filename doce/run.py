@@ -308,9 +308,11 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   cNoPercent = []
   cMinus = []
   cNoMinus = []
+  cMetric = []
   precisionFormat = {}
   for ci, c in enumerate(columns):
     if ci >= nbFactorColumns:
+      cMetric.append(c)
       if '%' in c:
         precisionFormat[c] = '{0:.'+str(experiment._display.metricPrecision-2)+'f}'
         cPercent.append(c)
@@ -356,6 +358,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   if experiment._display.highlight:
     styler.apply(highlightMax, subset=cNoMinus, axis=0)
     styler.apply(highlightMin, subset=cMinus, axis=0)
+    styler.apply(highlightStat, subset=cMetric, axis=None, **{'significance':table})
 
   return (df, header, styler)
 
@@ -365,6 +368,13 @@ def highlightMax(s):
 def highlightMin(s):
   is_min = s == s.min()
   return ['font-weight: bold' if v else '' for v in is_min]
+def highlightStat(s, significance):
+  print(s)
+  # print(table)
+  df = pd.DataFrame('', index=s.index, columns=s.columns)
+  dft = pd.DataFrame(significance)
+  df = df.where(s==0, 'color: blue')
+  return df
 
 
 def exportDataFrame(experiment, args, df, styler):
