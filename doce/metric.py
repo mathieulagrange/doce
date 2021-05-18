@@ -7,6 +7,7 @@ import doce.util as eu
 import copy
 from itertools import compress
 import time
+from scipy import stats
 
 class Metric():
   """Stores information about the way evaluation metrics are stored and manipulated.
@@ -73,6 +74,7 @@ class Metric():
 
     """
     table = []
+    stat = []
     modificationTimeStamp = []
     metricHasData = [False] * len(self.name())
     nbReducedMetrics = 0
@@ -82,7 +84,9 @@ class Metric():
     reducedMetrics = [False] * nbReducedMetrics
     for sIndex, setting in enumerate(settings):
       row = []
+      rStat = []
       idx = 0
+      nbMetrics = 0
       for mIndex, metric in enumerate(self.name()):
         fileName = dataLocation+setting.id(**settingEncoding)+'_'+metric+'.npy'
         if os.path.exists(fileName):
@@ -96,20 +100,39 @@ class Metric():
             reducedMetrics[idx] = True
             idx+=1
             row.append(self.reduceMetric(data, reductionType, reductionDirectiveModule))
+            rStat.append(data)
         else:
           if verbose:
             print('** Unable to find '+fileName)
           for reductionType in self.__getattribute__(metric):
             row.append(np.nan)
+            rStat.append(np.nan)
             idx+=1
       if len(row) and not all(np.isnan(c) for c in row):
         for factorName in reversed(settings.factors()):
           row.insert(0, setting.__getattribute__(factorName))
         table.append(row)
+        stat.append(rStat)
     nbFactors = len(settings.factors())
+    # print(stat[0][0])
+    significance = np.ndarray((len(settings),idx-1))
+    print(significance.shape)
+    for mi in range(idx-1):
+      # only for mean
+      # pick max
+      mv = []
+      for si, s in enumerate(settings):
+        mv.append(table[si][len(settings.factors())+mi])
+      im = np.argmax(mv)
+      sRow = []
+      for si, s in enumerate(settings):
+        (s, p) = stats.ttest_rel(stat[si][mi], stat[im][mi])
+        significance[si, mi] = p<0.05
+
+    print(significance)
     for ir, row in enumerate(table):
       table[ir] = row[:nbFactors]+list(compress(row[nbFactors:], reducedMetrics))
-    return (table, metricHasData, modificationTimeStamp)
+    return (table, metricHasData, modificationTimeStamp, significance)
 
   def reduceFromH5(
     self,
@@ -434,14 +457,14 @@ class Metric():
       modificationTimeStamp = []
       (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule)
     else:
-      (settingDescription, metricHasData, modificationTimeStamp) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule)
+      (settingDescription, metricHasData, modificationTimeStamp, significance) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule)
 
     columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricDisplay, metricDisplayLength, metricHasData, reducedMetricDisplay)
     nbColumnFactor = len(settings.factors())
 
     (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = eu.pruneSettingDescription(settingDescription, columnHeader, nbColumnFactor, factorDisplay)
 
-    return (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor, modificationTimeStamp)
+    return (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor, modificationTimeStamp, significance)
 
   def get(
     self,

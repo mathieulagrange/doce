@@ -271,7 +271,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
     ma[fi]=selector[fi][0]
     # print(ma)
 
-  (table, columns, header, nbFactorColumns, modificationTimeStamp) = experiment.metric.reduce(experiment.factor.select(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
+  (table, columns, header, nbFactorColumns, modificationTimeStamp, significance) = experiment.metric.reduce(experiment.factor.select(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
 
   if len(table) == 0:
       return (None, None, None)
@@ -283,11 +283,13 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 
     for m in range(1, len(selector[fi])):
       ma[fi]=selector[fi][m]
-      (sd, ch, csd, nb, md)  = experiment.metric.reduce(experiment.factor.select(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.verbose, reductionDirectiveModule=config)
+      (sd, ch, csd, nb, md, si)  = experiment.metric.reduce(experiment.factor.select(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.verbose, reductionDirectiveModule=config)
       columns.append(modalities[ma[fi]])
       modificationTimeStamp.append(md)
       for s in range(len(sd)):
         table[s].append(sd[s][-1])
+        significance[s].append(si[s][-1]) # TODO check probably wrong
+
     #
     # (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.select(experiment.selector), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.verbose, reductionDirectiveModule=config)
 
@@ -358,7 +360,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   if experiment._display.highlight:
     styler.apply(highlightMax, subset=cNoMinus, axis=0)
     styler.apply(highlightMin, subset=cMinus, axis=0)
-    styler.apply(highlightStat, subset=cMetric, axis=None, **{'significance':table})
+    styler.apply(highlightStat, subset=cMetric, axis=None, **{'significance':significance})
 
   return (df, header, styler)
 
@@ -370,10 +372,10 @@ def highlightMin(s):
   return ['font-weight: bold' if v else '' for v in is_min]
 def highlightStat(s, significance):
   print(s)
-  # print(table)
+  print(significance)
   df = pd.DataFrame('', index=s.index, columns=s.columns)
   dft = pd.DataFrame(significance)
-  df = df.where(s==0, 'color: blue')
+  df = df.where(significance>0, 'color: blue')
   return df
 
 
