@@ -253,7 +253,7 @@ def query_yes_no(
       sys.stdout.write("Please respond with 'yes' or 'no' "
                            "(or 'y' or 'n').\n")
 
-def expandsSelector(selector, factor, settings):
+def expandSelector(selector, factor, settings):
 
   fi = settings.factors().index(factor)
 

@@ -59,7 +59,8 @@ class Metric():
     dataLocation,
     settingEncoding={},
     verbose = False,
-    reductionDirectiveModule = None
+    reductionDirectiveModule = None,
+    metricSelector = None
     ):
     """Handle reduction of the metrics when considering numpy storage.
 
@@ -85,7 +86,8 @@ class Metric():
     for sIndex, setting in enumerate(settings):
       row = []
       rStat = []
-      idx = 0
+      rDir = []
+      nbReducedMetrics = 0
       nbMetrics = 0
       for mIndex, metric in enumerate(self.name()):
         fileName = dataLocation+setting.id(**settingEncoding)+'_'+metric+'.npy'
@@ -97,39 +99,43 @@ class Metric():
           metricHasData[mIndex] = True
           data = np.load(fileName)
           for reductionType in self.__getattribute__(metric):
-            reducedMetrics[idx] = True
-            idx+=1
+            reducedMetrics[nbReducedMetrics] = True
+            nbReducedMetrics+=1
             row.append(self.reduceMetric(data, reductionType, reductionDirectiveModule))
             rStat.append(data)
+            if reductionType[-1]=='-':
+              rDir.append(1)
+            else:
+              rDir.append(0)
         else:
           if verbose:
             print('** Unable to find '+fileName)
           for reductionType in self.__getattribute__(metric):
             row.append(np.nan)
             rStat.append(np.nan)
-            idx+=1
+            nbReducedMetrics+=1
       if len(row) and not all(np.isnan(c) for c in row):
         for factorName in reversed(settings.factors()):
           row.insert(0, setting.__getattribute__(factorName))
         table.append(row)
         stat.append(rStat)
     nbFactors = len(settings.factors())
-    # print(stat[0][0])
-    significance = np.ndarray((len(settings),idx-1))
-    print(significance.shape)
-    for mi in range(idx-1):
-      # only for mean
-      # pick max
+
+    significance = np.zeros((len(settings),nbReducedMetrics-1))
+    for mi in range(nbReducedMetrics-1):
       mv = []
       for si, s in enumerate(settings):
         mv.append(table[si][len(settings.factors())+mi])
-      im = np.argmax(mv)
+      if rDir[mi]:
+        im = np.argmin(mv)
+      else:
+        im = np.argmax(mv)
       sRow = []
       for si, s in enumerate(settings):
-        (s, p) = stats.ttest_rel(stat[si][mi], stat[im][mi])
-        significance[si, mi] = p<0.05
+        if si!=im:
+          (s, p) = stats.ttest_rel(stat[si][mi], stat[im][mi])
+          significance[si, mi] = p
 
-    print(significance)
     for ir, row in enumerate(table):
       table[ir] = row[:nbFactors]+list(compress(row[nbFactors:], reducedMetrics))
     return (table, metricHasData, modificationTimeStamp, significance)
@@ -455,9 +461,9 @@ class Metric():
 
     if dataLocation.endswith('.h5'):
       modificationTimeStamp = []
-      (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule)
+      (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
     else:
-      (settingDescription, metricHasData, modificationTimeStamp, significance) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule)
+      (settingDescription, metricHasData, modificationTimeStamp, significance) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
 
     columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricDisplay, metricDisplayLength, metricHasData, reducedMetricDisplay)
     nbColumnFactor = len(settings.factors())

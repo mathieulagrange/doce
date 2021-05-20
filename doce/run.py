@@ -279,19 +279,33 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
     modalities = getattr(experiment.factor, selectFactor)
     header = 'metric: '+columns.pop()+' '+header.replace(selectFactor+': '+str(modalities[0])+' ', '')
 
+    columns = columns[:nbFactorColumns]
     columns.append(modalities[ma[fi]])
-
+    print(0)
+    for s in range(len(table)):
+      v = table[s][nbFactorColumns+selectDisplay[0]]
+      table[s] = table[s][:nbFactorColumns]
+      table[s].append(v)
+    print(table)
+  # print(significance)
     for m in range(1, len(selector[fi])):
       ma[fi]=selector[fi][m]
-      (sd, ch, csd, nb, md, si)  = experiment.metric.reduce(experiment.factor.select(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.verbose, reductionDirectiveModule=config)
+      (sd, ch, csd, nb, md, si)  = experiment.metric.reduce(experiment.factor.select(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
       columns.append(modalities[ma[fi]])
-      modificationTimeStamp.append(md)
+      modificationTimeStamp += md
+      print(m)
+      # print(si)
       for s in range(len(sd)):
-        table[s].append(sd[s][-1])
-        significance[s].append(si[s][-1]) # TODO check probably wrong
+        table[s].append(sd[s][nbFactorColumns+selectDisplay[0]])
+        # significance[s].concatenate(si[s][-1]) # TODO check probably wrong
 
-    #
-    # (table, columns, header, nbFactorColumns) = experiment.metric.reduce(experiment.factor.select(experiment.selector), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, settingEncoding = experiment._settingEncoding, verbose=args.verbose, reductionDirectiveModule=config)
+  # print(significance)
+  if experiment._display.pValue:
+    significance = significance>experiment._display.pValue
+  else:
+    for ti, t in enumerate(table):
+      table[ti][-len(significance[ti]):]=significance[ti]
+
 
   if modificationTimeStamp:
     print('Displayed data generated from '+ time.ctime(min(modificationTimeStamp))+' to '+ time.ctime(max(modificationTimeStamp)))
@@ -326,13 +340,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
         cMinus.append(c)
       else:
         cNoMinus.append(c)
-  # print(precisionFormat)
-  # form = '{0:.'+str(experiment._display.metricPrecision-2)+'f}'
-  # df[df.columns[cPercent]]= df[df.columns[cPercent]].applymap(lambda x: np.round(x, experiment._display.metricPrecision-2)) # form.format
-  # form = '{0:.'+str(experiment._display.metricPrecision)+'f}'
-  # df[df.columns[cNoPercent]]= df[df.columns[cNoPercent]].applymap(lambda x: np.round(x, experiment._display.metricPrecision)) # form.format
-  # print(cPercent)
-  # print([experiment._display.metricPrecision-2]*len(cPercent))
+
   dPercent = pd.Series([experiment._display.metricPrecision-2]*len(cPercent), index=cPercent)
   dNoPercent = pd.Series([experiment._display.metricPrecision]*len(cNoPercent), index=cNoPercent)
   df=df.round(dPercent).round(dNoPercent)
@@ -375,7 +383,7 @@ def highlightStat(s, significance):
   print(significance)
   df = pd.DataFrame('', index=s.index, columns=s.columns)
   dft = pd.DataFrame(significance)
-  df = df.where(significance>0, 'color: blue')
+  df = df.where(significance==0, 'color: blue')
   return df
 
 
