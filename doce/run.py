@@ -264,21 +264,28 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   ma=copy.deepcopy(selector)
   if selectFactor:
     fi = experiment.factor.factors().index(selectFactor)
-    selector = doce.util.expandSelector(selector, selectFactor, experiment.factor)
+    selector = experiment.factor.expandSelector(selector, selectFactor)
+
+    # print(selector)
+    ms = selector[fi]
+    # print(ms)
     selector[fi] = [0]
     experiment.factor.select(selector).__setSettings__()
     settings = experiment.factor._settings
+    # print(settings)
+    # print(ms)
     for s in settings:
-     s[fi] = -1
-    ma=copy.deepcopy(selector)
-    ma[fi]=0
+     s[fi] = ms
+
+    # ma=copy.deepcopy(selector)
+    # ma[fi]=0
 
   (table, columns, header, nbFactorColumns, modificationTimeStamp, significance) = experiment.metric.reduce(experiment.factor.select(selector), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
 
   if len(table) == 0:
       return (None, None, None)
   if selectFactor:
-    modalities = getattr(experiment.factor, selectFactor)
+    modalities = getattr(experiment.factor, selectFactor)[ms]
     header = 'metric: '+columns[nbFactorColumns+selectDisplay
     [0]]+' '+header.replace(selectFactor+': '+str(modalities[0])+' ', '')
 
@@ -293,6 +300,8 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
       (sd, ch, csd, nb, md, si)  = experiment.metric.reduce(experiment.factor.select(s), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
       modificationTimeStamp += md
       significance[sIndex, :] = si[:, selectDisplay[0]]
+      print(s)
+      print(sd)
       for ssd in sd:
         table[sIndex].append(ssd[1+selectDisplay[0]])
 

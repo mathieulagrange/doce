@@ -314,12 +314,7 @@ class Factor():
     f1 c f2 2
     f1 c f2 3
     """
-    if selector and (isinstance(selector, str) or isinstance(selector, dict)):
-      selector = [selector]
-    if selector and any(isinstance(val, str) for val in selector):
-      selector = self._str2list(selector)
-    elif selector and any(isinstance(val, dict) for val in selector):
-      selector = self._dict2list(selector)
+    selector = self.__format__(selector)
 
     self._selector = selector
     self._selectorVolatile = volatile
@@ -615,6 +610,27 @@ class Factor():
       message += cst[:-2]
     return message
 
+  def expandSelector(self, selector, factor):
+    selector = self.__format__(selector)
+    print('////')
+    print(selector)
+    fi = self.factors().index(factor)
+
+    if len(selector)<=fi:
+      for m in range(1+fi-len(selector)):
+        selector.append(-1)
+
+    nm = []
+    for mi, m in enumerate(selector):
+      if m==-1:
+        nm.append(list(range(len(getattr(self, self.factors()[mi])))))
+      else:
+        nm.append(m)
+    nm.append(-1)
+    print(nm)
+    print('////')
+    return nm
+
   def _dict2list(self, dictSelector):
     """convert dict based selector to list based selector
 
@@ -882,6 +898,15 @@ class Factor():
         settings.insert(0, selector[done])
     # print(settings)
     return settings
+
+  def __format__(self, selector):
+    if selector and (isinstance(selector, str) or isinstance(selector, dict)):
+      selector = [selector]
+    if selector and any(isinstance(val, str) for val in selector):
+      selector = self._str2list(selector)
+    elif selector and any(isinstance(val, dict) for val in selector):
+      selector = self._dict2list(selector)
+    return selector
 
 if __name__ == '__main__':
     import doctest
