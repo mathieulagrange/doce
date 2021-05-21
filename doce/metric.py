@@ -141,8 +141,10 @@ class Metric():
           if si!=im:
             (s, p) = stats.ttest_rel(stat[si][mii], stat[im][mii])
             significance[si, mi] = p
+          else:
+            significance[si, mi] = -1
         mii += 1
-    print(significance)
+    # print(significance)
 
     for ir, row in enumerate(table):
       table[ir] = row[:nbFactors]+list(compress(row[nbFactors:], reducedMetrics))

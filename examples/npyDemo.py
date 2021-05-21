@@ -34,7 +34,7 @@ def set(args):
   experiment.factor.nbRuns = [2000]
 
   experiment.metric.mae = ['sqrt|mean-0*', 'std%-']
-  experiment.metric.mse = ['mean*', 'std%']
+  experiment.metric.mse = ['mean', 'std%']
   experiment.metric.duration = ['mean']
   experiment._display.metricPrecision = 20
   experiment._display.bar = False

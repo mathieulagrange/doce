@@ -243,7 +243,7 @@ def run():
         pd.set_option('precision', 2)
         print(df)
       if args.export != 'none':
-        exportDataFrame(experiment, args, df, styler)
+        exportDataFrame(experiment, args, df, styler, header)
       if args.mail>-1:
         body += '<div> '+header+' </div><br>'+styler.render()
 
@@ -263,61 +263,52 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   selector = experiment.selector
   ma=copy.deepcopy(selector)
   if selectFactor:
-    # print('pass')
-    # print(experiment.factor.factors())
     fi = experiment.factor.factors().index(selectFactor)
     selector = doce.util.expandSelector(selector, selectFactor, experiment.factor)
+    selector[fi] = [0]
+    experiment.factor.select(selector).__setSettings__()
+    settings = experiment.factor._settings
+    for s in settings:
+     s[fi] = -1
     ma=copy.deepcopy(selector)
-    ma[fi]=selector[fi][0]
-    # print(ma)
+    ma[fi]=0
 
-  (table, columns, header, nbFactorColumns, modificationTimeStamp, significance) = experiment.metric.reduce(experiment.factor.select(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
+  (table, columns, header, nbFactorColumns, modificationTimeStamp, significance) = experiment.metric.reduce(experiment.factor.select(selector), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
 
   if len(table) == 0:
       return (None, None, None)
   if selectFactor:
     modalities = getattr(experiment.factor, selectFactor)
-    header = 'metric: '+columns.pop()+' '+header.replace(selectFactor+': '+str(modalities[0])+' ', '')
+    header = 'metric: '+columns[nbFactorColumns+selectDisplay
+    [0]]+' '+header.replace(selectFactor+': '+str(modalities[0])+' ', '')
 
     columns = columns[:nbFactorColumns]
-    columns.append(modalities[ma[fi]])
-    print(0)
-    sig = np.zeros((len(table), len(modalities)))
-    sig[:, 0] = significance[:, selectDisplay[0]]
-    significance = sig
+    for m in modalities:
+      columns.append(str(m))
+    significance = np.zeros((len(settings), len(modalities)))
     for s in range(len(table)):
-      v = table[s][nbFactorColumns+selectDisplay[0]]
       table[s] = table[s][:nbFactorColumns]
-      table[s].append(v)
 
-    # print(table)
-    print(significance)
-    for m in range(1, len(selector[fi])):
-      ma[fi]=selector[fi][m]
-      (sd, ch, csd, nb, md, si)  = experiment.metric.reduce(experiment.factor.select(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
-      columns.append(modalities[ma[fi]])
+    for sIndex, s in enumerate(settings):
+      (sd, ch, csd, nb, md, si)  = experiment.metric.reduce(experiment.factor.select(s), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
       modificationTimeStamp += md
-      print(m)
-      print(si)
-      significance[:, m] = si[:, selectDisplay[0]]
+      significance[sIndex, :] = si[:, selectDisplay[0]]
+      for ssd in sd:
+        table[sIndex].append(ssd[1+selectDisplay[0]])
 
-      for s in range(len(sd)):
-        table[s].append(sd[s][nbFactorColumns+selectDisplay[0]])
-        # significance[s].concatenate(si[s][-1]) # TODO check probably wrong
+  best = significance == -1
+  significance = significance>experiment._display.pValue
+  significance = significance.astype(float)
+  significance[best] = -1
 
-
-  if experiment._display.pValue:
-    significance = significance>experiment._display.pValue
-  else:
+  if experiment._display.pValue == 0:
     for ti, t in enumerate(table):
       table[ti][-len(significance[ti]):]=significance[ti]
-  print(significance)
 
   if modificationTimeStamp:
     print('Displayed data generated from '+ time.ctime(min(modificationTimeStamp))+' to '+ time.ctime(max(modificationTimeStamp)))
   df = pd.DataFrame(table, columns=columns).fillna('')
-  # df[columns[nbFactorColumns+2:]] = df[columns[nbFactorColumns+2:]].round(experiment._display.metricPrecision)
-  # pd.set_option('precision', experiment._display.metricPrecision)
+
   if selectDisplay and not selectFactor and  len(columns)>=max(selectDisplay)+nbFactorColumns:
     columns = [columns[i] for i in [*range(nbFactorColumns)]+[s+nbFactorColumns for s in selectDisplay]]
     df = df[columns]
@@ -372,28 +363,21 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   if experiment._display.bar:
     styler.bar(subset=df.columns[nbFactorColumns:], align='mid', color=['#d65f5f', '#5fba7d'])
   if experiment._display.highlight:
-    styler.apply(highlightMax, subset=cNoMinus, axis=0)
-    styler.apply(highlightMin, subset=cMinus, axis=0)
     styler.apply(highlightStat, subset=cMetric, axis=None, **{'significance':significance})
+    styler.apply(highlightBest, subset=cMetric, axis=None, **{'significance':significance})
 
   return (df, header, styler)
 
-def highlightMax(s):
-  is_max = s == s.max()
-  return ['font-weight: bold' if v else '' for v in is_max]
-def highlightMin(s):
-  is_min = s == s.min()
-  return ['font-weight: bold' if v else '' for v in is_min]
 def highlightStat(s, significance):
-  print(s)
-  print(significance)
   df = pd.DataFrame('', index=s.index, columns=s.columns)
-  dft = pd.DataFrame(significance)
-  df = df.where(significance==0, 'color: blue')
+  df = df.where(significance<=0, 'color: blue')
+  return df
+def highlightBest(s, significance):
+  df = pd.DataFrame('', index=s.index, columns=s.columns)
+  df = df.where(significance>-1, 'font-weight: bold')
   return df
 
-
-def exportDataFrame(experiment, args, df, styler):
+def exportDataFrame(experiment, args, df, styler, header):
   if not os.path.exists(experiment.path.export):
     os.makedirs(experiment.path.export)
   if args.export == 'all':
@@ -413,6 +397,7 @@ def exportDataFrame(experiment, args, df, styler):
   reloadHeader =  '<script> window.onblur= function() {window.onfocus= function () {location.reload(true)}}; </script>'
   with open(exportFileName+'.html', "w") as outFile:
     outFile.write(reloadHeader)
+    outFile.write('<br><U>'+header+'</U><br><br>')
     outFile.write(styler.render())
   if 'csv' in args.export or 'all' == args.export:
     print('Creating '+exportFileName+'.csv')
@@ -465,3 +450,53 @@ if __name__ == '__main__':
 #     self.stdout.write("Writing %r\n" % s)
 #     traceback.print_stack(file=self.stdout)
 # sys.stdout = TracePrints()
+
+# if selectFactor:
+#   print('pass')
+#   # print(experiment.factor.factors())
+#   fi = experiment.factor.factors().index(selectFactor)
+#   print(selector)
+#   selector = doce.util.expandSelector(selector, selectFactor, experiment.factor)
+#   print('////')
+#   # selector[0] = [0]
+#   print(selector)
+#   experiment.factor.select(selector[0]).__setSettings__()
+#   print(experiment.factor._settings)
+#   print('////')
+#   ma=copy.deepcopy(selector)
+#   ma[fi]=selector[fi][0]
+#   print(ma)
+#
+# (table, columns, header, nbFactorColumns, modificationTimeStamp, significance) = experiment.metric.reduce(experiment.factor.select(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
+#
+# if len(table) == 0:
+#     return (None, None, None)
+# if selectFactor:
+#   modalities = getattr(experiment.factor, selectFactor)
+#   header = 'metric: '+columns.pop()+' '+header.replace(selectFactor+': '+str(modalities[0])+' ', '')
+#
+#   columns = columns[:nbFactorColumns]
+#   columns.append(modalities[ma[fi]])
+#   print(0)
+#   sig = np.zeros((len(table), len(modalities)))
+#   sig[:, 0] = significance[:, selectDisplay[0]]
+#   significance = sig
+#   for s in range(len(table)):
+#     v = table[s][nbFactorColumns+selectDisplay[0]]
+#     table[s] = table[s][:nbFactorColumns]
+#     table[s].append(v)
+#
+#   # print(table)
+#   # print(significance)
+#   for m in range(1, len(selector[fi])):
+#     ma[fi] = selector[fi][m]
+#     (sd, ch, csd, nb, md, si)  = experiment.metric.reduce(experiment.factor.select(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
+#     columns.append(modalities[ma[fi]])
+#     modificationTimeStamp += md
+#     print(m)
+#     # print(si)
+#     significance[:, m] = si[:, selectDisplay[0]]
+#
+#     for s in range(len(sd)):
+#       table[s].append(sd[s][nbFactorColumns+selectDisplay[0]])
+#       # significance[s].concatenate(si[s][-1]) # TODO check probably wrong
