@@ -282,30 +282,36 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
     columns = columns[:nbFactorColumns]
     columns.append(modalities[ma[fi]])
     print(0)
+    sig = np.zeros((len(table), len(modalities)))
+    sig[:, 0] = significance[:, selectDisplay[0]]
+    significance = sig
     for s in range(len(table)):
       v = table[s][nbFactorColumns+selectDisplay[0]]
       table[s] = table[s][:nbFactorColumns]
       table[s].append(v)
-    print(table)
-  # print(significance)
+
+    # print(table)
+    print(significance)
     for m in range(1, len(selector[fi])):
       ma[fi]=selector[fi][m]
       (sd, ch, csd, nb, md, si)  = experiment.metric.reduce(experiment.factor.select(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
       columns.append(modalities[ma[fi]])
       modificationTimeStamp += md
       print(m)
-      # print(si)
+      print(si)
+      significance[:, m] = si[:, selectDisplay[0]]
+
       for s in range(len(sd)):
         table[s].append(sd[s][nbFactorColumns+selectDisplay[0]])
         # significance[s].concatenate(si[s][-1]) # TODO check probably wrong
 
-  # print(significance)
+
   if experiment._display.pValue:
     significance = significance>experiment._display.pValue
   else:
     for ti, t in enumerate(table):
       table[ti][-len(significance[ti]):]=significance[ti]
-
+  print(significance)
 
   if modificationTimeStamp:
     print('Displayed data generated from '+ time.ctime(min(modificationTimeStamp))+' to '+ time.ctime(max(modificationTimeStamp)))

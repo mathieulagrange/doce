@@ -120,7 +120,7 @@ class Experiment():
     self._display.factorFormatInReduceLength = 2
     self._display.metricFormatInReduceLength = 2
     self._display.showRowIndex = True
-    self._display.highlight = False
+    self._display.highlight = True
     self._display.bar = True
     self._display.pValue = 0.05
 

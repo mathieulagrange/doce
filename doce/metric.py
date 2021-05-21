@@ -102,9 +102,13 @@ class Metric():
             reducedMetrics[nbReducedMetrics] = True
             nbReducedMetrics+=1
             row.append(self.reduceMetric(data, reductionType, reductionDirectiveModule))
-            rStat.append(data)
-            if reductionType[-1]=='-':
-              rDir.append(1)
+            # print(reductionType)
+            if '*' in reductionType:
+              rStat.append(data)
+              if reductionType[-1]=='-':
+                rDir.append(-1)
+              else:
+                rDir.append(1)
             else:
               rDir.append(0)
         else:
@@ -122,19 +126,23 @@ class Metric():
     nbFactors = len(settings.factors())
 
     significance = np.zeros((len(settings),nbReducedMetrics-1))
+    mii = 0
     for mi in range(nbReducedMetrics-1):
       mv = []
-      for si, s in enumerate(settings):
-        mv.append(table[si][len(settings.factors())+mi])
-      if rDir[mi]:
-        im = np.argmin(mv)
-      else:
-        im = np.argmax(mv)
-      sRow = []
-      for si, s in enumerate(settings):
-        if si!=im:
-          (s, p) = stats.ttest_rel(stat[si][mi], stat[im][mi])
-          significance[si, mi] = p
+      if rDir[mi] != 0:
+        for si, s in enumerate(settings):
+          mv.append(table[si][len(settings.factors())+mi])
+        if rDir[mi]<0:
+          im = np.argmin(mv)
+        else:
+          im = np.argmax(mv)
+        sRow = []
+        for si, s in enumerate(settings):
+          if si!=im:
+            (s, p) = stats.ttest_rel(stat[si][mii], stat[im][mii])
+            significance[si, mi] = p
+        mii += 1
+    print(significance)
 
     for ir, row in enumerate(table):
       table[ir] = row[:nbFactors]+list(compress(row[nbFactors:], reducedMetrics))
@@ -254,7 +262,7 @@ class Metric():
     reductionTypeDirective = reductionType
     indexPercent = -1
     if isinstance(reductionType, str):
-      split = reductionType.replace('%', '').split('-')
+      split = reductionType.replace('%', '').replace('*', '').split('-')
       reductionTypeDirective = split[0]
       ignore = ''
       if len(split)>1:
