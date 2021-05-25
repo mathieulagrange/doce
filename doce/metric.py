@@ -743,7 +743,7 @@ class Metric():
 
     doce.util.compressDescription
     """
-    # print(factorDisplay)
+
     columnHeader = []
     for factorName in factor.factors():
       columnHeader.append(eu.compressDescription(factorName, factorDisplay, factorDisplayLength))

@@ -186,7 +186,6 @@ class Factor():
     if progress:
       print('Number of settings: '+str(len(self)))
     if nbJobs>1 or nbJobs<0:
-      # print(nbJobs)
       result = Parallel(n_jobs=nbJobs, require='sharedmem')(delayed(setting.do)(function, experiment, logFileName, *parameters) for setting in self)
     else:
       startTime = time.time()
@@ -517,13 +516,10 @@ class Factor():
       for x in self.factors():
         if not f in getattr(self, x).factors():
           have[fi] = False
-    # print(have)
     factor = Factor()
     factor._default = tmp._default
     for fi, f in enumerate(tmp.factors()):
       m = getattr(tmp, f)
-      # print(m)
-      # print(type(m[0]))
       if not isinstance(m[0], str) and all(np.array([val.is_integer() for val in m])):
         m = np.array(m, dtype=np.intc)
       setattr(factor, f, m)
@@ -593,8 +589,6 @@ class Factor():
   def constantFactors(self, selector):
     self.select(selector)
     message = str(len(self))+' settings'
-    # print(self._selector)
-    # print(self._expandedSelector)
     cf = [ [] for _ in range(len(self._factors)) ]
     for m in self._expandedSelector:
       for fi, f in enumerate(self._factors):
@@ -612,8 +606,6 @@ class Factor():
 
   def expandSelector(self, selector, factor):
     selector = self.__format__(selector)
-    print('////')
-    print(selector)
     fi = self.factors().index(factor)
 
     if len(selector)<=fi:
@@ -627,8 +619,6 @@ class Factor():
       else:
         nm.append(m)
     nm.append(-1)
-    print(nm)
-    print('////')
     return nm
 
   def _dict2list(self, dictSelector):
@@ -691,8 +681,6 @@ class Factor():
 
   def _checkSelector(self, selector):
     check=True
-    # print(selector)
-    # print(self._factors)
     for s in selector:
       for fi, f in enumerate(s):
         if fi<len(self._factors):
@@ -733,15 +721,12 @@ class Factor():
     if name[0] != '_' and type(value) not in {np.ndarray, Factor}:
       if len(value) and not all(isinstance(x, type(value[0])) for x in value):
         raise Exception('All the modalities of the factor '+name+' must be of the same type (str, int, or float)')
-      # print(type(value))
-      # print(type(value[0]))
       if len(value) and all(isinstance(x, str) for x in value):
         value = np.array(value)
       elif len(value) and all(isinstance(x, int) for x in value):
         value = np.array(value, dtype=np.intc)
       elif len(value) and all(isinstance(x, float) for x in value):
         value = np.array(value, dtype=np.float)
-    # print(type(value))
     return object.__setattr__(self, name, value)
 
   def __delattr__(
@@ -793,18 +778,11 @@ class Factor():
       raise StopIteration
     else:
       self._setting = self._settings[self._currentSetting]
-      # print(self._setting)
       self._currentSetting += 1
       return es.Setting(self)
-      # if self._parallel:
-      #   return copy.deepcopy(self)
-      # else:
-      #   return self #  copy.deepcopy(self)
 
   def __getitem__(self, index):
-    # print('get item')
     self.__setSettings__()
-    # print(self._selector)
     return  self
 
 
@@ -850,8 +828,6 @@ class Factor():
             if isinstance(mf, int) and mf == -1 and mfi<len(self.factors()):
               attr = self.__getattribute__(self.factors()
               [mfi])
-              # print(attr)
-              # print(isinstance(attr, int))
               if isinstance(attr, list) or isinstance(attr, np.ndarray):
                 m[mfi] = list(range(len(np.atleast_1d(attr))))
               else:
@@ -896,7 +872,6 @@ class Factor():
           ss.insert(0, selector[done])
       else:
         settings.insert(0, selector[done])
-    # print(settings)
     return settings
 
   def __format__(self, selector):

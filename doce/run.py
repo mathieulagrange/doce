@@ -287,7 +287,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   if selectFactor:
     modalities = getattr(experiment.factor, selectFactor)[ms]
     header = 'metric: '+columns[nbFactorColumns+selectDisplay
-    [0]]+' '+header.replace(selectFactor+': '+str(modalities[0])+' ', '')
+    [0]]+' '+header.replace(selectFactor+': '+str(modalities[0])+' ', '')+' '+selectFactor
 
     columns = columns[:nbFactorColumns]
     for m in modalities:
@@ -300,8 +300,8 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
       (sd, ch, csd, nb, md, si)  = experiment.metric.reduce(experiment.factor.select(s), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
       modificationTimeStamp += md
       significance[sIndex, :] = si[:, selectDisplay[0]]
-      print(s)
-      print(sd)
+      # print(s)
+      # print(sd)
       for ssd in sd:
         table[sIndex].append(ssd[1+selectDisplay[0]])
 
@@ -447,65 +447,3 @@ def exportDataFrame(experiment, args, df, styler, header):
 if __name__ == '__main__':
     import doctest
     doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
-
-# find which line of code is printing
-# import sys
-# import traceback
-# class TracePrints(object):
-#   def __init__(self):
-#     self.stdout = sys.stdout
-#   def flush(self): pass
-#   def write(self, s):
-#     self.stdout.write("Writing %r\n" % s)
-#     traceback.print_stack(file=self.stdout)
-# sys.stdout = TracePrints()
-
-# if selectFactor:
-#   print('pass')
-#   # print(experiment.factor.factors())
-#   fi = experiment.factor.factors().index(selectFactor)
-#   print(selector)
-#   selector = doce.util.expandSelector(selector, selectFactor, experiment.factor)
-#   print('////')
-#   # selector[0] = [0]
-#   print(selector)
-#   experiment.factor.select(selector[0]).__setSettings__()
-#   print(experiment.factor._settings)
-#   print('////')
-#   ma=copy.deepcopy(selector)
-#   ma[fi]=selector[fi][0]
-#   print(ma)
-#
-# (table, columns, header, nbFactorColumns, modificationTimeStamp, significance) = experiment.metric.reduce(experiment.factor.select(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
-#
-# if len(table) == 0:
-#     return (None, None, None)
-# if selectFactor:
-#   modalities = getattr(experiment.factor, selectFactor)
-#   header = 'metric: '+columns.pop()+' '+header.replace(selectFactor+': '+str(modalities[0])+' ', '')
-#
-#   columns = columns[:nbFactorColumns]
-#   columns.append(modalities[ma[fi]])
-#   print(0)
-#   sig = np.zeros((len(table), len(modalities)))
-#   sig[:, 0] = significance[:, selectDisplay[0]]
-#   significance = sig
-#   for s in range(len(table)):
-#     v = table[s][nbFactorColumns+selectDisplay[0]]
-#     table[s] = table[s][:nbFactorColumns]
-#     table[s].append(v)
-#
-#   # print(table)
-#   # print(significance)
-#   for m in range(1, len(selector[fi])):
-#     ma[fi] = selector[fi][m]
-#     (sd, ch, csd, nb, md, si)  = experiment.metric.reduce(experiment.factor.select(ma), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
-#     columns.append(modalities[ma[fi]])
-#     modificationTimeStamp += md
-#     print(m)
-#     # print(si)
-#     significance[:, m] = si[:, selectDisplay[0]]
-#
-#     for s in range(len(sd)):
-#       table[s].append(sd[s][nbFactorColumns+selectDisplay[0]])
-#       # significance[s].concatenate(si[s][-1]) # TODO check probably wrong

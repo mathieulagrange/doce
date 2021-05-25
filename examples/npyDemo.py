@@ -30,7 +30,7 @@ def set(args):
 
   experiment.factor.dataType = ['float', 'double']
   experiment.factor.datasetSize = 1000*np.array([1, 2, 4, 8], dtype=np.intc)
-  experiment.factor.meanOffset = 10**np.array([0, 1, 2])
+  experiment.factor.meanOffset = 10.0**np.array([0, 1, 2])
   experiment.factor.nbRuns = [2000]
 
   experiment.metric.mae = ['sqrt|mean-0*', 'std%-']
