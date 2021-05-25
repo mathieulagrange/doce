@@ -22,22 +22,25 @@ def set(args):
   experiment.project.version = '0.1'
 
   experiment.path.output = '/tmp/'+experiment.project.name+'/'
-  # experiment.path.archive = '/tmp/archive/'+experiment.project.name+'/'
   experiment.path.code = '~/tools/explanes.py/demonstrations/'
   experiment.setPath()
 
   experiment.host = ['pc-lagrange.irccyn.ec-nantes.fr']
 
-  experiment.factor.dataType = ['float', 'double']
-  experiment.factor.datasetSize = 1000*np.array([1, 2, 4, 8], dtype=np.intc)
-  experiment.factor.meanOffset = 10.0**np.array([0, 1, 2])
-  experiment.factor.nbRuns = [2000]
+  experiment.plan = doce.Plan(
+    dataType = ['float', 'double'],
+    datasetSize = 1000*np.array([1, 2, 4, 8], dtype=np.intc),
+    meanOffset = 10.0**np.array([0, 1, 2]),
+    nbRuns = [2000])
 
-  experiment.metric.mae = ['sqrt|mean-0*', 'std%-']
-  experiment.metric.mse = ['mean', 'std%']
-  experiment.metric.duration = ['mean']
+  experiment.metric = doce.metric(
+    mae = ['sqrt|mean-0*', 'std%-'],
+    mse = ['mean', 'std%'],
+    duration = ['mean'])
+
   experiment._display.metricPrecision = 20
   experiment._display.bar = False
+
   return experiment
 
 def step(setting, experiment):

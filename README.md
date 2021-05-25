@@ -25,28 +25,3 @@ rename factor as experiment
 a doce environnment is a set of experiments, data sinks, and environnment variables.
 
 selector for export with sink selector considered also for display
-
-experiment: doce
-factor: experiment
-project: description
-description: purpose
-metric: sink
-
-experiment -> doce
-factor -> experiment
-metric -> output
-project -> description
-description -> purpose
-
-experiment.metric = NameSpace()
-experiment.metric.mse = []
-experiment.metric['mae'] = []
-
-doce(name='toto', )
-
-init(name):
-  self.name = name
-
-map(f, zip, mask)
-
-reduce()
