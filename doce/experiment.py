@@ -86,21 +86,20 @@ class Experiment():
   """
 
   def __init__(
-    self
+    self, **description
     ):
     # list of attributes (preserving order of insertion for antique versions of python)
     self._atrs = []
-    self.project = types.SimpleNamespace()
-    self.project.name = ''
-    self.project.description = ''
-    self.project.author = 'no name'
-    self.project.address = 'noname@noorg.org'
+    self._plan = doce.Plan()
+    self.name = ''
+    self.description = ''
+    self.author = 'no name'
+    self.address = 'noname@noorg.org'
 
     self.status = types.SimpleNamespace()
     self.status.runId = str(int((time.time()-datetime.datetime(2020,1,1,0,0).timestamp())/60))
     self.status.verbose = 0
 
-    self.factor = doce.Factor()
     self.parameter = types.SimpleNamespace()
     self.metric = doce.Metric()
     self.path = Path()
@@ -123,6 +122,10 @@ class Experiment():
     self._display.highlight = True
     self._display.bar = True
     self._display.pValue = 0.05
+
+    for field, value in description.items():
+      self.__setattr__(field, value)
+
 
 
 
@@ -158,8 +161,24 @@ class Experiment():
 
   def setPath(
     self,
+    name,
+    path,
+    create=True,
     force=False
     ):
+
+    # for sns in self.__getattribute__('path').__dict__.keys():
+    self.path.__setattr__(name, path)
+    path = os.path.abspath(os.path.expanduser(path))
+    if path:
+      if path.endswith('.h5'):
+        path = os.path.dirname(os.path.abspath(path))
+      if not os.path.exists(path):
+        if force or doce.util.query_yes_no('The '+sns+' path: '+path+' does not exist. Do you want to create it ?'):
+          os.makedirs(path)
+          if not force:
+            print('Path succesfully created.')
+
     """Create directories whose path described in experiment.path are not reachable.
 
     For each path set in experiment.path, create the directory if not reachable. The user may be prompted before creation.
@@ -185,16 +204,7 @@ class Experiment():
     >>> os.listdir('/tmp/'+e.project.name)
     ['processing', 'output']
     """
-    for sns in self.__getattribute__('path').__dict__.keys():
-      path = os.path.abspath(os.path.expanduser(self.__getattribute__('path').__getattribute__(sns)))
-      if path:
-        if path.endswith('.h5'):
-          path = os.path.dirname(os.path.abspath(path))
-        if not os.path.exists(path):
-          if force or doce.util.query_yes_no('The '+sns+' path: '+path+' does not exist. Do you want to create it ?'):
-            os.makedirs(path)
-            if not force:
-              print('Path succesfully created.')
+
 
   def __str__(
     self,
@@ -297,14 +307,14 @@ class Experiment():
     Sent message entitled: [explanes]  id ... hello ...
 
     """
-    header = 'From: expLanes mailer <'+self._gmailId+'@gmail.com> \r\nTo: '+self.project.author+' '+self.project.address+'\r\nMIME-Version: 1.0 \r\nContent-type: text/html \r\nSubject: [explanes] '+self.project.name+' id '+self.status.runId+' '+title+'\r\n'
+    header = 'From: expLanes mailer <'+self._gmailId+'@gmail.com> \r\nTo: '+self.author+' '+self.address+'\r\nMIME-Version: 1.0 \r\nContent-type: text/html \r\nSubject: [explanes] '+self.name+' id '+self.status.runId+' '+title+'\r\n'
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
     server.login(self._gmailId+'@gmail.com', self._gmailAppPassword)
-    server.sendmail(self._gmailId, self.project.address, header+body+'<h3> '+self.__str__(format = 'html')+'</h3>')
+    server.sendmail(self._gmailId, self.address, header+body+'<h3> '+self.__str__(format = 'html')+'</h3>')
     server.quit
-    print('Sent message entitled: [explanes] '+self.project.name+' id '+self.status.runId+' '+title+' on '+time.ctime(time.time()))
+    print('Sent message entitled: [explanes] '+self.name+' id '+self.status.runId+' '+title+' on '+time.ctime(time.time()))
 
   def do(
     self,
@@ -398,7 +408,7 @@ class Experiment():
     3+5=8
     """
 
-    return self.factor.select(selector).do(function, self, *parameters, nbJobs=nbJobs, progress=progress, logFileName=logFileName, mailInterval=mailInterval)
+    return self._plan.select(selector).do(function, self, *parameters, nbJobs=nbJobs, progress=progress, logFileName=logFileName, mailInterval=mailInterval)
 
   def cleanDataSink(
     self,
@@ -414,7 +424,7 @@ class Experiment():
     ):
     """ Perform a cleaning of a data sink (directory or h5 file).
 
-    This method is essentially a wrapper to :meth:`doce.factor.Factor.cleanDataSink`.
+    This method is essentially a wrapper to :meth:`doce.Factor.cleanDataSink`.
 
     Parameters
     ----------
@@ -441,7 +451,7 @@ class Experiment():
       end of the wildcard used to select the entries to remove or to keep (default: '*').
 
     settingEncoding : dict (optional)
-      format of the id describing the :term:`setting`. Please refer to :meth:`doce.factor.Factor.id` for further information.
+      format of the id describing the :term:`setting`. Please refer to :meth:`doce.Factor.id` for further information.
 
     archivePath : str (optional)
       If not None, specify an existing directory where the specified data will be moved.
@@ -451,7 +461,7 @@ class Experiment():
     See Also
     --------
 
-    doce.factor.Factor.cleanDataSink, doce.factor.Factor.id
+    doce.Factor.cleanDataSink, doce.Factor.id
 
     Examples
     --------
@@ -462,8 +472,8 @@ class Experiment():
     >>> e=doce.experiment.Experiment()
     >>> e.path.output = '/tmp/test'
     >>> e.setPath(force=True)
-    >>> e.factor.factor1=[1, 3]
-    >>> e.factor.factor2=[2, 4]
+    >>> e.plan.factor1=[1, 3]
+    >>> e.plan.factor2=[2, 4]
     >>> def myFunction(setting, experiment):
     ...   np.save(experiment.path.output+'/'+setting.id()+'_sum.npy', setting.factor1+setting.factor2)
     ...   np.save(experiment.path.output+'/'+setting.id()+'_mult.npy', setting.factor1*setting.factor2)
@@ -549,7 +559,14 @@ class Experiment():
     if '/' not in path and '\\' not in path:
       path = self.__getattribute__('path').__getattribute__(path)
     if path:
-      self.factor.select(selector).cleanDataSink(path, reverse=reverse, force=force, keep=keep, wildcard=wildcard, settingEncoding=settingEncoding, archivePath=archivePath, verbose=verbose)
+      self._plan.select(selector).cleanDataSink(path, reverse=reverse, force=force, keep=keep, wildcard=wildcard, settingEncoding=settingEncoding, archivePath=archivePath, verbose=verbose)
+
+  def plans(self):
+    names = []
+    for attribute in dir(self):
+      if attribute[0] != '_' and isinstance(getattr(self, attribute), doce.Plan):
+        names.append(attribute)
+    return names
 
   # def clean(
   #   self,

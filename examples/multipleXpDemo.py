@@ -11,21 +11,24 @@ if __name__ == "__main__":
 
 
 def set(args):
-  experiment = doce.experiment.Experiment()
-  experiment.project.name = os.path.basename(__file__)[:-3]
-  experiment.path.output = '/tmp/'+experiment.project.name+'/'
-  experiment.setPath()
+  experiment = doce.Experiment(
+    name = os.path.basename(__file__)[:-3]
+    )
 
-  experiment.factor.xp1 = doce.Factor()
-  experiment.factor.xp1.method = ['methodOne']
-  experiment.factor.xp1.parameterMethodOne = ['modalityOne', 'modalityTwo']
-  experiment.factor.xp2 = doce.Factor()
-  experiment.factor.xp2.method = ['methodTwo']
-  experiment.factor.xp2.parameterMethodTwo = [1, 2, 3]
+  experiment.setPath('output', '/tmp/'+experiment.name+'/')
+
+  experiment.xp1 = doce.Plan(
+    method = ['methodOne'],
+    parameterMethodOne = ['modalityOne', 'modalityTwo']
+  )
+  experiment.xp2 = doce.Plan(
+    method = ['methodTwo'],
+    parameterMethodTwo = [1, 2, 3]
+  )
 
   # experiment.factor.truc = doce.factor.Factor() #['machin', 'bidule']
 
-  experiment.metric.m = ['mean']
+  experiment.metric = doce.Metric(m = ['mean'])
 
   return experiment
 

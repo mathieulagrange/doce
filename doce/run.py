@@ -25,8 +25,8 @@ def run():
   >>> if __name__ == "__main__":
   ...   doce.experiment.run() # doctest: +SKIP
   >>> def set(experiment, args=None):
-  ...   experiment.factor.factor1=[1, 3]
-  ...   experiment.factor.factor2=[2, 4]
+  ...   experiment._plan.factor1=[1, 3]
+  ...   experiment._plan.factor2=[2, 4]
   ...   return experiment
   >>> def step(setting, experiment):
   ...   print(setting.id())
@@ -43,7 +43,7 @@ def run():
 
   $ python experiment_run.py -h
 
-    usage: npyDemo.py [-h] [-A [ARCHIVE]] [-C] [-d [DISPLAY]] [-D] [-e [EXPERIMENT]] [-E [EXPORT]] [-f] [-i] [-K [KEEP]] [-l] [-M [MAIL]] [-p PARAMETER] [-P [PROGRESS]] [-r [RUN]] [-R [REMOVE]] [-s SERVER] [-S] [-v]
+    usage: npyDemo.py [-h] [-A [ARCHIVE]] [-C] [-d [DISPLAY]] [-D] [-e [EXPERIMENT]] [-E [EXPORT]] [-f] [-i] [-K [KEEP]] [-l] [-M [MAIL]] [-p userData] [-P [PROGRESS]] [-r [RUN]] [-R [REMOVE]] [-s SERVER] [-S] [-v]
 
   optional arguments:
     -h, --help
@@ -70,8 +70,8 @@ def run():
       list settings.
     -M [MAIL], --mail [MAIL]
       send email at the beginning and end of the computation. If a positive integer value x is provided, additional emails are sent every x hours.
-    -p PARAMETER, --parameter PARAMETER
-      a dict specified as str (for example, '{"test": 1}') that will be available in Experiment.parameter (parameter.test 1).
+    -p USERDATA, --userData USERDATA
+      a dict specified as str (for example, '{"test": 1}') that will be available in Experiment.userData (userData.test 1).
     -P [PROGRESS], --progress [PROGRESS]
       display progress bar. Argument controls the display of the current setting: d alphanumeric description, s numeric selector, ds combination of both (default d).
     -r [RUN], --run [RUN]
@@ -92,26 +92,26 @@ def run():
   parser.add_argument('-A', '--archive', type=str, help='archive the selected  settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. The files are copied to the path experiment.path.archive if set.', nargs='?', const='')
   parser.add_argument('-C', '--copy', help='copy codebase to server defined by the server (-s) argument.', action='store_true')
   parser.add_argument('-d', '--display', type=str, help='display metrics. If no parameter is given, consider the default display and show all metrics. If the str parameter contain a list of integers, use the default display and show only the selected metrics defined by the integer list. If the str parameter contain a name, run the display method with this name.', nargs='?', default='-1')
-  parser.add_argument('-e', '--experiment', type=str, help='select experiment. List experiments if empty.', nargs='?', default='all')
+  # parser.add_argument('-e', '--experiment', type=str, help='select experiment. List experiments if empty.', nargs='?', default='all')
   parser.add_argument('-E', '--export', type=str, help='Export the display of reduced metrics among different file types (html, png, pdf). If parameter is empty, all exports are made. If parameter has a dot, interpreted as a filename which should be of support type. If parameter has nothing before the dot, interpreted as file type, and experiment.project.name is used. If parameter has no dot, interpreted as file name with no extension, and all exports are made.', nargs='?', default='none')
-  parser.add_argument('-f', '--factor', help='show the factors of the experiment.', action='store_true')
   parser.add_argument('-H', '--host', type=int, help='running on specified HOST. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside.', default=-2)
   parser.add_argument('-i', '--information', help='show information about the experiment.', action='store_true')
   parser.add_argument('-K', '--keep', type=str, help='keep only the selected settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. Unwanted files are moved to the path experiment.path.archive if set, deleted otherwise.', nargs='?', const='')
   parser.add_argument('-l', '--list', help='list settings.', action='store_true')
   parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation. If a positive integer value x is provided, additional emails are sent every x hours.', nargs='?', default='-1')
-  parser.add_argument('-p', '--parameter', type=str, help='a dict specified as str (for example, \'{\"test\": 1}\') that will be available in Experiment.parameter (parameter.test 1).', default='{}')
+  parser.add_argument('-p', '--plan', help='show the active plan of the experiment.', action='store_true')
   parser.add_argument('-P', '--progress', help='display progress bar. Argument controls the display of the current setting: d alphanumeric description, s numeric selector, ds combination of both (default d).', nargs='?', const='d')
   parser.add_argument('-r', '--run', type=int, help='perform computation. Integer parameter sets the number of jobs computed in parallel (default to one core).', nargs='?', const=1)
   parser.add_argument('-R', '--remove', type=str, help='remove the selected  settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. Unwanted files are moved to the path experiment.path.archive if set, deleted otherwise.', nargs='?', const='')
   parser.add_argument('-s', '--select', type=str, help='selection of settings', default='[]')
   parser.add_argument('-S', '--serverDefault', help='augment the command line with the content of the dict experiment._defaultServerRunArgument.', action='store_true')
+  parser.add_argument('-u', '--userData', type=str, help='a dict specified as str (for example, \'{\"test\": 1}\') that will be available in Experiment.userData (userData.test=1).', default='{}')
   parser.add_argument('-v', '--version', help='print version', action='store_true')
   parser.add_argument('-V', '--verbose', help='level of verbosity (default 0: silent).', action='store_true')
   args = parser.parse_args()
 
   if args.version:
-    print("Experiment version "+experiment.project.version)
+    print("Experiment version "+experiment.version)
     exit(1)
   if args.mail is None:
     args.mail = 0
@@ -123,12 +123,23 @@ def run():
   if args.progress is None:
     args.progress = ''
 
-  try:
-    selector = ast.literal_eval(args.select)
-  except:
-    selector = args.select
+  experimentId = 'all'
+  selector = args.select
+  if ':' in selector:
+    s = selector.split(':')
+    experimentId = s[0]
+    if len(s)>1:
+      selector = s[1]
+    else:
+      selector = ''
 
-  parameter = ast.literal_eval(args.parameter)
+  try:
+    selector = ast.literal_eval(selector)
+  except:
+    pass
+
+
+  userData = ast.literal_eval(args.userData)
 
   module = sys.argv[0][:-3]
   try:
@@ -138,31 +149,45 @@ def run():
    raise ValueError
 
   experiment = doce.experiment.Experiment()
-  if isinstance(parameter, dict):
-    experiment.parameter = parameter
+  if isinstance(userData, dict):
+    experiment.userData = userData
 
   experiment = config.set(experiment)
+
   experiment.selector = selector
-  # if len(experiment.selector):
-  #   print(experiment.factor.constantFactors(experiment.selector))
 
   experiment.status.verbose = args.verbose
 
-  if args.experiment != 'all':
-    if args.experiment is None:
-      for e in experiment.factor.factors():
-        if isinstance(e, doce.Factor):
-          print('Experiment '+e+': ')
-          print(getattr(experiment.factor, e))
-        else:
-          print('There is only one experiment. Please do not consider the -e (--experiment) option and use -i for information about the factors.')
-          break
-    elif hasattr(experiment.factor, args.experiment):
-      experiment.factor = getattr(experiment.factor, args.experiment)
+  plans = experiment.plans()
+  if len(plans)==1:
+    experiment._plan = getattr(experiment, plans[0])
+  else:
+    if experimentId == 'all':
+      oPlans = []
+      for p in plans:
+        oPlans.append(getattr(experiment, p))
+      experiment._plan = experiment._plan.merge(oPlans)
     else:
-      print('Unrecognized experiment: '+args.experiment)
-  elif len(experiment.factor.factors())>0 and isinstance(getattr(experiment.factor, experiment.factor.factors()[0]), doce.factor.Factor):
-    experiment.factor = experiment.factor.merge()
+      if experimentId.isnumeric():
+        print('pass')
+        experimentId = plans[int(experimentId)]
+      experiment._plan = getattr(experiment, experimentId)
+
+  # if experimentId != 'all':
+  #   if experimentId is None:
+  #     for e in :
+  #       if isinstance(getattr(self, e), doce.Plan):
+  #         print('Selecting plan '+e+': ')
+  #         print(getattr(experiment, e))
+  #       else:
+  #         print('There is only one experiment. Please do not consider the -e (--experiment) option and use -i for information about the factors.')
+  #         break
+  #   elif hasattr(experiment._plan, experimentId):
+  #     experiment._plan = getattr(experiment._plan, experimentId)
+  #   else:
+  #     print('Unrecognized experiment: '+experimentId)
+  # elif len(experiment.plans())>0:
+
   if args.serverDefault:
     args.serverDefault = False
     for key in experiment._defaultServerRunArgument:
@@ -171,8 +196,8 @@ def run():
 
   if args.information:
       print(experiment)
-  if args.factor:
-      print(experiment.factor.asPandaFrame())
+  if args.plan:
+      print(experiment._plan.asPandaFrame())
   if args.list:
     experiment.do(experiment.selector, progress='')
 
@@ -235,7 +260,7 @@ def run():
   body = '<div> Selector = '+args.select+'</div>'
   if display:
     if hasattr(config, displayMethod):
-      getattr(config, displayMethod)(experiment, experiment.factor.select(experiment.selector))
+      getattr(config, displayMethod)(experiment, experiment._plan.select(experiment.selector))
     else:
       (df, header, styler) = dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor)
       if df is not None:
@@ -263,15 +288,15 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   selector = experiment.selector
   ma=copy.deepcopy(selector)
   if selectFactor:
-    fi = experiment.factor.factors().index(selectFactor)
-    selector = experiment.factor.expandSelector(selector, selectFactor)
+    fi = experiment._plan.factors().index(selectFactor)
+    selector = experiment._plan.expandSelector(selector, selectFactor)
 
     # print(selector)
     ms = selector[fi]
     # print(ms)
     selector[fi] = [0]
-    experiment.factor.select(selector).__setSettings__()
-    settings = experiment.factor._settings
+    experiment._plan.select(selector).__setSettings__()
+    settings = experiment._plan._settings
     # print(settings)
     # print(ms)
     for s in settings:
@@ -280,12 +305,12 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
     # ma=copy.deepcopy(selector)
     # ma[fi]=0
 
-  (table, columns, header, nbFactorColumns, modificationTimeStamp, significance) = experiment.metric.reduce(experiment.factor.select(selector), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
+  (table, columns, header, nbFactorColumns, modificationTimeStamp, significance) = experiment.metric.reduce(experiment._plan.select(selector), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
 
   if len(table) == 0:
       return (None, None, None)
   if selectFactor:
-    modalities = getattr(experiment.factor, selectFactor)[ms]
+    modalities = getattr(experiment._plan, selectFactor)[ms]
     header = 'metric: '+columns[nbFactorColumns+selectDisplay
     [0]]+' '+header.replace(selectFactor+': '+str(modalities[0])+' ', '')+' '+selectFactor
 
@@ -297,7 +322,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
       table[s] = table[s][:nbFactorColumns]
 
     for sIndex, s in enumerate(settings):
-      (sd, ch, csd, nb, md, si)  = experiment.metric.reduce(experiment.factor.select(s), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
+      (sd, ch, csd, nb, md, si)  = experiment.metric.reduce(experiment._plan.select(s), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
       modificationTimeStamp += md
       significance[sIndex, :] = si[:, selectDisplay[0]]
       # print(s)

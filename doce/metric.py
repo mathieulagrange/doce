@@ -39,10 +39,14 @@ class Metric():
 
   In this case, the odd values will be removed before reduction and the last reduction will select the first value of the metric vector, expressed in percents by multiplying it by 100.
   """
-  def __init__(self):
+  def __init__(self, **metrics):
     self._unit = types.SimpleNamespace()
     self._description = types.SimpleNamespace()
     self._metrics = []
+
+    for metric, reduction in metrics.items():
+      self.__setattr__(metric, reduction)
+
 
   def __setattr__(
     self,
@@ -833,7 +837,7 @@ class Metric():
           cString+=', the '+str(self._description.__getattribute__(atr))+''
         if hasattr(self._unit, atr) and self._unit.__getattribute__(atr):
           cString+=' in '+str(self._unit.__getattribute__(atr))
-        cString += '.\r\n'
+        cString += '\r\n'
     return cString.rstrip()
 
 if __name__ == '__main__':
