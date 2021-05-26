@@ -32,15 +32,15 @@ class Plan():
 
   >>> import doce
 
-  >>> f = doce.plan.Plan()
-  >>> f.factor1=[1, 3]
-  >>> f.factor2=[2, 4]
+  >>> p = doce.Plan()
+  >>> p.factor1=[1, 3]
+  >>> p.factor2=[2, 4]
 
-  >>> print(f)
+  >>> print(p)
     0  factor1: [1 3]
     1  factor2: [2 4]
 
-  >>> for setting in f:
+  >>> for setting in p:
   ...   print(setting)
   factor1 1 factor2 2
   factor1 1 factor2 4
@@ -88,33 +88,33 @@ class Plan():
   	See Also
   	--------
 
-    doce.plan.Plan.id
+    doce.Plan.id
 
   	Examples
   	--------
 
     >>> import doce
 
-    f = doce.Plan()
+    p = doce.Plan()
 
-    f.f1 = ['a', 'b']
-    f.f2 = [1, 2, 3]
+    p.f1 = ['a', 'b']
+    p.f2 = [1, 2, 3]
 
     print(f)
-    for setting in f.select():
+    for setting in p.select():
       print(setting.id())
 
-    f.default('f2', 2)
+    p.default('f2', 2)
 
-    for setting in f:
+    for setting in p:
       print(setting.id())
 
-    f.f2 = [0, 1, 2, 3]
+    p.f2 = [0, 1, 2, 3]
     print(f)
 
-    f.default('f2', 2)
+    p.default('f2', 2)
 
-    for setting in f:
+    for setting in p:
       print(setting.id())
 
 
@@ -146,7 +146,7 @@ class Plan():
     Parameters
     ----------
 
-    function : function(:class:`~doce.plan.Plan`, :class:`~doce.experiment.Experiment`, \*parameters)
+    function : function(:class:`~doce.Plan`, :class:`~doce.experiment.Experiment`, \*parameters)
       operates on a given setting within the experiment environnment with optional parameters.
 
     experiment:
@@ -243,55 +243,55 @@ class Plan():
 
     >>> import doce
 
-    >>> f = doce.plan.Plan()
-    >>> f.f1=['a', 'b', 'c']
-    >>> f.f2=[1, 2, 3]
+    >>> p = doce.Plan()
+    >>> p.f1=['a', 'b', 'c']
+    >>> p.f2=[1, 2, 3]
 
     >>> # doce allows two ways of defining the selector. The first one is dict based:
-    >>> for setting in f.select([{'f1':'b', 'f2':[1, 2]}, {'f1':'c', 'f2':[3]}]):
+    >>> for setting in p.select([{'f1':'b', 'f2':[1, 2]}, {'f1':'c', 'f2':[3]}]):
     ...  print(setting)
     f1 b f2 1
     f1 b f2 2
     f1 c f2 3
 
     >>> # The second one is list based. In this exmaple, we select the settings with the second modality of the first factor, and with the first modality of the second factor
-    >>> for setting in f.select([1, 0]):
+    >>> for setting in p.select([1, 0]):
     ...  print(setting)
     f1 b f2 1
     >>> # select the settings with all the modalities of the first factor, and the second modality of the second factor
-    >>> for setting in f.select([-1, 1]):
+    >>> for setting in p.select([-1, 1]):
     ...  print(setting)
     f1 a f2 2
     f1 b f2 2
     f1 c f2 2
     >>> # the selection of all the modalities of the remaining factors can be conveniently expressed
-    >>> for setting in f.select([1]):
+    >>> for setting in p.select([1]):
     ...  print(setting)
     f1 b f2 1
     f1 b f2 2
     f1 b f2 3
     >>> # select the settings using 2 selector, where the first selects the settings with the first modality of the first factor and with the second modality of the second factor, and the second selector selects the settings with the second modality of the first factor, and with the third modality of the second factor
-    >>> for setting in f.select([[0, 1], [1, 2]]):
+    >>> for setting in p.select([[0, 1], [1, 2]]):
     ...  print(setting)
     f1 a f2 2
     f1 b f2 3
     >>> # the latter expression may be interpreted as the selection of the settings with the first and second modalities of the first factor and with second and third modalities of the second factor. In that case, one needs to add a -1 at the end the selector (even if by doing so the length of the selector is larger than the number of factors)
-    >>> for setting in f.select([[0, 1], [1, 2], -1]):
+    >>> for setting in p.select([[0, 1], [1, 2], -1]):
     ...  print(setting)
     f1 a f2 2
     f1 a f2 3
     f1 b f2 2
     f1 b f2 3
     >>> # if volatile is set to False (default) when the selector is set and the setting set iterated, the setting set stays ready for another iteration.
-    >>> for setting in f.select([0, 1]):
+    >>> for setting in p.select([0, 1]):
     ...  pass
-    >>> for setting in f:
+    >>> for setting in p:
     ...  print(setting)
     f1 a f2 2
     >>> # if volatile is set to True when the selector is set and the setting set iterated, the setting set is reinitialized at the second iteration.
-    >>> for setting in f.select([0, 1], volatile=True):
+    >>> for setting in p.select([0, 1], volatile=True):
     ...  pass
-    >>> for setting in f:
+    >>> for setting in p:
     ...  print(setting)
     f1 a f2 1
     f1 a f2 2
@@ -303,9 +303,9 @@ class Plan():
     f1 c f2 2
     f1 c f2 3
     >>> # if volatile was set to False (default) when the selector was first set and the setting set iterated, the complete set of settings can be reached by calling selector with no parameters.
-    >>> for setting in f.select([0, 1]):
+    >>> for setting in p.select([0, 1]):
     ...  pass
-    >>> for setting in f.select():
+    >>> for setting in p.select():
     ...  print(setting)
     f1 a f2 1
     f1 a f2 2
@@ -336,12 +336,12 @@ class Plan():
 
     >>> import doce
 
-    >>> f = doce.plan.Plan()
-    >>> f.f1=['a', 'b']
-    >>> f.f2=[1, 2]
-    >>> f.f3=[0, 1]
+    >>> p = doce.Plan()
+    >>> p.f1=['a', 'b']
+    >>> p.f2=[1, 2]
+    >>> p.f3=[0, 1]
 
-    >>> print(f.factors())
+    >>> print(p.factors())
     ['f1', 'f2', 'f3']
     """
     return self._factors
@@ -367,13 +367,13 @@ class Plan():
 
     >>> import doce
 
-    >>> f = doce.plan.Plan()
-    >>> f.one = ['a', 'b']
-    >>> f.two = list(range(10))
+    >>> p = doce.Plan()
+    >>> p.one = ['a', 'b']
+    >>> p.two = list(range(10))
 
-    >>> print(f.nbModalities('one'))
+    >>> print(p.nbModalities('one'))
     2
-    >>> print(f.nbModalities(1))
+    >>> print(p.nbModalities(1))
     10
     """
     if isinstance(factor, int):
@@ -551,15 +551,15 @@ class Plan():
 
     >>> import doce
 
-    >>> f = doce.plan.Plan()
-    >>> f.one = ['a', 'b']
-    >>> f.two = list(range(10))
+    >>> p = doce.Plan()
+    >>> p.one = ['a', 'b']
+    >>> p.two = list(range(10))
 
-    >>> print(f)
+    >>> print(p)
       0  one: ['a' 'b']
       1  two: [0 1 2 3 4 5 6 7 8 9]
-    >>> print(f.asPandaFrame())
-      Plan  0  1  2  3  4  5  6  7  8  9
+    >>> print(p.asPandaFrame())
+      Factors  0  1  2  3  4  5  6  7  8  9
     0    one  a  b
     1    two  0  1  2  3  4  5  6  7  8  9
     """

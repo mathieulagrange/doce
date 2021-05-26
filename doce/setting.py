@@ -1,4 +1,4 @@
-import doce.util as eu
+import doce
 import hashlib
 import copy
 import logging
@@ -15,11 +15,11 @@ class Setting():
 
   >>> import doce
 
-  >>> f = doce.factor.Factor()
-  >>> f.f1=['a', 'b']
-  >>> f.f2=[1, 2]
+  >>> p = doce.Plan()
+  >>> p.f1=['a', 'b']
+  >>> p.f2=[1, 2]
 
-  >>> for setting in f:
+  >>> for setting in p:
   ...   print(setting)
   f1 a f2 1
   f1 a f2 2
@@ -28,21 +28,21 @@ class Setting():
 
   """
 
-  def __init__(self, factor, settingArray=None):
-    self._factor = factor
-    # underscore = ['_nonSingleton', '_default', '_factors', '_setting']
+  def __init__(self, plan, settingArray=None):
+    self._plan = plan
+    # underscore = ['_nonSingleton', '_default', '_plans', '_setting']
     # for f in underscore:
-    #   self.__setattr__(f, getattr(factor, f))
+    #   self.__setattr__(f, getattr(plan, f))
 
     if settingArray:
       self._setting = copy.deepcopy(settingArray)
     else:
-      self._setting = copy.deepcopy(factor._setting)
+      self._setting = copy.deepcopy(plan._setting)
 
-    for fi, f in enumerate(factor.factors()):
+    for fi, f in enumerate(plan.factors()):
       # print(self._setting[fi])
       # print(f)
-      self.__setattr__(f, getattr(factor, f)[self._setting[fi]])
+      self.__setattr__(f, getattr(plan, f)[self._setting[fi]])
 
   def __str__(self):
     """returns a one-liner str with a readable description of the Factor object or the current setting.
@@ -54,15 +54,15 @@ class Setting():
 
     >>> import doce
 
-    >>> f = doce.factor.Factor()
-    >>> f.one = ['a', 'b']
-    >>> f.two = [1, 2]
+    >>> p = doce.Plan()
+    >>> p.one = ['a', 'b']
+    >>> p.two = [1, 2]
 
-    >>> print(f)
+    >>> print(p)
       0  one: ['a' 'b']
       1  two: [1 2]
 
-    >>> for setting in f:
+    >>> for setting in p:
     ...   print(setting)
     one a two 1
     one a two 2
@@ -73,9 +73,9 @@ class Setting():
 
 
   def id(self, format='long', sort=True, separator='_', singleton=True, default=False, hide=[], toInt=True):
-    """return a one-liner str or a list of str that describes a setting or a :class:`~doce.factor.Factor` object.
+    """return a one-liner str or a list of str that describes a setting or a :class:`~doce.Plan` object.
 
-  	Return a one-liner str or a list of str that describes a setting or a :class:`~doce.factor.Factor` object with a high degree of flexibility.
+  	Return a one-liner str or a list of str that describes a setting or a :class:`~doce.Plan` object with a high degree of flexibility.
 
   	Parameters
   	----------
@@ -96,7 +96,7 @@ class Setting():
       if False, consider factors with only one modality (default).
 
     default: bool (optional)
-      if True, also consider couple of factor/modality where the modality is explicitly set to be a default value for this factor using :meth:`doce.factor.Factors.default`.
+      if True, also consider couple of factor/modality where the modality is explicitly set to be a default value for this factor using :meth:`doce.Plan.default`.
 
       if False, do not show them (default).
 
@@ -109,7 +109,7 @@ class Setting():
   	See Also
   	--------
 
-    doce.factor.Factor.default
+    doce.Plan.default
 
     doce.util.compressName
 
@@ -118,19 +118,19 @@ class Setting():
 
     >>> import doce
 
-    >>> f = doce.factor.Factor()
-    >>> f.one = ['a', 'b']
-    >>> f.two = [0,1]
-    >>> f.three = ['none', 'c']
-    >>> f.four = 'd'
+    >>> p = doce.Plan()
+    >>> p.one = ['a', 'b']
+    >>> p.two = [0,1]
+    >>> p.three = ['none', 'c']
+    >>> p.four = 'd'
 
-    >>> print(f)
+    >>> print(p)
       0  one: ['a' 'b']
       1  two: [0 1]
       2  three: ['none' 'c']
       3  four: ['d']
 
-    >>> for setting in f.select([0, 1, 1]):
+    >>> for setting in p.select([0, 1, 1]):
     ...   # default display
     ...   print(setting.id())
     four_d_one_a_three_c_two_1
@@ -152,34 +152,34 @@ class Setting():
     >>> # do not show factors with only one modality
     >>> print(setting.id(singleton=False))
     one_a_three_c_two_1
-    >>> delattr(f, 'four')
-    >>> for setting in f.select([0, 0, 0]):
+    >>> delattr(p, 'four')
+    >>> for setting in p.select([0, 0, 0]):
     ...   print(setting.id())
     one_a_three_none_two_0
 
     >>> # set the default value of factor one to a
-    >>> f.default('one', 'a')
-    >>> for setting in f.select([0, 1, 1]):
+    >>> p.default('one', 'a')
+    >>> for setting in p.select([0, 1, 1]):
     ...   print(setting.id())
     three_c_two_1
     >>> # do not hide the default value in the description
     >>> print(setting.id(default=True))
     one_a_three_c_two_1
 
-    >>> f.optional_parameter = ['value_one', 'value_two']
-    >>> for setting in f.select([0, 1, 1, 0]):
+    >>> p.optional_parameter = ['value_one', 'value_two']
+    >>> for setting in p.select([0, 1, 1, 0]):
     ...   print(setting.id())
     optional_parameter_valueunderscoreone_three_c_two_1
-    >>> delattr(f, 'optional_parameter')
+    >>> delattr(p, 'optional_parameter')
 
-    >>> f.optionalParameter = ['valueOne', 'valueTwo']
-    >>> for setting in f.select([0, 1, 1, 0]):
+    >>> p.optionalParameter = ['valueOne', 'valueTwo']
+    >>> for setting in p.select([0, 1, 1, 0]):
     ...   print(setting.id())
     optionalParameter_valueOne_three_c_two_1
 
     """
     id = []
-    fNames = self._factor._factors
+    fNames = self._plan._factors
     if isinstance(hide, str):
       hide=[hide]
     elif isinstance(hide, int) :
@@ -191,10 +191,10 @@ class Setting():
       fNames = sorted(fNames)
     for fIndex, f in enumerate(fNames):
       if f[0] != '_' and getattr(self, f) is not None and f not in hide:
-        if (singleton or f in self._factor._nonSingleton) and (default or not hasattr(self._factor._default, f) or (not default and hasattr(self._factor._default, f) and getattr(self._factor._default, f) != getattr(self, f))):
+        if (singleton or f in self._plan._nonSingleton) and (default or not hasattr(self._plan._default, f) or (not default and hasattr(self._plan._default, f) and getattr(self._plan._default, f) != getattr(self, f))):
           id.append(f)
           # print(str(getattr(self, f)))
-          modality = eu.specialCaracterNaturalNaming(str(getattr(self, f)))
+          modality = doce.util.specialCaracterNaturalNaming(str(getattr(self, f)))
           id.append(modality)
     if 'list' not in format:
       id = separator.join(id)
@@ -203,9 +203,9 @@ class Setting():
     return id
 
   def replace(self, factor, value=None, positional=0, relative=0):
-    """returns a new doce.factor.Factor object with one factor with modified modality.
+    """returns a new doce.Plan object with one factor with modified modality.
 
-    Returns a new doce.factor.Factor object with with one factor with modified modality. The value of the requested new modality can requested by 3 exclusive means: its value, its position in the modality array, or its relative position in the array with respect to the position of the current modality.
+    Returns a new doce.Plan object with with one factor with modified modality. The value of the requested new modality can requested by 3 exclusive means: its value, its position in the modality array, or its relative position in the array with respect to the position of the current modality.
 
     Parameters
     ----------
@@ -233,11 +233,11 @@ class Setting():
 
     >>> import doce
 
-    >>> f = doce.factor.Factor()
-    >>> f.one = ['a', 'b', 'c']
-    >>> f.two = [1, 2, 3]
+    >>> p = doce.Plan()
+    >>> p.one = ['a', 'b', 'c']
+    >>> p.two = [1, 2, 3]
 
-    >>> for setting in f.select([1, 1]):
+    >>> for setting in p.select([1, 1]):
     ...   # the inital setting
     ...   print(setting)
     one b two 2
@@ -258,11 +258,11 @@ class Setting():
 
     # get factor index
     if isinstance(factor, str):
-      factor = self._factor._factors.index(factor)
+      factor = self._plan._factors.index(factor)
     # get modality index
     if value is not None:
-      factorName = self._factor._factors[factor]
-      modalities = self._factor.__getattribute__(factorName)
+      factorName = self._plan._factors[factor]
+      modalities = self._plan.__getattribute__(factorName)
       positional, = np.where(modalities == value)
       positional = positional[0] # assumes no repetion
 
@@ -271,11 +271,11 @@ class Setting():
       sDesc[factor] += relative
     else:
       sDesc[factor] = positional
-    if sDesc[factor]< 0 or sDesc[factor] >= self._factor.nbModalities(factor):
+    if sDesc[factor]< 0 or sDesc[factor] >= self._plan.nbModalities(factor):
       print('Unable to find the requested modality.')
       return None
     else:
-      s = Setting(self._factor, sDesc)
+      s = Setting(self._plan, sDesc)
       return s
 
   def do(
@@ -287,12 +287,12 @@ class Setting():
     ):
     """run the function given as parameter for the setting.
 
-  	Helper function for the method :meth:`~doce.factor.Factor.do`.
+  	Helper function for the method :meth:`~doce.Plan.do`.
 
   	See Also
   	--------
 
-    doce.factor.Factor.do
+    doce.Plan.do
 
     """
     failed = 0

@@ -9,21 +9,21 @@ import doce
 class Experiment():
   """Stores high level information about the experiment and tools to control the processing and storage of data.
 
-  The experiment class displays high level information about the experiment in the experiment.project NameSpace such as its name, description, author, author's email address, and run identification. Information about storage of data is specified using the experiment.path NameSpace. It also stores a Factor object and a Metric object to respectively specify the factors and the metrics considered in the experiment.
+  The experiment class displays high level information about the experiment such as its name, description, author, author's email address, and run identification. Information about storage of data is specified using the experiment.path NameSpace. It also stores one or several Plan objects and a Metric object to respectively specify the experimental plans and the metrics considered in the experiment.
 
   See Also
   --------
 
-  doce.factor.Factor, doce.metric.Metric
+  doce.Plan, doce.metric.Metric
 
   Examples
   --------
 
   >>> import doce
-  >>> e=doce.experiment.Experiment()
-  >>> e.project.name='myExperiment'
-  >>> e.project.author='Mathieu Lagrange'
-  >>> e.project.address='mathieu.lagrange@ls2n.fr'
+  >>> e=doce.Experiment()
+  >>> e.name='myExperiment'
+  >>> e.author='Mathieu Lagrange'
+  >>> e.address='mathieu.lagrange@ls2n.fr'
   >>> e.path.processing='/tmp'
   >>> print(e)
   project:
@@ -149,11 +149,11 @@ class Experiment():
   #   >>> import doce
   #   >>> import os
   #   >>> e=doce.Experiment()
-  #   >>> e.project.name = 'experiment'
-  #   >>> e.path.processing = '/tmp/'+e.project.name+'/processing'
-  #   >>> e.path.output = '/tmp/'+e.project.name+'/output'
+  #   >>> e.name = 'experiment'
+  #   >>> e.path.processing = '/tmp/'+e.name+'/processing'
+  #   >>> e.path.output = '/tmp/'+e.name+'/output'
   #   >>> e.setPath(force=True)
-  #   >>> os.listdir('/tmp/'+e.project.name)
+  #   >>> os.listdir('/tmp/'+e.name)
   #   ['processing', 'output']
   #   """
   #   for sns in self.__getattribute__('path').__dict__.keys():
@@ -197,11 +197,11 @@ class Experiment():
     >>> import doce
     >>> import os
     >>> e=doce.Experiment()
-    >>> e.project.name = 'experiment'
-    >>> e.path.processing = '/tmp/'+e.project.name+'/processing'
-    >>> e.path.output = '/tmp/'+e.project.name+'/output'
+    >>> e.name = 'experiment'
+    >>> e.path.processing = '/tmp/'+e.name+'/processing'
+    >>> e.path.output = '/tmp/'+e.name+'/output'
     >>> e.setPath(force=True)
-    >>> os.listdir('/tmp/'+e.project.name)
+    >>> os.listdir('/tmp/'+e.name)
     ['processing', 'output']
     """
 
@@ -241,7 +241,7 @@ class Experiment():
     status:
       runId: ...
       verbose: 0
-    factor
+    plan
     parameter
     metric
     path:
@@ -255,7 +255,7 @@ class Experiment():
 
     >>> import doce
     >>> doce.Experiment().__str__(format='html')
-    '<div>project:</div><div>  name: </div><div>  description: </div><div>  author: no name</div><div>  address: noname@noorg.org</div><div>status:</div><div>  runId: ...</div><div>  verbose: 0</div><div>factor</div><div>parameter</div><div>metric</div><div>path:</div><div>  code_raw: /Users/lagrange/tools/doce/doce</div><div>  code: /Users/lagrange/tools/doce/doce</div><div>  archive_raw: </div><div>  archive: </div><div>  export_raw: export</div><div>  export: export</div><div>host: []</div><div></div>'
+    '<div>project:</div><div>  name: </div><div>  description: </div><div>  author: no name</div><div>  address: noname@noorg.org</div><div>status:</div><div>  runId: ...</div><div>  verbose: 0</div><div>plan</div><div>parameter</div><div>metric</div><div>path:</div><div>  code_raw: /Users/lagrange/tools/doce/doce</div><div>  code: /Users/lagrange/tools/doce/doce</div><div>  archive_raw: </div><div>  archive: </div><div>  export_raw: export</div><div>  export: export</div><div>host: []</div><div></div>'
     """
     description = ''
     for atr in self._atrs:
@@ -285,9 +285,9 @@ class Experiment():
     self,
     title='',
     body=''):
-    """Send an email to the email address given in experiment.project.address.
+    """Send an email to the email address given in experiment.address.
 
-    Send an email to the experiment.project.address email address using the smtp service from gmail. For privacy, please consider using a dedicated gmail account by setting experiment._gmailId and experiment._gmailAppPassword. For this, you will need to create a gmail account, set two-step validation and allow connection with app password (see https://support.google.com/accounts/answer/185833?hl=en).
+    Send an email to the experiment.address email address using the smtp service from gmail. For privacy, please consider using a dedicated gmail account by setting experiment._gmailId and experiment._gmailAppPassword. For this, you will need to create a gmail account, set two-step validation and allow connection with app password (see https://support.google.com/accounts/answer/185833?hl=en).
 
     Parameters
     ----------
@@ -301,8 +301,8 @@ class Experiment():
     Examples
     --------
     >>> import doce
-    >>> e=doce.experiment.Experiment()
-    >>> e.project.address = 'mathieu.lagrange@cnrs.fr'
+    >>> e=doce.Experiment()
+    >>> e.address = 'mathieu.lagrange@cnrs.fr'
     >>> e.sendMail('hello', '<div> good day </div>')
     Sent message entitled: [explanes]  id ... hello ...
 
@@ -330,7 +330,7 @@ class Experiment():
 
     Operate a given function on the setting set generated using selector. The setting set can be browsed in parallel by setting nbJobs>1. If logFileName is not empty, a faulty setting do not stop the execution, the error is stored and another setting is executed. If progress is set to True, a graphical display of the progress through the setting set is displayed.
 
-    This function is essentially a wrapper to the function :meth:`doce.factor.Factor.do`.
+    This function is essentially a wrapper to the function :meth:`doce.Plan.do`.
 
     Parameters
     ----------
@@ -338,7 +338,7 @@ class Experiment():
     selector : a list of literals or a list of lists of literals
       :term:`selector` used to specify the :term:`settings<setting>` set
 
-    function : function(:class:`~doce.factor.Factor`, :class:`~doce.experiment.Experiment`, \*parameters) (optional)
+    function : function(:class:`~doce.Plan`, :class:`~doce.Experiment`, \*parameters) (optional)
       A function that operates on a given setting within the experiment environnment with optional parameters.
 
       If None, a description of the given setting is shown.
@@ -376,7 +376,7 @@ class Experiment():
     See Also
     --------
 
-    doce.factor.Factor.do
+    doce.Plan.do
 
     Examples
     --------
@@ -385,9 +385,8 @@ class Experiment():
     >>> import random
     >>> import doce
 
-    >>> e=doce.experiment.Experiment()
-    >>> e.factor.factor1=[1, 3]
-    >>> e.factor.factor2=[2, 5]
+    >>> e=doce.Experiment()
+    >>> e.plan = doce.Plan(factor1=[1, 3], factor2=[2, 5])
 
     >>> # this function displays the sum of the two modalities of the current setting
     >>> def myFunction(setting, experiment):
@@ -424,7 +423,7 @@ class Experiment():
     ):
     """ Perform a cleaning of a data sink (directory or h5 file).
 
-    This method is essentially a wrapper to :meth:`doce.Factor.cleanDataSink`.
+    This method is essentially a wrapper to :meth:`doce.Plan.cleanDataSink`.
 
     Parameters
     ----------
@@ -451,17 +450,17 @@ class Experiment():
       end of the wildcard used to select the entries to remove or to keep (default: '*').
 
     settingEncoding : dict (optional)
-      format of the id describing the :term:`setting`. Please refer to :meth:`doce.Factor.id` for further information.
+      format of the id describing the :term:`setting`. Please refer to :meth:`doce.Plan.id` for further information.
 
     archivePath : str (optional)
       If not None, specify an existing directory where the specified data will be moved.
 
-      If None, the path doce.experiment.Experiment._archivePath is used (default).
+      If None, the path doce.Experiment._archivePath is used (default).
 
     See Also
     --------
 
-    doce.Factor.cleanDataSink, doce.Factor.id
+    doce.Plan.cleanDataSink, doce.Plan.id
 
     Examples
     --------
@@ -469,11 +468,10 @@ class Experiment():
     >>> import doce
     >>> import numpy as np
     >>> import os
-    >>> e=doce.experiment.Experiment()
+    >>> e=doce.Experiment()
     >>> e.path.output = '/tmp/test'
     >>> e.setPath(force=True)
-    >>> e.plan.factor1=[1, 3]
-    >>> e.plan.factor2=[2, 4]
+    >>> e.plan = doce.Plan(factor1=[1, 3], factor2=[2, 4])
     >>> def myFunction(setting, experiment):
     ...   np.save(experiment.path.output+'/'+setting.id()+'_sum.npy', setting.factor1+setting.factor2)
     ...   np.save(experiment.path.output+'/'+setting.id()+'_mult.npy', setting.factor1*setting.factor2)
@@ -493,7 +491,7 @@ class Experiment():
 
     >>> import doce
     >>> import tables as tb
-    >>> e=doce.experiment.Experiment()
+    >>> e=doce.Experiment()
     >>> e.path.output = '/tmp/test.h5'
     >>> e.factor.factor1=[1, 3]
     >>> e.factor.factor2=[2, 4]
@@ -579,18 +577,18 @@ class Experiment():
   #   ):
   #   """Clean all relevant directories specified in the NameSpace doce.Experiment.experiment.path.
   #
-  #   Apply :meth:`doce.experiment.Experiment.cleanDataSink` on each relevant directories specified in the NameSpace doce.experiment.Experiment.path.
+  #   Apply :meth:`doce.Experiment.cleanDataSink` on each relevant directories specified in the NameSpace doce.Experiment.path.
   #
   #   See Also
   #   --------
   #
-  #   doce.experiment.Experiment.cleanDataSink
+  #   doce.Experiment.cleanDataSink
   #
   #   Examples
   #   --------
   #
   #   >>> import doce
-  #   >>> e=doce.experiment.Experiment()
+  #   >>> e=doce.Experiment()
   #   >>> e.path.output = '/tmp/test'
   #   >>> e.setPath()
   #   >>> e.clean()
