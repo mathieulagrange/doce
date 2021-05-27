@@ -25,14 +25,14 @@ def set(args):
 
   experiment.setPath('output', '/tmp/'+experiment.name+'/')
 
-  experiment.plan = doce.Plan(
+  experiment.addPlan('plan',
     dataType= ['float', 'double'],
     datasetSize = 1000*np.array([1, 2, 4, 8], dtype=np.intc),
     meanOffset = 10.0**np.array([0, 1, 2]),
     nbRuns = 2000
     )
 
-  experiment.metric = doce.Metric(
+  experiment.setMetrics(
     mae = ['sqrt|mean-0*', 'std%-'],
     mse = ['mean', 'std%'],
     duration = ['mean']

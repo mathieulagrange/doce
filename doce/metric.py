@@ -160,7 +160,8 @@ class Metric():
     dataLocation,
     settingEncoding={},
     verbose = False,
-    reductionDirectiveModule = None
+    reductionDirectiveModule = None,
+    metricSelector = None # TODO
     ):
     """Handle reduction of the metrics when considering numpy storage.
 
@@ -331,22 +332,22 @@ class Metric():
     Parameters
     ----------
 
-    settings: doce.factor.Factor
+    settings: doce.Plan
       iterable settings.
 
     dataLocation: str
       In the case of .npy storage, a valid path to the main directory. In the case of .h5 storage, a valid path to an .h5 file.
 
     settingEncoding : dict
-      Encoding of the setting. See doce.factor.Factor.id for references.
+      Encoding of the setting. See doce.Plan.id for references.
 
     reducedMetricDisplay : str (optional)
       If set to 'capitalize' (default), the description of the reduced metric is done in a Camel case fashion: metricReduction.
 
       If set to 'underscore', the description of the reduced metric is done in a Python case fashion: metric_reduction.
 
-    factor : doce.factor.Factor
-      The doce.factor.Factor describing the factors of the experiment.
+    factor : doce.Plan
+      The doce.Plan describing the factors of the experiment.
 
     factorDisplay : str (optional)
       The expected format of the display of factors. 'long' (default) do not lead to any reduction. If factorDisplay contains 'short', a reduction of each word is performed. 'shortUnderscore' assumes pythonCase delimitation. 'shortCapital' assumes camelCase delimitation. 'short' attempts to perform reduction by guessing the type of delimitation.
@@ -385,20 +386,17 @@ class Metric():
     >>> np.random.seed(0)
 
     >>> experiment = doce.experiment.Experiment()
-    >>> experiment.project.name = 'example'
-    >>> experiment.path.output = '/tmp/'+experiment.project.name+'/'
-    >>> experiment.factor.f1 = [1, 2]
-    >>> experiment.factor.f2 = [1, 2, 3]
-    >>> experiment.metric.m1 = ['mean', 'std']
-    >>> experiment.metric.m2 = ['min', 'argmin']
+    >>> experiment.name = 'example'
+    >>> experiment.setPath('output', '/tmp/'+experiment.name+'/', force=True)
+    >>> experiment.addPlan('plan', f1 = [1, 2], f2 = [1, 2, 3])
+    >>> experiment.setMetrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
     >>> def process(setting, experiment):
     ...   metric1 = setting.f1+setting.f2+np.random.randn(100)
     ...   metric2 = setting.f1*setting.f2*np.random.randn(100)
     ...   np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
     ...   np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
-    >>> experiment.setPath()
     >>> nbFailed = experiment.do([], process, progress='')
-    >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor, modificationTimeStamp) = experiment.metric.reduce(experiment.factor.select([1]), experiment.path.output)
+    >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor, modificationTimeStamp, significance) = experiment.metric.reduce(experiment._plan.select([1]), experiment.path.output)
 
     >>> df = pd.DataFrame(settingDescription, columns=columnHeader)
     >>> df[columnHeader[nbColumnFactor:]] = df[columnHeader[nbColumnFactor:]].round(decimals=2)
@@ -419,19 +417,16 @@ class Metric():
     >>> np.random.seed(0)
 
     >>> experiment = doce.experiment.Experiment()
-    >>> experiment.project.name = 'example'
-    >>> experiment.path.output = '/tmp/'+experiment.project.name+'.h5'
-    >>> experiment.factor.f1 = [1, 2]
-    >>> experiment.factor.f2 = [1, 2, 3]
-    >>> experiment.metric.m1 = ['mean', 'std']
-    >>> experiment.metric.m2 = ['min', 'argmin']
+    >>> experiment.name = 'example'
+    >>> experiment.setPath('output', '/tmp/'+experiment.name+'.h5', force=True)
+    >>> experiment.addPlan('plan', f1 = [1, 2], f2 = [1, 2, 3])
+    >>> experiment.setMetrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
     >>> def process(setting, experiment):
     ...   h5 = tb.open_file(experiment.path.output, mode='a')
     ...   settingGroup = experiment.metric.addSettingGroup(h5, setting, metricDimension = {'m1':100, 'm2':100})
     ...   settingGroup.m1[:] = setting.f1+setting.f2+np.random.randn(100)
     ...   settingGroup.m2[:] = setting.f1*setting.f2*np.random.randn(100)
     ...   h5.close()
-    >>> experiment.setPath()
     >>> nbFailed = experiment.do([], process, progress='')
     >>> h5 = tb.open_file(experiment.path.output, mode='r')
     >>> print(h5)
@@ -459,14 +454,14 @@ class Metric():
     /f1_2_f2_3/m2 (EArray(100,)) 'm2'
     >>> h5.close()
 
-    >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor, modificationTimeStamp) = experiment.metric.reduce(experiment.factor.select([0]), experiment.path.output)
+    >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor, modificationTimeStamp, significance) = experiment.metric.reduce(experiment.plan.select([0]), experiment.path.output)
 
     >>> df = pd.DataFrame(settingDescription, columns=columnHeader)
     >>> df[columnHeader[nbColumnFactor:]] = df[columnHeader[nbColumnFactor:]].round(decimals=2)
     >>> print(constantSettingDescription)
     f1: 1
     >>> print(df)
-       f2  m1Mean  m1Std  m2Min  m2Argmin
+      f2  m1Mean  m1Std  m2Min  m2Argmin
     0   1    2.06   1.01  -2.22        83
     1   2    2.94   0.95  -5.32        34
     2   3    3.99   1.04  -9.14        89
@@ -475,6 +470,7 @@ class Metric():
 
     if dataLocation.endswith('.h5'):
       modificationTimeStamp = []
+      significance = [] # TODO
       (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
     else:
       (settingDescription, metricHasData, modificationTimeStamp, significance) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
@@ -504,14 +500,14 @@ class Metric():
     metric: str
       The name of the metric. Must be a member of the doce.metric.Metric object.
 
-    settings: doce.factor.Factor
+    settings: doce.Plan
       Iterable settings.
 
     dataLocation: str
       In the case of .npy storage, a valid path to the main directory. In the case of .h5 storage, a valid path to an .h5 file.
 
     settingEncoding : dict
-      Encoding of the setting. See doce.factor.Factor.id for references.
+      Encoding of the setting. See doce.Plan.id for references.
 
     verbose : bool
       In the case of .npy metric storage, if verbose is set to True, print the fileName seeked for the metric.
@@ -538,22 +534,19 @@ class Metric():
     >>> import pandas as pd
 
     >>> experiment = doce.experiment.Experiment()
-    >>> experiment.project.name = 'example'
-    >>> experiment.path.output = '/tmp/'+experiment.project.name+'/'
-    >>> experiment.factor.f1 = [1, 2]
-    >>> experiment.factor.f2 = [1, 2, 3]
-    >>> experiment.metric.m1 = ['mean', 'std']
-    >>> experiment.metric.m2 = ['min', 'argmin']
+    >>> experiment.name = 'example'
+    >>> experiment.setPath('output', '/tmp/'+experiment.name+'/')
+    >>> experiment.addPlan('plan', f1 = [1, 2], f2 = [1, 2, 3])
+    >>> experiment.setMetrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
 
     >>> def process(setting, experiment):
     ...  metric1 = setting.f1+setting.f2+np.random.randn(100)
     ...  metric2 = setting.f1*setting.f2*np.random.randn(100)
     ...  np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
     ...  np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
-    >>> experiment.setPath()
     >>> nbFailed = experiment.do([], process, progress='')
 
-    >>> (settingMetric, settingDescription, constantSettingDescription) = experiment.metric.get('m1', experiment.factor.select([1]), experiment.path.output)
+    >>> (settingMetric, settingDescription, constantSettingDescription) = experiment.metric.get('m1', experiment._plan.select([1]), experiment.path.output)
     >>> print(constantSettingDescription)
     f1 2
     >>> print(settingDescription)
@@ -616,14 +609,14 @@ class Metric():
     fileId: PyTables file Object
     a valid PyTables file Object, leading to an .h5 file opened with writing permission.
 
-    setting: :class:`doce.factor.Factor`
+    setting: :class:`doce.Plan`
     an instantiated Factor object describing a setting.
 
     metricDimension: dict
     for metrics for which the dimensionality of the storage vector is known, each key of the dict is a valid metric name and each conresponding value is the size of the storage vector.
 
     settingEncoding : dict
-    Encoding of the setting. See doce.factor.Factor.id for references.
+    Encoding of the setting. See doce.Plan.id for references.
 
     Returns
     -------
@@ -639,12 +632,10 @@ class Metric():
     >>> import tables as tb
 
     >>> experiment = doce.experiment.Experiment()
-    >>> experiment.project.name = 'example'
-    >>> experiment.path.output = '/tmp/'+experiment.project.name+'.h5'
-    >>> experiment.factor.f1 = [1, 2]
-    >>> experiment.factor.f2 = [1, 2, 3]
-    >>> experiment.metric.m1 = ['mean', 'std']
-    >>> experiment.metric.m2 = ['min', 'argmin']
+    >>> experiment.name = 'example'
+    >>> experiment.setPath('output', '/tmp/'+experiment.name+'.h5')
+    >>> experiment.addPlan('plan', f1 = [1, 2], f2 = [1, 2, 3])
+    >>> experiment.setMetrics (m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
 
     >>> def process(setting, experiment):
     ...  h5 = tb.open_file(experiment.path.output, mode='a')
@@ -652,8 +643,6 @@ class Metric():
     ...  sg.m1[:] = setting.f1+setting.f2+np.random.randn(100)
     ...  sg.m2.append(setting.f1*setting.f2*np.random.randn(100))
     ...  h5.close()
-
-    >>> experiment.setPath()
     >>> nbFailed = experiment.do([], process, progress='')
 
     >>> h5 = tb.open_file(experiment.path.output, mode='r')
@@ -710,7 +699,7 @@ class Metric():
 
   def getColumnHeader(
     self,
-    factor,
+    plan,
     factorDisplay='long',
     factorDisplayLength=2,
     metricDisplay='long',
@@ -720,13 +709,13 @@ class Metric():
     ):
     """Builds the column header of the reduction settingDescription.
 
-    This method builds the column header of the reduction settingDescription by formating the Factor names from the doce.factor.Factor class and by describing the reduced metrics.
+    This method builds the column header of the reduction settingDescription by formating the Factor names from the doce.Plan class and by describing the reduced metrics.
 
     Parameters
     ----------
 
-    factor : doce.factor.Factor
-      The doce.factor.Factor describing the factors of the experiment.
+    plan : doce.Plan
+      The doce.Plan describing the factors of the experiment.
 
     factorDisplay : str (optional)
       The expected format of the display of factors. 'long' (default) do not lead to any reduction. If factorDisplay contains 'short', a reduction of each word is performed. 'shortUnderscore' assumes pythonCase delimitation. 'shortCapital' assumes camelCase delimitation. 'short' attempts to perform reduction by guessing the type of delimitation.
@@ -749,7 +738,7 @@ class Metric():
     """
 
     columnHeader = []
-    for factorName in factor.factors():
+    for factorName in plan.factors():
       columnHeader.append(eu.compressDescription(factorName, factorDisplay, factorDisplayLength))
     for mIndex, metric in enumerate(self.name()):
       if metricHasData[mIndex]:
@@ -822,8 +811,8 @@ class Metric():
     >>> m._unit.mse = ''
     >>> m._description.mse = 'Mean Square Error'
     >>> print(m)
-    duration: ['mean'], the duration of the trial in seconds.
-    mse: ['mean'], the Mean Square Error.
+    duration: ['mean'], the duration of the trial in seconds
+    mse: ['mean'], the Mean Square Error
     """
     cString = ''
     atrs = dict(vars(type(self)))

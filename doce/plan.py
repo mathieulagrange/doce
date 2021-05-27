@@ -697,7 +697,7 @@ class Plan():
                 print('Error: factor '+str(self._factors[fi])+' only has '+str(nm)+' modalities. Requested modality '+str(fm))
                 check = False
         elif f != -1:
-          print('Warning: the selector is longer than the number of factors. Doce takes this laste element into account only if it is equal to -1 (see the documentation of the Plan.select() method).')
+          print('Warning: the selector is longer than the number of factors. Doce takes this last element into account only if it is equal to -1 (see the documentation of the Plan.select() method).')
 
     return check
 

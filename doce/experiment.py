@@ -26,27 +26,25 @@ class Experiment():
   >>> e.address='mathieu.lagrange@ls2n.fr'
   >>> e.path.processing='/tmp'
   >>> print(e)
-  project:
-    name: myExperiment
-    description:
+      name: myExperiment
+    description
     author: Mathieu Lagrange
     address: mathieu.lagrange@ls2n.fr
-  status:
-    runId: ...
-    verbose: 0
-  factor
-  parameter
-  metric
-  path:
-    code_raw: ...
-    code: ...
-    archive_raw:
-    archive:
-    export_raw: export
-    export: export
-    processing_raw: /tmp
-    processing: /tmp
-  host: []
+    status:
+      runId: ...
+      verbose: 0
+    parameter
+    metric
+    path:
+      code_raw: ...
+      code: ...
+      archive_raw:
+      archive:
+      export_raw: export
+      export: export
+      processing_raw: /tmp
+      processing: /tmp
+    host: []
 
 
   Each level can be complemented with new members to store specific information:
@@ -57,32 +55,29 @@ class Experiment():
   >>> e.myData.info1= 1
   >>> e.myData.info2= 2
   >>> print(e)
-  project:
     name: myExperiment
-    description:
+    description
     author: Mathieu Lagrange
     address: mathieu.lagrange@ls2n.fr
-  status:
-    runId: ...
-    verbose: 0
-  factor
-  parameter
-  metric
-  path:
-    code_raw: ...
-    code: ...
-    archive_raw:
-    archive:
-    export_raw: export
-    export: export
-    processing_raw: /tmp
-    processing: /tmp
-  host: []
-  specificInfo: stuff
-  myData:
-    info1: 1
-    info2: 2
-
+    status:
+      runId: ...
+      verbose: 0
+    parameter
+    metric
+    path:
+      code_raw: ...
+      code: ...
+      archive_raw:
+      archive:
+      export_raw: export
+      export: export
+      processing_raw: /tmp
+      processing: /tmp
+    host: []
+    specificInfo: stuff
+    myData:
+      info1: 1
+      info2: 2
   """
 
   def __init__(
@@ -199,8 +194,7 @@ class Experiment():
     >>> e=doce.Experiment()
     >>> e.name = 'experiment'
     >>> e.path.processing = '/tmp/'+e.name+'/processing'
-    >>> e.path.output = '/tmp/'+e.name+'/output'
-    >>> e.setPath(force=True)
+    >>> e.setPath('output', '/tmp/'+e.name+'/output', force=True)
     >>> os.listdir('/tmp/'+e.name)
     ['processing', 'output']
     """
@@ -233,20 +227,18 @@ class Experiment():
 
     >>> import doce
     >>> print(doce.Experiment())
-    project:
-      name:
-      description:
-      author: no name
-      address: noname@noorg.org
+    name
+    description
+    author: no name
+    address: noname@noorg.org
     status:
       runId: ...
       verbose: 0
-    plan
     parameter
     metric
     path:
-      code_raw: /Users/lagrange/tools/doce/doce
-      code: /Users/lagrange/tools/doce/doce
+      code_raw: ...
+      code: ...
       archive_raw:
       archive:
       export_raw: export
@@ -255,7 +247,7 @@ class Experiment():
 
     >>> import doce
     >>> doce.Experiment().__str__(format='html')
-    '<div>project:</div><div>  name: </div><div>  description: </div><div>  author: no name</div><div>  address: noname@noorg.org</div><div>status:</div><div>  runId: ...</div><div>  verbose: 0</div><div>plan</div><div>parameter</div><div>metric</div><div>path:</div><div>  code_raw: /Users/lagrange/tools/doce/doce</div><div>  code: /Users/lagrange/tools/doce/doce</div><div>  archive_raw: </div><div>  archive: </div><div>  export_raw: export</div><div>  export: export</div><div>host: []</div><div></div>'
+        '<div>name</div><div>description</div><div>author: no name</div><div>address: noname@noorg.org</div><div>status:</div><div>  runId: ...</div><div>  verbose: 0</div><div>parameter</div><div>metric</div><div>path:</div><div>  code_raw: ...</div><div>  code: ...</div><div>  archive_raw: </div><div>  archive: </div><div>  export_raw: export</div><div>  export: export</div><div>host: []</div><div></div>'
     """
     description = ''
     for atr in self._atrs:
@@ -386,11 +378,10 @@ class Experiment():
     >>> import doce
 
     >>> e=doce.Experiment()
-    >>> e.plan = doce.Plan(factor1=[1, 3], factor2=[2, 5])
+    >>> e.addPlan('plan', factor1=[1, 3], factor2=[2, 5])
 
     >>> # this function displays the sum of the two modalities of the current setting
     >>> def myFunction(setting, experiment):
-    ...  time.sleep(random.uniform(0, 2))
     ...  print('{}+{}={}'.format(setting.factor1, setting.factor2, setting.factor1+setting.factor2))
 
     >>> # sequential execution of settings
@@ -469,9 +460,8 @@ class Experiment():
     >>> import numpy as np
     >>> import os
     >>> e=doce.Experiment()
-    >>> e.path.output = '/tmp/test'
-    >>> e.setPath(force=True)
-    >>> e.plan = doce.Plan(factor1=[1, 3], factor2=[2, 4])
+    >>> e.setPath('output', '/tmp/test', force=True)
+    >>> e.addPlan('plan', factor1=[1, 3], factor2=[2, 4])
     >>> def myFunction(setting, experiment):
     ...   np.save(experiment.path.output+'/'+setting.id()+'_sum.npy', setting.factor1+setting.factor2)
     ...   np.save(experiment.path.output+'/'+setting.id()+'_mult.npy', setting.factor1*setting.factor2)
@@ -492,11 +482,9 @@ class Experiment():
     >>> import doce
     >>> import tables as tb
     >>> e=doce.Experiment()
-    >>> e.path.output = '/tmp/test.h5'
-    >>> e.factor.factor1=[1, 3]
-    >>> e.factor.factor2=[2, 4]
-    >>> e.metric.sum = ['']
-    >>> e.metric.mult = ['']
+    >>> e.setPath('output', '/tmp/test.h5')
+    >>> e.addPlan('plan', factor1=[1, 3], factor2=[2, 4])
+    >>> e.setMetrics(sum = [''], mult = [''])
     >>> def myFunction(setting, experiment):
     ...   h5 = tb.open_file(experiment.path.output, mode='a')
     ...   sg = experiment.metric.addSettingGroup(h5, setting, metricDimension={'sum': 1, 'mult': 1})
@@ -565,6 +553,14 @@ class Experiment():
       if attribute[0] != '_' and isinstance(getattr(self, attribute), doce.Plan):
         names.append(attribute)
     return names
+
+  def addPlan(self, name, **kwargs):
+    self.__setattr__(name, doce.Plan(**kwargs))
+    self._plan = getattr(self, name)
+
+  def setMetrics(self, **kwargs):
+    self.__setattr__('metric', doce.Metric(**kwargs))
+
 
   # def clean(
   #   self,

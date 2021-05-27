@@ -17,18 +17,17 @@ def set(args):
 
   experiment.setPath('output', '/tmp/'+experiment.name+'/')
 
-  experiment.xp1 = doce.Plan(
+  experiment.addPlan('xp1',
     method = ['methodOne'],
     parameterMethodOne = ['modalityOne', 'modalityTwo']
   )
-  experiment.xp2 = doce.Plan(
+  
+  experiment.addPlan('xp2',
     method = ['methodTwo'],
     parameterMethodTwo = [1, 2, 3]
   )
 
-  # experiment.factor.truc = doce.factor.Factor() #['machin', 'bidule']
-
-  experiment.metric = doce.Metric(m = ['mean'])
+  experiment.setMetrics(m = ['mean'])
 
   return experiment
 
