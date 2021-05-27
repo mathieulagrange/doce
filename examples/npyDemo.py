@@ -14,29 +14,29 @@ if __name__ == "__main__":
 #   - the metrics does not operate on the same data, resulting on result vectors with different sizes per metric
 
 def set(args):
-  experiment = doce.experiment.Experiment()
-  experiment.project.name = 'npyDemo'
-  experiment.project.description = 'demonstration of npy storage of metrics'
-  experiment.project.author = 'mathieu Lagrange'
-  experiment.project.address = 'mathieu.lagrange@ls2n.fr'
-  experiment.project.version = '0.1'
+  experiment = doce.experiment.Experiment(
+    name = 'npyDemo',
+    purpose = 'demonstration of npy storage of metrics',
+    author = 'mathieu Lagrange',
+    address = 'mathieu.lagrange@ls2n.fr',
+    version = '0.1',
+    host = ['pc-lagrange.irccyn.ec-nantes.fr']
+  )
 
-  experiment.path.output = '/tmp/'+experiment.project.name+'/'
-  experiment.path.code = '~/tools/explanes.py/demonstrations/'
-  experiment.setPath()
+  experiment.setPath('output', '/tmp/'+experiment.name+'/')
 
-  experiment.host = ['pc-lagrange.irccyn.ec-nantes.fr']
-
-  experiment.plan = doce.Plan(
-    dataType = ['float', 'double'],
+  experiment.addPlan('plan',
+    dataType= ['float', 'double'],
     datasetSize = 1000*np.array([1, 2, 4, 8], dtype=np.intc),
     meanOffset = 10.0**np.array([0, 1, 2]),
-    nbRuns = [2000])
+    nbRuns = 2000
+    )
 
-  experiment.metric = doce.metric(
+  experiment.setMetrics(
     mae = ['sqrt|mean-0*', 'std%-'],
     mse = ['mean', 'std%'],
-    duration = ['mean'])
+    duration = ['mean']
+  )
 
   experiment._display.metricPrecision = 20
   experiment._display.bar = False

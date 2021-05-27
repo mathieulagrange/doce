@@ -20,34 +20,34 @@ if eu.inNotebook():
 else:
     from tqdm import tqdm as tqdm
 
-class Factor():
+class Plan():
   """stores the different factors of the explanes experiment.
 
   This class stores the different factors of the explanes experiments. For each factor, the set of different modalities can be expressed as a list or a numpy array.
 
-  To browse the setting set defined by the Factor object, one must iterate over the Factor object.
+  To browse the setting set defined by the Plan object, one must iterate over the Plan object.
 
   Examples
   --------
 
   >>> import doce
 
-  >>> f = doce.factor.Factor()
-  >>> f.factor1=[1, 3]
-  >>> f.factor2=[2, 4]
+  >>> p = doce.Plan()
+  >>> p.factor1=[1, 3]
+  >>> p.factor2=[2, 4]
 
-  >>> print(f)
+  >>> print(p)
     0  factor1: [1 3]
     1  factor2: [2 4]
 
-  >>> for setting in f:
+  >>> for setting in p:
   ...   print(setting)
   factor1 1 factor2 2
   factor1 1 factor2 4
   factor1 3 factor2 2
   factor1 3 factor2 4
   """
-  def __init__(self):
+  def __init__(self, **factors):
       self._setting = None
       self._changed = False
       self._currentSetting = 0
@@ -59,6 +59,10 @@ class Factor():
       self._default = types.SimpleNamespace()
       self._selectorVolatile = True
       self._pruneSelector = True
+
+      for factor, modalities in factors.items():
+        self.__setattr__(factor, modalities)
+
 
   def copy(self):
     return copy.deepcopy(self)
@@ -84,33 +88,33 @@ class Factor():
   	See Also
   	--------
 
-    doce.factor.Factor.id
+    doce.Plan.id
 
   	Examples
   	--------
 
     >>> import doce
 
-    f = doce.Factor()
+    p = doce.Plan()
 
-    f.f1 = ['a', 'b']
-    f.f2 = [1, 2, 3]
+    p.f1 = ['a', 'b']
+    p.f2 = [1, 2, 3]
 
     print(f)
-    for setting in f.select():
+    for setting in p.select():
       print(setting.id())
 
-    f.default('f2', 2)
+    p.default('f2', 2)
 
-    for setting in f:
+    for setting in p:
       print(setting.id())
 
-    f.f2 = [0, 1, 2, 3]
+    p.f2 = [0, 1, 2, 3]
     print(f)
 
-    f.default('f2', 2)
+    p.default('f2', 2)
 
-    for setting in f:
+    for setting in p:
       print(setting.id())
 
 
@@ -142,7 +146,7 @@ class Factor():
     Parameters
     ----------
 
-    function : function(:class:`~doce.factor.Factor`, :class:`~doce.experiment.Experiment`, \*parameters)
+    function : function(:class:`~doce.Plan`, :class:`~doce.experiment.Experiment`, \*parameters)
       operates on a given setting within the experiment environnment with optional parameters.
 
     experiment:
@@ -239,55 +243,55 @@ class Factor():
 
     >>> import doce
 
-    >>> f = doce.factor.Factor()
-    >>> f.f1=['a', 'b', 'c']
-    >>> f.f2=[1, 2, 3]
+    >>> p = doce.Plan()
+    >>> p.f1=['a', 'b', 'c']
+    >>> p.f2=[1, 2, 3]
 
     >>> # doce allows two ways of defining the selector. The first one is dict based:
-    >>> for setting in f.select([{'f1':'b', 'f2':[1, 2]}, {'f1':'c', 'f2':[3]}]):
+    >>> for setting in p.select([{'f1':'b', 'f2':[1, 2]}, {'f1':'c', 'f2':[3]}]):
     ...  print(setting)
     f1 b f2 1
     f1 b f2 2
     f1 c f2 3
 
     >>> # The second one is list based. In this exmaple, we select the settings with the second modality of the first factor, and with the first modality of the second factor
-    >>> for setting in f.select([1, 0]):
+    >>> for setting in p.select([1, 0]):
     ...  print(setting)
     f1 b f2 1
     >>> # select the settings with all the modalities of the first factor, and the second modality of the second factor
-    >>> for setting in f.select([-1, 1]):
+    >>> for setting in p.select([-1, 1]):
     ...  print(setting)
     f1 a f2 2
     f1 b f2 2
     f1 c f2 2
     >>> # the selection of all the modalities of the remaining factors can be conveniently expressed
-    >>> for setting in f.select([1]):
+    >>> for setting in p.select([1]):
     ...  print(setting)
     f1 b f2 1
     f1 b f2 2
     f1 b f2 3
     >>> # select the settings using 2 selector, where the first selects the settings with the first modality of the first factor and with the second modality of the second factor, and the second selector selects the settings with the second modality of the first factor, and with the third modality of the second factor
-    >>> for setting in f.select([[0, 1], [1, 2]]):
+    >>> for setting in p.select([[0, 1], [1, 2]]):
     ...  print(setting)
     f1 a f2 2
     f1 b f2 3
     >>> # the latter expression may be interpreted as the selection of the settings with the first and second modalities of the first factor and with second and third modalities of the second factor. In that case, one needs to add a -1 at the end the selector (even if by doing so the length of the selector is larger than the number of factors)
-    >>> for setting in f.select([[0, 1], [1, 2], -1]):
+    >>> for setting in p.select([[0, 1], [1, 2], -1]):
     ...  print(setting)
     f1 a f2 2
     f1 a f2 3
     f1 b f2 2
     f1 b f2 3
     >>> # if volatile is set to False (default) when the selector is set and the setting set iterated, the setting set stays ready for another iteration.
-    >>> for setting in f.select([0, 1]):
+    >>> for setting in p.select([0, 1]):
     ...  pass
-    >>> for setting in f:
+    >>> for setting in p:
     ...  print(setting)
     f1 a f2 2
     >>> # if volatile is set to True when the selector is set and the setting set iterated, the setting set is reinitialized at the second iteration.
-    >>> for setting in f.select([0, 1], volatile=True):
+    >>> for setting in p.select([0, 1], volatile=True):
     ...  pass
-    >>> for setting in f:
+    >>> for setting in p:
     ...  print(setting)
     f1 a f2 1
     f1 a f2 2
@@ -299,9 +303,9 @@ class Factor():
     f1 c f2 2
     f1 c f2 3
     >>> # if volatile was set to False (default) when the selector was first set and the setting set iterated, the complete set of settings can be reached by calling selector with no parameters.
-    >>> for setting in f.select([0, 1]):
+    >>> for setting in p.select([0, 1]):
     ...  pass
-    >>> for setting in f.select():
+    >>> for setting in p.select():
     ...  print(setting)
     f1 a f2 1
     f1 a f2 2
@@ -332,12 +336,12 @@ class Factor():
 
     >>> import doce
 
-    >>> f = doce.factor.Factor()
-    >>> f.f1=['a', 'b']
-    >>> f.f2=[1, 2]
-    >>> f.f3=[0, 1]
+    >>> p = doce.Plan()
+    >>> p.f1=['a', 'b']
+    >>> p.f2=[1, 2]
+    >>> p.f3=[0, 1]
 
-    >>> print(f.factors())
+    >>> print(p.factors())
     ['f1', 'f2', 'f3']
     """
     return self._factors
@@ -363,13 +367,13 @@ class Factor():
 
     >>> import doce
 
-    >>> f = doce.factor.Factor()
-    >>> f.one = ['a', 'b']
-    >>> f.two = list(range(10))
+    >>> p = doce.Plan()
+    >>> p.one = ['a', 'b']
+    >>> p.two = list(range(10))
 
-    >>> print(f.nbModalities('one'))
+    >>> print(p.nbModalities('one'))
     2
-    >>> print(f.nbModalities(1))
+    >>> print(p.nbModalities(1))
     10
     """
     if isinstance(factor, int):
@@ -491,70 +495,71 @@ class Factor():
               os.remove(f)
       else:
         print('no files found.')
-  def merge(self):
-    # build temporary factor
-    tmp = Factor()
-    for x in self.factors():
-      for f in getattr(self, x).factors():
+
+  def merge(self, plans):
+    # build temporary plan
+    tmp = Plan()
+    for x in plans:
+      for f in x.factors():
         setattr(tmp, f, np.empty([0]))
-        if hasattr(getattr(self, x)._default, f):
-          if hasattr(tmp._default, f) and getattr(getattr(self, x)._default, f) != getattr(tmp._default, f):
+        if hasattr(x._default, f):
+          if hasattr(tmp._default, f) and getattr(x._default, f) != getattr(tmp._default, f):
             print(getattr(tmp._default, f))
             print('While merging factors of the different experiment, a conflict of default modalities for the factor '+f+' is detected. This may lead to an inconsistent behavior.')
             raise ValueError
           else:
-            setattr(tmp._default, f, getattr(getattr(self, x)._default, f))
+            setattr(tmp._default, f, getattr(x._default, f))
             # print(tmp._default)
-    for x in self.factors():
-      for f in getattr(self, x).factors():
-        for m in getattr(getattr(self, x), f):
+    for x in plans:
+      for f in x.factors():
+        for m in getattr(x, f):
           if len(getattr(tmp, f))==0 or m not in getattr(tmp, f):
             setattr(tmp, f, np.append(getattr(tmp, f), m))
     # check if factors are available in every experiment
     have = [True]*len(tmp.factors())
     for fi, f in enumerate(tmp.factors()):
-      for x in self.factors():
-        if not f in getattr(self, x).factors():
+      for x in plans:
+        if not f in x.factors():
           have[fi] = False
-    factor = Factor()
-    factor._default = tmp._default
+    plan = Plan()
+    plan._default = tmp._default
     for fi, f in enumerate(tmp.factors()):
       m = getattr(tmp, f)
       if not isinstance(m[0], str) and all(np.array([val.is_integer() for val in m])):
         m = np.array(m, dtype=np.intc)
-      setattr(factor, f, m)
+      setattr(plan, f, m)
       if not have[fi] and not hasattr(tmp._default, f):
         if isinstance(m[0], str):
           if 'none' not in m:
             m = np.insert(m, 0, 'none')
-            setattr(factor, f, m)
-          factor.default(f, 'none')
+            setattr(plan, f, m)
+          plan.default(f, 'none')
         if not isinstance(m[0], str):
           if 0 not in m:
             m = np.insert(m, 0, 0)
-            setattr(factor, f, m)
-          factor.default(f, 0)
-    return factor
+            setattr(plan, f, m)
+          plan.default(f, 0)
+    return plan
 
   def asPandaFrame(self):
-    """returns a panda frame that describes the Factor object.
+    """returns a panda frame that describes the Plan object.
 
-  	Returns a panda frame describing the Factor object. For ease of definition of a selector to select some settings, the columns and the rows of the panda frame are numbered.
+  	Returns a panda frame describing the Plan object. For ease of definition of a selector to select some settings, the columns and the rows of the panda frame are numbered.
 
   	Examples
   	--------
 
     >>> import doce
 
-    >>> f = doce.factor.Factor()
-    >>> f.one = ['a', 'b']
-    >>> f.two = list(range(10))
+    >>> p = doce.Plan()
+    >>> p.one = ['a', 'b']
+    >>> p.two = list(range(10))
 
-    >>> print(f)
+    >>> print(p)
       0  one: ['a' 'b']
       1  two: [0 1 2 3 4 5 6 7 8 9]
-    >>> print(f.asPandaFrame())
-      Factor  0  1  2  3  4  5  6  7  8  9
+    >>> print(p.asPandaFrame())
+      Factors  0  1  2  3  4  5  6  7  8  9
     0    one  a  b
     1    two  0  1  2  3  4  5  6  7  8  9
     """
@@ -581,7 +586,7 @@ class Factor():
           line.append('')
       table.append(line)
     columns = []
-    columns.append('Factor')
+    columns.append('Factors')
     for il in range(l):
       columns.append(il)
     return pd.DataFrame(table, columns=columns)
@@ -692,7 +697,7 @@ class Factor():
                 print('Error: factor '+str(self._factors[fi])+' only has '+str(nm)+' modalities. Requested modality '+str(fm))
                 check = False
         elif f != -1:
-          print('Warning: the selector is longer than the number of factors. Doce takes this laste element into account only if it is equal to -1 (see the documentation of the Factor.select() method).')
+          print('Warning: the selector is longer than the number of factors. Doce takes this last element into account only if it is equal to -1 (see the documentation of the Plan.select() method).')
 
     return check
 
@@ -718,7 +723,7 @@ class Factor():
       self._nonSingleton.append(name)
     if name[0] != '_' and type(value) not in {list, np.ndarray} :
       value = [value]
-    if name[0] != '_' and type(value) not in {np.ndarray, Factor}:
+    if name[0] != '_' and type(value) not in {np.ndarray, Plan}:
       if len(value) and not all(isinstance(x, type(value[0])) for x in value):
         raise Exception('All the modalities of the factor '+name+' must be of the same type (str, int, or float)')
       if len(value) and all(isinstance(x, str) for x in value):
@@ -801,15 +806,15 @@ class Factor():
       self._setting = None
 
       selector = copy.deepcopy(selector)
-      nbFactors = len(self.factors())
+      nbPlans = len(self.factors())
       if selector is None or len(selector)==0 or (len(selector)==1 and len(selector)==0) :
-         selector = [[-1]*nbFactors]
+         selector = [[-1]*nbPlans]
       if isinstance(selector, list) and not all(isinstance(x, list) for x in selector):
           selector = [selector]
 
       for im, m in enumerate(selector):
-        if len(m) < nbFactors:
-          selector[im] = m+[-1]*(nbFactors-len(m))
+        if len(m) < nbPlans:
+          selector[im] = m+[-1]*(nbPlans-len(m))
         for il, l in enumerate(m):
             if not isinstance(l, list) and l > -1:
                 selector[im][il] = [l]
