@@ -129,7 +129,8 @@ class Metric():
         stat.append(rStat)
     nbFactors = len(settings.factors())
 
-    significance = np.zeros((len(settings),nbReducedMetrics-1))
+    significance = np.zeros((len(settings),nbReducedMetrics))
+    # print(significance.shape)
     mii = 0
     for mi in range(nbReducedMetrics-1):
       mv = []

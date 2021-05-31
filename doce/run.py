@@ -11,6 +11,7 @@ import subprocess
 import numpy as np
 import shutil
 import time
+import re
 
 def run():
   """This method shall be called from the main script of the experiment to control the experiment using the command line.
@@ -124,7 +125,7 @@ def run():
     args.progress = ''
 
   experimentId = 'all'
-  selector = args.select
+  selector = re.sub(r"[\n\t\s]*", "", args.select)
   if ':' in selector:
     s = selector.split(':')
     experimentId = s[0]
@@ -148,11 +149,11 @@ def run():
    print('Please provide a valid project name')
    raise ValueError
 
-  experiment = doce.experiment.Experiment()
-  if isinstance(userData, dict):
-    experiment.userData = userData
+  # experiment = doce.experiment.Experiment()
+  # if isinstance(userData, dict):
+  #   experiment.userData = userData
 
-  experiment = config.set(experiment)
+  experiment = config.set(userData)
 
   experiment.selector = selector
 
@@ -404,6 +405,8 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 
 def highlightStat(s, significance):
   df = pd.DataFrame('', index=s.index, columns=s.columns)
+  # print(significance.shape)
+  # print(df.shape)
   df = df.where(significance<=0, 'color: blue')
   return df
 def highlightBest(s, significance):

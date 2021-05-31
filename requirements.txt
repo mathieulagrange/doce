@@ -4,3 +4,5 @@ argunparse
 numpy
 tqdm
 joblib
+sklearn
+xlwt

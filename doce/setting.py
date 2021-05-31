@@ -69,7 +69,7 @@ class Setting():
     one b two 1
     one b two 2
     """
-    return self.id(sort=False, separator=' ', singleton=True, default=False)
+    return self.id(sort=False, separator='_', singleton=True, default=True)
 
 
   def id(self, format='long', sort=True, separator='_', singleton=True, default=False, hide=[], toInt=True):

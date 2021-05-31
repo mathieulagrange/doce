@@ -86,6 +86,7 @@ class Experiment():
     # list of attributes (preserving order of insertion for antique versions of python)
     self._atrs = []
     self._plan = doce.Plan()
+    self._plans = []
     self.name = ''
     self.description = ''
     self.author = 'no name'
@@ -169,7 +170,7 @@ class Experiment():
       if path.endswith('.h5'):
         path = os.path.dirname(os.path.abspath(path))
       if not os.path.exists(path):
-        if force or doce.util.query_yes_no('The '+sns+' path: '+path+' does not exist. Do you want to create it ?'):
+        if force or doce.util.query_yes_no('The '+name+' path: '+path+' does not exist. Do you want to create it ?'):
           os.makedirs(path)
           if not force:
             print('Path succesfully created.')
@@ -548,18 +549,22 @@ class Experiment():
       self._plan.select(selector).cleanDataSink(path, reverse=reverse, force=force, keep=keep, wildcard=wildcard, settingEncoding=settingEncoding, archivePath=archivePath, verbose=verbose)
 
   def plans(self):
-    names = []
-    for attribute in dir(self):
-      if attribute[0] != '_' and isinstance(getattr(self, attribute), doce.Plan):
-        names.append(attribute)
-    return names
+    # names = []
+    # for attribute in dir(self):
+    #   if attribute[0] != '_' and isinstance(getattr(self, attribute), doce.Plan):
+    #     names.append(attribute)
+    return self._plans
 
   def addPlan(self, name, **kwargs):
     self.__setattr__(name, doce.Plan(**kwargs))
     self._plan = getattr(self, name)
+    self._plans.append(name)
 
   def setMetrics(self, **kwargs):
     self.__setattr__('metric', doce.Metric(**kwargs))
+
+  def default(self, plan='', factor='', modality=''):
+    getattr(self, plan).default(factor, modality)
 
 
   # def clean(
