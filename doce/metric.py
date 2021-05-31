@@ -91,6 +91,7 @@ class Metric():
       row = []
       rStat = []
       rDir = []
+      rDo = []
       nbReducedMetrics = 0
       nbMetrics = 0
       for mIndex, metric in enumerate(self.name()):
@@ -108,12 +109,14 @@ class Metric():
             row.append(self.reduceMetric(data, reductionType, reductionDirectiveModule))
             # print(reductionType)
             if '*' in reductionType:
+              rDo.append(1)
               rStat.append(data)
               if reductionType[-1]=='-':
                 rDir.append(-1)
               else:
                 rDir.append(1)
             else:
+              rDo.append(0)
               rDir.append(0)
         else:
           if verbose:
@@ -129,25 +132,24 @@ class Metric():
         stat.append(rStat)
     nbFactors = len(settings.factors())
 
-    significance = np.zeros((len(settings),nbReducedMetrics))
+    significance = np.zeros((len(table),nbReducedMetrics))
     # print(significance.shape)
     mii = 0
-    for mi in range(nbReducedMetrics-1):
+    for mi in range(nbReducedMetrics):
       mv = []
-      if rDir[mi] != 0:
-        for si, s in enumerate(settings):
-          mv.append(table[si][len(settings.factors())+mi])
-        if rDir[mi]<0:
-          im = np.argmin(mv)
-        else:
-          im = np.argmax(mv)
-        sRow = []
-        for si, s in enumerate(settings):
+      for si in range(len(table)):
+        mv.append(table[si][len(settings.factors())+mi])
+      if rDir[mi]<0:
+        im = np.argmin(mv)
+      else:
+        im = np.argmax(mv)
+      significance[im, mi] = -1
+      sRow = []
+      if rDo[mi] != 0:
+        for si in range(len(table)):
           if si!=im:
             (s, p) = stats.ttest_rel(stat[si][mii], stat[im][mii])
             significance[si, mi] = p
-          else:
-            significance[si, mi] = -1
         mii += 1
     # print(significance)
 
