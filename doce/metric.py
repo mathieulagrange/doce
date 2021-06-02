@@ -148,8 +148,9 @@ class Metric():
       if rDo[mi] != 0:
         for si in range(len(table)):
           if si!=im:
-            (s, p) = stats.ttest_rel(stat[si][mii], stat[im][mii])
-            significance[si, mi] = p
+            if not np.isnan(stat[si][mii]).all() and not np.isnan(stat[im][mii]).all():
+              (s, p) = stats.ttest_rel(stat[si][mii], stat[im][mii])
+              significance[si, mi] = p
         mii += 1
     # print(significance)
 
