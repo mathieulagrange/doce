@@ -437,25 +437,26 @@ def exportDataFrame(experiment, args, df, styler, header):
     outFile.write('<br><U>'+header+'</U><br><br>')
     outFile.write(styler.render())
   if 'csv' in args.export or 'all' == args.export:
-    print('Creating '+exportFileName+'.csv')
     df.to_csv(path_or_buf=exportFileName+'.csv', index=experiment._display.showRowIndex)
+    print('csv export: '+exportFileName+'.csv')
   if 'xls' in args.export or 'all' == args.export:
-    print('Creating '+exportFileName+'.xls')
     df.to_excel(excel_writer=exportFileName+'.xls', index=experiment._display.showRowIndex)
+    print('excel export: '+exportFileName+'.xls')
 
   if 'tex' in args.export or 'all' == args.export:
-    print('Creating '+exportFileName+'.tex')
     df.to_latex(buf=exportFileName+'.tex', index=experiment._display.showRowIndex, bold_rows=True)
+    print('tex export: '+exportFileName+'.tex')
 
   if 'png' in args.export or 'all' == args.export:
-      print('Creating '+exportFileName+'.png')
+      print('Creating image...')
       if shutil.which('wkhtmltoimage') is not None:
         subprocess.call(
         'wkhtmltoimage -f png --width 0 '+exportFileName+'.html '+exportFileName+'.png', shell=True)
+        print('png export: '+exportFileName+'.png')
       else:
         print('generation of png is handled by converting the html generated from the result dataframe using the wkhtmltoimage tool. This tool must be installed and reachable from you path.')
   if 'pdf' in args.export or 'all' == args.export:
-    print('Creating '+exportFileName+'.pdf')
+    print('Creating pdf...')
     if shutil.which('wkhtmltopdf'):
       subprocess.call(
       'wkhtmltopdf '+exportFileName+'.html '+exportFileName+'.pdf', shell=True)
@@ -466,11 +467,14 @@ def exportDataFrame(experiment, args, df, styler, header):
     if shutil.which('pdfcrop') is not None:
       subprocess.call(
       'pdfcrop '+exportFileName+'.pdf '+exportFileName+'.pdf', shell=True)
+      print('pdf export: '+exportFileName+'.pdf')
     else:
       print('Crop of pdf is handled using the pdfcrop tool. This tool must be installed and reachable from you path.')
 
   if 'html' not in args.export and 'all' != args.export:
     os.remove(exportFileName+'.html')
+  else:
+    print('html export: '+exportFileName+'.html')
 
 if __name__ == '__main__':
     import doctest
