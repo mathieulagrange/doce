@@ -342,7 +342,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 
   if modificationTimeStamp:
     print('Displayed data generated from '+ time.ctime(min(modificationTimeStamp))+' to '+ time.ctime(max(modificationTimeStamp)))
-  df = pd.DataFrame(table, columns=columns).fillna('')
+    df = pd.DataFrame(table, columns=columns) #.fillna('-')
 
   if selectDisplay and not selectFactor and  len(columns)>=max(selectDisplay)+nbFactorColumns:
     columns = [columns[i] for i in [*range(nbFactorColumns)]+[s+nbFactorColumns for s in selectDisplay]]
@@ -392,7 +392,8 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
         **{'width':'10em', 'text-align':'left'})\
         .set_properties(subset=df.columns[nbFactorColumns], # left-align the non-numeric columns and set their width
         **{'border-left':'.1rem solid'})\
-        .set_table_styles([d]).format(precisionFormat)
+        .set_table_styles([d])\
+        .format(precisionFormat).applymap(lambda x: 'color: white' if pd.isnull(x) else '')
   if not experiment._display.showRowIndex:
     styler.hide_index()
   if experiment._display.bar:
@@ -401,7 +402,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
     styler.apply(highlightStat, subset=cMetric, axis=None, **{'significance':significance})
     styler.apply(highlightBest, subset=cMetric, axis=None, **{'significance':significance})
 
-  return (df, header, styler)
+  return (df.fillna('-'), header, styler)
 
 def highlightStat(s, significance):
   df = pd.DataFrame('', index=s.index, columns=s.columns)
