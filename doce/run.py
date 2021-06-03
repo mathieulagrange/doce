@@ -331,7 +331,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
       for ssd in sd:
         table[sIndex].append(ssd[1+selectDisplay[0]])
 
-  if significance != None:
+  if len(significance):
     best = significance == -1
     significance = significance>experiment._display.pValue
     significance = significance.astype(float)
@@ -409,12 +409,12 @@ def highlightStat(s, significance):
   df = pd.DataFrame('', index=s.index, columns=s.columns)
   # print(significance.shape)
   # print(df.shape)
-  if significance != None:
+  if len(significance):
     df = df.where(significance<=0, 'color: blue')
   return df
 def highlightBest(s, significance):
   df = pd.DataFrame('', index=s.index, columns=s.columns)
-  if significance != None:
+  if len(significance):
     df = df.where(significance>-1, 'font-weight: bold')
   return df
 

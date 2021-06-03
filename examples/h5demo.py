@@ -14,8 +14,8 @@ if __name__ == "__main__":
 
 def set(userData):
   experiment = doce.Experiment(
-    name = 'npyDemo',
-    purpose = 'demonstration of npy storage of metrics',
+    name = 'h5Demo',
+    purpose = 'demonstration of hdf5 storage of metrics',
     author = 'mathieu Lagrange',
     address = 'mathieu.lagrange@ls2n.fr',
     version = '0.1',
@@ -34,9 +34,9 @@ def set(userData):
   experiment.setMetrics(
     mae = ['sqrt|mean-0*', 'std%-'],
     mse = ['mean*', 'std%'],
-    duration = ['mean']
+    duration = ['mean'],
+    du = ['mean']
   )
-
   experiment._display.metricPrecision = 10
   experiment._display.highlight = True
 
@@ -60,7 +60,8 @@ def step(setting, experiment):
       estimate =  np.var(data, dtype=np.float64)
 
     # write to statically allocated array
-    sg.mae[r] = [abs(reference - estimate)]
+    if setting.dataType == 'float':
+      sg.mae[r] = [abs(reference - estimate)]
     # write to dynamically allocated array
     sg.mse.append([np.square(reference - estimate)])
 

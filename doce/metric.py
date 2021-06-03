@@ -82,23 +82,9 @@ class Metric():
     stat = []
     modificationTimeStamp = []
     metricHasData = [False] * len(self.name())
-    nbReducedMetrics = 0
-    rDir = []
-    rDo = []
-    for mIndex, metric in enumerate(self.name()):
-      for reductionType in self.__getattribute__(metric):
-        nbReducedMetrics += 1
-        if '*' in reductionType:
-          rDo.append(1)
-          if reductionType[-1]=='-':
-            rDir.append(-1)
-          else:
-            rDir.append(1)
-        else:
-          rDo.append(0)
-          rDir.append(0)
 
-    reducedMetrics = [False] * nbReducedMetrics
+    (reducedMetrics, rDir, rDo) = self.significanceStatus()
+
     for sIndex, setting in enumerate(settings):
       row = []
       rStat = []
@@ -134,9 +120,35 @@ class Metric():
           row.insert(0, setting.__getattribute__(factorName))
         table.append(row)
         stat.append(rStat)
-    nbFactors = len(settings.factors())
 
-    significance = np.zeros((len(table),nbReducedMetrics))
+    significance = self.significance(settings, table, stat, reducedMetrics, rDir, rDo)
+
+    print(metricHasData)
+    print(reducedMetrics)
+    return (table, metricHasData, reducedMetrics, modificationTimeStamp, significance)
+
+  def significanceStatus(self):
+    nbReducedMetrics = 0
+    rDir = []
+    rDo = []
+    for mIndex, metric in enumerate(self.name()):
+      for reductionType in self.__getattribute__(metric):
+        nbReducedMetrics += 1
+        if '*' in reductionType:
+          rDo.append(1)
+          if reductionType[-1]=='-':
+            rDir.append(-1)
+          else:
+            rDir.append(1)
+        else:
+          rDo.append(0)
+          rDir.append(0)
+    reducedMetrics = [False] * nbReducedMetrics
+
+    return reducedMetrics, rDir, rDo
+
+  def significance(self, settings, table, stat, reducedMetrics, rDir, rDo):
+    significance = np.zeros((len(table),len(reducedMetrics)))
     mii = 0
     for mi in range(len(rDir)):
       mv = []
@@ -156,12 +168,9 @@ class Metric():
                 (s, p) = stats.ttest_rel(stat[si][mii], stat[im][mii])
                 significance[si, mi] = p
           mii += 1
-
-    for ir, row in enumerate(table):
-      table[ir] = row[:nbFactors]+list(compress(row[nbFactors:], reducedMetrics))
     significance = np.delete(significance, np.invert(reducedMetrics), axis=1)
-    # print(significance.shape)
-    return (table, metricHasData, modificationTimeStamp, significance)
+
+    return significance
 
   def reduceFromH5(
     self,
@@ -185,10 +194,17 @@ class Metric():
 
     """
     table = []
+    stat = []
     h5 = tb.open_file(dataLocation, mode='r')
     metricHasData = [False] * len(self.name())
+
+    (reducedMetrics, rDir, rDo) = self.significanceStatus()
+
     for sIndex, setting in enumerate(settings):
       row = []
+      rStat = []
+      nbReducedMetrics = 0
+      nbMetrics = 0
       if verbose:
         print('Seeking Group '+setting.id(**settingEncoding))
       if h5.root.__contains__(setting.id(**settingEncoding)):
@@ -197,17 +213,33 @@ class Metric():
         # print(setting.id(**settingEncoding))
         for mIndex, metric in enumerate(self.name()):
           for reductionType in self.__getattribute__(metric):
-            value = np.nan
+            # value = np.nan
+            noData = True
             if settingGroup.__contains__(metric):
-              metricHasData[mIndex] = True
               data = settingGroup._f_get_child(metric)
-            row.append(self.reduceMetric(np.array(data), reductionType, reductionDirectiveModule))
+              if data.shape[0] > 0:
+                metricHasData[mIndex] = True
+                reducedMetrics[nbReducedMetrics] = True
+                nbReducedMetrics+=1
+                noData = False
+              if '*' in reductionType:
+                rStat.append(np.array(data))
+            if noData:
+              row.append(np.nan)
+              if '*' in reductionType:
+                rStat.append(np.nan)
+              nbReducedMetrics+=1
+            else:
+              row.append(self.reduceMetric(np.array(data), reductionType, reductionDirectiveModule))
         if len(row) and not all(np.isnan(c) for c in row):
           for factorName in reversed(settings.factors()):
             row.insert(0, setting.__getattribute__(factorName))
         table.append(row)
+        stat.append(rStat)
     h5.close()
-    return (table, metricHasData)
+    significance = self.significance(settings, table, stat, reducedMetrics, rDir, rDo)
+
+    return (table, metricHasData, reducedMetrics, significance)
 
   def applyReduction(
     self,
@@ -479,10 +511,13 @@ class Metric():
 
     if dataLocation.endswith('.h5'):
       modificationTimeStamp = []
-      significance = None # TODO
-      (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
+      (settingDescription, metricHasData, reducedMetrics, significance) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
     else:
-      (settingDescription, metricHasData, modificationTimeStamp, significance) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
+      (settingDescription, metricHasData, reducedMetrics, modificationTimeStamp, significance) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
+
+    nbFactors = len(settings.factors())
+    for ir, row in enumerate(settingDescription):
+      settingDescription[ir] = row[:nbFactors]+list(compress(row[nbFactors:], reducedMetrics))
 
     columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricDisplay, metricDisplayLength, metricHasData, reducedMetricDisplay)
     nbColumnFactor = len(settings.factors())
