@@ -34,11 +34,11 @@ def set(userData):
 
   experiment.setMetrics(
     mae = ['sqrt|mean-0*', 'std%-'],
-    mse = ['mean', 'std%'],
+    mse = ['mean*', 'std%'],
     duration = ['mean']
   )
 
-  experiment._display.metricPrecision = 20
+  experiment._display.metricPrecision = 10
   experiment._display.bar = False
 
   return experiment
