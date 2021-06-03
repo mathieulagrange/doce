@@ -137,11 +137,7 @@ class Metric():
     nbFactors = len(settings.factors())
 
     significance = np.zeros((len(table),nbReducedMetrics))
-    # print(significance.shape)
     mii = 0
-    # print(rDir)
-    # print(rDo)
-    # print(len(stat[0]))
     for mi in range(len(rDir)):
       mv = []
       for si in range(len(table)):
@@ -156,11 +152,10 @@ class Metric():
         if rDo[mi] != 0:
           for si in range(len(stat)):
             if si!=im:
-              if not np.isnan(stat[si][mii]).all(): #  and not np.isnan(stat[im][mii]).all()
+              if not np.isnan(stat[si][mii]).all():
                 (s, p) = stats.ttest_rel(stat[si][mii], stat[im][mii])
                 significance[si, mi] = p
           mii += 1
-    # print(significance)
 
     for ir, row in enumerate(table):
       table[ir] = row[:nbFactors]+list(compress(row[nbFactors:], reducedMetrics))
@@ -484,7 +479,7 @@ class Metric():
 
     if dataLocation.endswith('.h5'):
       modificationTimeStamp = []
-      significance = [] # TODO
+      significance = None # TODO
       (settingDescription, metricHasData) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
     else:
       (settingDescription, metricHasData, modificationTimeStamp, significance) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, metricSelector)

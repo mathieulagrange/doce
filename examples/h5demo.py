@@ -12,33 +12,39 @@ if __name__ == "__main__":
 #   - the metric does not operate on the same data, resulting on result vectors with different sizes per metric
 #   - thank to the description capabilities of the h5 file format, some information about the metric can be stored
 
-def set(args):
-    experiment = doce.experiment.Experiment()
-    experiment.project.name = 'demoH5'
-    experiment.project.description = 'demonstration of explanes using H5'
-    experiment.project.author = 'mathieu Lagrange'
-    experiment.project.address = 'mathieu.lagrange@ls2n.fr'
-    experiment.path.output = '/tmp/results.h5'
-    experiment.path.archive = '/tmp/archive.h5'
+def set(userData):
+  experiment = doce.Experiment(
+    name = 'npyDemo',
+    purpose = 'demonstration of npy storage of metrics',
+    author = 'mathieu Lagrange',
+    address = 'mathieu.lagrange@ls2n.fr',
+    version = '0.1',
+    host = ['pc-lagrange.irccyn.ec-nantes.fr']
+  )
 
-    experiment.factor.dataType = ['float', 'double']
-    experiment.factor.datasetSize = 1000*np.array([1, 2, 4, 8])
-    experiment.factor.meanOffset = 10.0**np.array([0, 1, 2, 3, 4])
-    experiment.factor.nbRuns = np.array([20, 40])
+  experiment.setPath('output', '/tmp/'+experiment.name+'.h5')
 
-    experiment.metric.mae = ['mean', 'std']
-    experiment.metric._description.mae = 'Mean absolute error'
-    experiment.metric.mse = ['mean', 'std']
-    experiment.metric._description.mse = 'Mean square error'
-    experiment.metric.duration = ['']
-    experiment.metric._unit.duration = 'seconds'
-    experiment.metric._description.duration = 'time used to compute'
+  experiment.addPlan('plan',
+    dataType= ['float', 'double'],
+    datasetSize = 1000*np.array([1, 2, 4, 8], dtype=np.intc),
+    meanOffset = 10.0**np.array([0, 1, 2]),
+    nbRuns = 2000
+    )
 
-    return experiment
+  experiment.setMetrics(
+    mae = ['sqrt|mean-0*', 'std%-'],
+    mse = ['mean*', 'std%'],
+    duration = ['mean']
+  )
+
+  experiment._display.metricPrecision = 10
+  experiment._display.highlight = True
+
+  return experiment
 
 def step(setting, experiment):
   h5 = tb.open_file(experiment.path.output, mode='a')
-  sg = experiment.metric.addSettingGroup(h5, setting, metricDimension = {'mae':setting.nbRuns, 'duration':1}, settingEncoding = experiment._settingEncoding)
+  sg = experiment.metric.addSettingGroup(h5, setting, metricDimension = {'mae':setting.nbRuns, 'duration':1})
 
   tic = time.time()
   for r in range(setting.nbRuns):
