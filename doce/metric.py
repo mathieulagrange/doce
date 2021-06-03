@@ -139,20 +139,18 @@ class Metric():
     significance = np.zeros((len(table),nbReducedMetrics))
     # print(significance.shape)
     mii = 0
-    print(rDir)
-    print(rDo)
-    print(len(stat[0]))
+    # print(rDir)
+    # print(rDo)
+    # print(len(stat[0]))
     for mi in range(len(rDir)):
       mv = []
       for si in range(len(table)):
         mv.append(table[si][len(settings.factors())+mi])
-      print(mv)
       if not np.isnan(mv).all():
         if rDir[mi]<0:
           im = np.nanargmin(mv)
         else:
           im = np.nanargmax(mv)
-        print(im)
         significance[im, mi] = -1
         sRow = []
         if rDo[mi] != 0:

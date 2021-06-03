@@ -342,7 +342,6 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 
   if modificationTimeStamp:
     print('Displayed data generated from '+ time.ctime(min(modificationTimeStamp))+' to '+ time.ctime(max(modificationTimeStamp)))
-  print(columns)
   df = pd.DataFrame(table, columns=columns) #.fillna('-')
 
   if selectDisplay and not selectFactor and  len(columns)>=max(selectDisplay)+nbFactorColumns:
