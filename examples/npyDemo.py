@@ -65,10 +65,11 @@ def step(setting, experiment):
     settingMse[r] = abs(reference - estimate)
     settingMae[r] = np.square(reference - estimate)
 
-  np.save(experiment.path.output+setting.id()+'_mae.npy', settingMae)
+  if setting.dataType == 'float':
+    np.save(experiment.path.output+setting.id()+'_mae.npy', settingMae)
   np.save(experiment.path.output+setting.id()+'_mse.npy', settingMse)
   duration = time.time()-tic
-  np.save(experiment.path.output+setting.id()+'.duration.npy', duration)
+  # np.save(experiment.path.output+setting.id()+'_duration.npy', duration)
 
 # uncomment this method to fine tune display of metrics
 def myDisplay(experiment, settings):

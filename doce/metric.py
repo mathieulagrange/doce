@@ -125,6 +125,7 @@ class Metric():
             row.append(np.nan)
             rStat.append(np.nan)
             nbReducedMetrics+=1
+
       if len(row) and not all(np.isnan(c) for c in row):
         for factorName in reversed(settings.factors()):
           row.insert(0, setting.__getattribute__(factorName))
@@ -135,7 +136,8 @@ class Metric():
     significance = np.zeros((len(table),nbReducedMetrics))
     # print(significance.shape)
     mii = 0
-    for mi in range(nbReducedMetrics):
+    print(rDir)
+    for mi in range(len(rDir)):
       mv = []
       for si in range(len(table)):
         mv.append(table[si][len(settings.factors())+mi])
@@ -156,6 +158,8 @@ class Metric():
 
     for ir, row in enumerate(table):
       table[ir] = row[:nbFactors]+list(compress(row[nbFactors:], reducedMetrics))
+    significance = np.delete(significance, np.invert(reducedMetrics), axis=1)
+    # print(significance.shape)
     return (table, metricHasData, modificationTimeStamp, significance)
 
   def reduceFromH5(

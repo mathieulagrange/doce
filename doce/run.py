@@ -268,7 +268,7 @@ def run():
         print(header)
         pd.set_option('precision', 2)
         print(df)
-      if args.export != 'none':
+      if args.export != 'none' and styler is not None:
         exportDataFrame(experiment, args, df, styler, header)
       if args.mail>-1:
         body += '<div> '+header+' </div><br>'+styler.render()
@@ -309,7 +309,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   (table, columns, header, nbFactorColumns, modificationTimeStamp, significance) = experiment.metric.reduce(experiment._plan.select(selector), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
 
   if len(table) == 0:
-      return (None, None, None)
+      return (None, '', None)
   if selectFactor:
     modalities = getattr(experiment._plan, selectFactor)[ms]
     header = 'metric: '+columns[nbFactorColumns+selectDisplay
@@ -342,7 +342,8 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 
   if modificationTimeStamp:
     print('Displayed data generated from '+ time.ctime(min(modificationTimeStamp))+' to '+ time.ctime(max(modificationTimeStamp)))
-    df = pd.DataFrame(table, columns=columns) #.fillna('-')
+  print(columns)
+  df = pd.DataFrame(table, columns=columns) #.fillna('-')
 
   if selectDisplay and not selectFactor and  len(columns)>=max(selectDisplay)+nbFactorColumns:
     columns = [columns[i] for i in [*range(nbFactorColumns)]+[s+nbFactorColumns for s in selectDisplay]]
@@ -406,8 +407,8 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 
 def highlightStat(s, significance):
   df = pd.DataFrame('', index=s.index, columns=s.columns)
-  # print(significance.shape)
-  # print(df.shape)
+  print(significance.shape)
+  print(df.shape)
   df = df.where(significance<=0, 'color: blue')
   return df
 def highlightBest(s, significance):
