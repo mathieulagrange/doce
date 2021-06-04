@@ -32,7 +32,7 @@ def set(userData):
     )
 
   experiment.setMetrics(
-    mae = ['sqrt|mean-0*', 'std%-'],
+    mae = ['sqrt|mean-0*-', 'std%-'],
     mse = ['mean*', 'std%'],
     duration = ['mean'],
     du = ['mean']
@@ -63,7 +63,7 @@ def step(setting, experiment):
     if setting.dataType == 'float':
       sg.mae[r] = [abs(reference - estimate)]
     # write to dynamically allocated array
-    sg.mse.append([np.square(reference - estimate)])
+      sg.mse.append([np.square(reference - estimate)])
 
   duration = time.time()-tic
   sg.duration[0] = duration

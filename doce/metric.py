@@ -123,8 +123,8 @@ class Metric():
 
     significance = self.significance(settings, table, stat, reducedMetrics, rDir, rDo)
 
-    print(metricHasData)
-    print(reducedMetrics)
+    # print(metricHasData)
+    # print(reducedMetrics)
     return (table, metricHasData, reducedMetrics, modificationTimeStamp, significance)
 
   def significanceStatus(self):
@@ -136,15 +136,14 @@ class Metric():
         nbReducedMetrics += 1
         if '*' in reductionType:
           rDo.append(1)
-          if reductionType[-1]=='-':
-            rDir.append(-1)
-          else:
-            rDir.append(1)
         else:
           rDo.append(0)
-          rDir.append(0)
-    reducedMetrics = [False] * nbReducedMetrics
+        if reductionType[-1]=='-':
+          rDir.append(-1)
+        else:
+          rDir.append(1)
 
+    reducedMetrics = [False] * nbReducedMetrics
     return reducedMetrics, rDir, rDo
 
   def significance(self, settings, table, stat, reducedMetrics, rDir, rDo):
@@ -238,7 +237,6 @@ class Metric():
         stat.append(rStat)
     h5.close()
     significance = self.significance(settings, table, stat, reducedMetrics, rDir, rDo)
-
     return (table, metricHasData, reducedMetrics, significance)
 
   def applyReduction(
@@ -733,7 +731,7 @@ class Metric():
 
       if metric in metricDimension:
         if not settingGroup.__contains__(metric):
-          fileId.create_array(settingGroup, metric, np.zeros((metricDimension[metric])), description)
+          fileId.create_array(settingGroup, metric, np.zeros((metricDimension[metric]))*np.nan, description)
       else:
         if settingGroup.__contains__(metric):
           settingGroup._f_get_child(metric)._f_remove()

@@ -33,7 +33,7 @@ def set(userData):
     )
 
   experiment.setMetrics(
-    mae = ['sqrt|mean-0*', 'std%-'],
+    mae = ['sqrt|mean-0*-', 'std%-'],
     mse = ['mean*', 'std%'],
     duration = ['mean']
   )
