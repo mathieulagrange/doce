@@ -153,7 +153,7 @@ def run():
   # if isinstance(userData, dict):
   #   experiment.userData = userData
 
-  experiment = config.set(userData)
+  experiment = config.set(args)
 
   experiment.selector = selector
 

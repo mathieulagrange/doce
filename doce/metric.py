@@ -111,7 +111,7 @@ class Metric():
             print('** Unable to find '+fileName)
           for reductionType in self.__getattribute__(metric):
             row.append(np.nan)
-            if '*' in reductionType:
+            if isinstance(reductionType, str) and '*' in reductionType:
               rStat.append(np.nan)
             nbReducedMetrics+=1
 
@@ -134,11 +134,11 @@ class Metric():
     for mIndex, metric in enumerate(self.name()):
       for reductionType in self.__getattribute__(metric):
         nbReducedMetrics += 1
-        if '*' in reductionType:
+        if isinstance(reductionType, str) and '*' in reductionType:
           rDo.append(1)
         else:
           rDo.append(0)
-        if reductionType[-1]=='-':
+        if isinstance(reductionType, str) and len(reductionType) and reductionType[-1]=='-':
           rDir.append(-1)
         else:
           rDir.append(1)
@@ -221,11 +221,11 @@ class Metric():
                 reducedMetrics[nbReducedMetrics] = True
                 nbReducedMetrics+=1
                 noData = False
-              if '*' in reductionType:
+              if isinstance(reductionType, str) and '*' in reductionType:
                 rStat.append(np.array(data))
             if noData:
               row.append(np.nan)
-              if '*' in reductionType:
+              if isinstance(reductionType, str) and '*' in reductionType:
                 rStat.append(np.nan)
               nbReducedMetrics+=1
             else:
