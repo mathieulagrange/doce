@@ -104,7 +104,7 @@ class Metric():
             nbReducedMetrics+=1
             row.append(self.reduceMetric(data, reductionType, reductionDirectiveModule))
             # print(reductionType)
-            if '*' in reductionType:
+            if isinstance(reductionType, str) and '*' in reductionType:
               rStat.append(data)
         else:
           if verbose:
