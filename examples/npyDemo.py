@@ -39,7 +39,7 @@ def set(userData):
     duration = ['mean']
   )
 
-  experiment._display.metricPrecision = 4
+  experiment._display.metricPrecision = 2
   experiment._display.bar = False
 
   return experiment

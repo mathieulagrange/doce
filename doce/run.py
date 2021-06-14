@@ -358,6 +358,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   cMinus = []
   cNoMinus = []
   cMetric = []
+  cInt = {}
   precisionFormat = {}
   for ci, c in enumerate(columns):
     if ci >= nbFactorColumns:
@@ -372,10 +373,22 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
         cMinus.append(c)
       else:
         cNoMinus.append(c)
+    else:
+      if isinstance(df[c][0], float):
+        isInteger = True
+        for x in df[c]:
+          if not x.is_integer():
+            isInteger = False
+        if isInteger:
+          print(c)
+          cInt[c] = 'int32'
 
   dPercent = pd.Series([experiment._display.metricPrecision-2]*len(cPercent), index=cPercent)
   dNoPercent = pd.Series([experiment._display.metricPrecision]*len(cNoPercent), index=cNoPercent)
-  df=df.round(dPercent).round(dNoPercent)
+  dInt = pd.Series([0]*len(cInt), index=cInt)
+  df=df.round(dPercent).round(dNoPercent).astype(cInt)
+
+  # df['meanOffset'].map(lambda x: 0)
 
   # if cNoPercent:
   #   form = '%.'+str(experiment._display.metricPrecision)+'f'
