@@ -266,7 +266,7 @@ def run():
       (df, header, styler) = dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor)
       if df is not None:
         print(header)
-        pd.set_option('precision', 2)
+        # pd.set_option('precision', 2)
         print(df)
       if args.export != 'none' and styler is not None:
         exportDataFrame(experiment, args, df, styler, header)
@@ -369,7 +369,6 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
         precisionFormat[c] = '{0:.'+str(experiment._display.metricPrecision)+'f}'
         cNoPercent.append(c)
       if c[-1] == '-' :
-        # print('pass')
         cMinus.append(c)
       else:
         cNoMinus.append(c)
@@ -378,14 +377,13 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   dNoPercent = pd.Series([experiment._display.metricPrecision]*len(cNoPercent), index=cNoPercent)
   df=df.round(dPercent).round(dNoPercent)
 
-  if cNoPercent:
-    form = '%.'+str(experiment._display.metricPrecision)+'f'
-  else:
-    form = '%.'+str(experiment._display.metricPrecision-2)+'f'
-
-  pd.set_option('display.float_format', lambda x: '%.0f' % x
-                      if (x == x and x*10 % 10 == 0)
-                      else form % x)
+  # if cNoPercent:
+  #   form = '%.'+str(experiment._display.metricPrecision)+'f'
+  # else:
+  #   form = '%.'+str(experiment._display.metricPrecision-2)+'f'
+  # pd.set_option('display.float_format', lambda x: '%.0f' % x
+  #                     if (x == x and x*10 % 10 == 0)
+  #                     else form % x)
 
   styler = df.style.set_properties(subset=df.columns[numeric_col_selector], # right-align the numeric columns and set their width
         **{'width':'10em', 'text-align':'right'})\

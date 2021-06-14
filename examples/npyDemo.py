@@ -29,7 +29,8 @@ def set(userData):
     dataType= ['float', 'double'],
     datasetSize = 1000*np.array([1, 2, 4, 8], dtype=np.intc),
     meanOffset = 10.0**np.array([0, 1, 2]),
-    nbRuns = 2000
+    nbRuns = 2000,
+    test = [0.0001, 0.00002]
     )
 
   experiment.setMetrics(
@@ -38,7 +39,7 @@ def set(userData):
     duration = ['mean']
   )
 
-  experiment._display.metricPrecision = 10
+  experiment._display.metricPrecision = 4
   experiment._display.bar = False
 
   return experiment
