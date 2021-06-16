@@ -150,7 +150,7 @@ def run():
 
   experiment.status.verbose = args.verbose
 
-  experiment.select(selector)
+  experiment.select(selector, args.plan)
 
   # if experimentId != 'all':
   #   if experimentId is None:
@@ -175,8 +175,9 @@ def run():
 
   if args.information:
       print(experiment)
-  if args.plan:
-      print(experiment._plan.asPandaFrame())
+  # if args.plan:
+  #     print('Main')
+  #     print(experiment._plan.asPandaFrame())
   if args.list:
     experiment.do(experiment.selector, progress='')
 

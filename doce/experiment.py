@@ -401,7 +401,7 @@ class Experiment():
 
     return self._plan.select(selector).do(function, self, *parameters, nbJobs=nbJobs, progress=progress, logFileName=logFileName, mailInterval=mailInterval)
 
-  def select(self, selector):
+  def select(self, selector, show=False):
     experimentId = 'all'
     if ':' in selector:
       s = selector.split(':')
@@ -411,20 +411,26 @@ class Experiment():
       else:
         selector = ''
 
-      plans = experiment.plans()
-      if len(plans)==1:
-        self._plan = getattr(self, plans[0])
+    plans = self.plans()
+    if len(plans)==1:
+      self._plan = getattr(self, plans[0])
+    else:
+      if experimentId == 'all':
+        oPlans = []
+        for p in plans:
+          print('Plan '+p)
+          print(getattr(self, p).asPandaFrame())
+          oPlans.append(getattr(self, p))
+        self._plan = self._plan.merge(oPlans)
+        if show and len(plans)>1:
+          print('Those plans can be selected using the selector parameter. ')
+          print('Merged plan')
       else:
-        if experimentId == 'all':
-          oPlans = []
-          for p in plans:
-            oPlans.append(getattr(self, p))
-          self._plan = self._plan.merge(oPlans)
-        else:
-          if experimentId.isnumeric():
-            experimentId = plans[int(experimentId)]
-          self._plan = getattr(self, experimentId)
-
+        if experimentId.isnumeric():
+          experimentId = plans[int(experimentId)]
+        self._plan = getattr(self, experimentId)
+    if show:
+      print(self._plan.asPandaFrame())
     return self._plan.select(selector)
 
   def cleanDataSink(

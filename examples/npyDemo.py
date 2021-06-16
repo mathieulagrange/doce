@@ -13,7 +13,7 @@ if __name__ == "__main__":
 #   - one factor affects the size of the results vectors
 #   - the metrics does not operate on the same data, resulting on result vectors with different sizes per metric
 
-def set():
+def set(args):
   experiment = doce.Experiment(
     name = 'npyDemo',
     purpose = 'demonstration of npy storage of metrics',
