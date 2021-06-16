@@ -401,6 +401,32 @@ class Experiment():
 
     return self._plan.select(selector).do(function, self, *parameters, nbJobs=nbJobs, progress=progress, logFileName=logFileName, mailInterval=mailInterval)
 
+  def select(self, selector):
+    experimentId = 'all'
+    if ':' in selector:
+      s = selector.split(':')
+      experimentId = s[0]
+      if len(s)>1:
+        selector = s[1]
+      else:
+        selector = ''
+
+      plans = experiment.plans()
+      if len(plans)==1:
+        self._plan = getattr(self, plans[0])
+      else:
+        if experimentId == 'all':
+          oPlans = []
+          for p in plans:
+            oPlans.append(getattr(self, p))
+          self._plan = self._plan.merge(oPlans)
+        else:
+          if experimentId.isnumeric():
+            experimentId = plans[int(experimentId)]
+          self._plan = getattr(self, experimentId)
+
+    return self._plan.select(selector)
+
   def cleanDataSink(
     self,
     path,
@@ -423,7 +449,7 @@ class Experiment():
     path : str
       If has a / or \\\, a valid path to a directory or .h5 file.
 
-      If has no / or \\\, a member of the NameSpace experiment.path.
+      If has no / or \\\, a member of the NameSpace self.path.
 
     selector : a list of literals or a list of lists of literals (optional)
       :term:`selector` used to specify the :term:`settings<setting>` set

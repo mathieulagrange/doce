@@ -124,21 +124,12 @@ def run():
   if args.progress is None:
     args.progress = ''
 
-  experimentId = 'all'
   selector = re.sub(r"[\n\t\s]*", "", args.select)
-  if ':' in selector:
-    s = selector.split(':')
-    experimentId = s[0]
-    if len(s)>1:
-      selector = s[1]
-    else:
-      selector = ''
 
   try:
     selector = ast.literal_eval(selector)
   except:
     pass
-
 
   userData = ast.literal_eval(args.userData)
 
@@ -159,20 +150,7 @@ def run():
 
   experiment.status.verbose = args.verbose
 
-  plans = experiment.plans()
-  if len(plans)==1:
-    experiment._plan = getattr(experiment, plans[0])
-  else:
-    if experimentId == 'all':
-      oPlans = []
-      for p in plans:
-        oPlans.append(getattr(experiment, p))
-      experiment._plan = experiment._plan.merge(oPlans)
-    else:
-      if experimentId.isnumeric():
-        print('pass')
-        experimentId = plans[int(experimentId)]
-      experiment._plan = getattr(experiment, experimentId)
+  experiment.select(selector)
 
   # if experimentId != 'all':
   #   if experimentId is None:

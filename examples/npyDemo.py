@@ -13,7 +13,7 @@ if __name__ == "__main__":
 #   - one factor affects the size of the results vectors
 #   - the metrics does not operate on the same data, resulting on result vectors with different sizes per metric
 
-def set(userData):
+def set():
   experiment = doce.Experiment(
     name = 'npyDemo',
     purpose = 'demonstration of npy storage of metrics',
@@ -29,8 +29,7 @@ def set(userData):
     dataType= ['float', 'double'],
     datasetSize = 1000*np.array([1, 2, 4, 8], dtype=np.intc),
     meanOffset = 10.0**np.array([0, 1, 2]),
-    nbRuns = 2000,
-    test = [0.0001, 0.00002]
+    nbRuns = 2000
     )
 
   experiment.setMetrics(
@@ -74,7 +73,7 @@ def step(setting, experiment):
 
 # uncomment this method to fine tune display of metrics
 def myDisplay(experiment, settings):
-  (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output, settingEncoding = experiment._settingEncoding)
+  (data, desc, header)  = experiment.metric.get('mae', settings, experiment.path.output)
 
   print(header)
   print(desc)
