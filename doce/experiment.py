@@ -418,13 +418,14 @@ class Experiment():
       if experimentId == 'all':
         oPlans = []
         for p in plans:
-          print('Plan '+p)
-          print(getattr(self, p).asPandaFrame())
+          if show:
+            print('Plan '+p+':')
+            print(getattr(self, p).asPandaFrame())
           oPlans.append(getattr(self, p))
         self._plan = self._plan.merge(oPlans)
         if show and len(plans)>1:
-          print('Those plans can be selected using the selector parameter. ')
-          print('Merged plan')
+          print('Those plans can be selected using the selector parameter.')
+          print('Otherwise the merged plan is considered: ')
       else:
         if experimentId.isnumeric():
           experimentId = plans[int(experimentId)]
