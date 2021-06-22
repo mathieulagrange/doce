@@ -52,7 +52,7 @@ class Plan():
       self._changed = False
       self._currentSetting = 0
       self._settings = []
-      self._selector = None 
+      self._selector = None
       self._expandedSelector = None
       self._nonSingleton = []
       self._factors = []

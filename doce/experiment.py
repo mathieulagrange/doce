@@ -410,6 +410,7 @@ class Experiment():
         selector = s[1]
       else:
         selector = ''
+    self.selector = selector
 
     plans = self.plans()
     if len(plans)==1:

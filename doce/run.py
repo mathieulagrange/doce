@@ -146,8 +146,6 @@ def run():
 
   experiment = config.set(args)
 
-  experiment.selector = selector
-
   experiment.status.verbose = args.verbose
 
   experiment.select(selector, args.plan)
