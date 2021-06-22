@@ -630,7 +630,7 @@ class Metric():
           elif verbose:
             print('** Unable to find '+fileName)
 
-    (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = eu.pruneSettingDescription(settingDescription)
+    (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = eu.pruneSettingDescription(settingDescription, showUniqueSetting=True)
 
     return (settingMetric, settingDescription, constantSettingDescription)
 

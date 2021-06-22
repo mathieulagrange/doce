@@ -80,7 +80,7 @@ def constantColumn(
               values[cIndex] = None
   return values
 
-def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFactor=0, factorDisplay='long'):
+def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFactor=0, factorDisplay='long', showUniqueSetting=False):
   """remove the columns corresponding to factors with only one modality from the settingDescription and the columnHeader.
 
   Remove the columns corresponding to factors with only one modality from the settingDescription and the columnHeader and describes the factors with only one modality in a separate string.
@@ -99,6 +99,9 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
 
   factorDisplay:
     type of description of the factors (default 'long'), see :meth:`doce.util.compressDescription` for reference.
+
+  showUniqueSetting: bool
+    If True, show the description of the unique setting in constantSettingDescription.
 
 	Returns
 	-------
@@ -153,7 +156,10 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
         for r in settingDescription:
           r.pop(s)
     else:
-      constantSettingDescription = ''#' '.join(str(x) for x in settingDescription[0]).strip()
+      constantSettingDescription = ''
+      if showUniqueSetting:
+        constantSettingDescription = ' '.join(str(x) for x in settingDescription[0]).strip()
+
   return (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor)
 
 
