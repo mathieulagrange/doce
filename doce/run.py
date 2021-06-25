@@ -396,8 +396,8 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 
 def highlightStat(s, significance):
   df = pd.DataFrame('', index=s.index, columns=s.columns)
-  print(significance.shape)
-  print(df.shape)
+  # print(significance.shape)
+  # print(df.shape)
   if len(significance):
     df = df.where(significance<=0, 'color: blue')
   return df
