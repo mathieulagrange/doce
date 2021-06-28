@@ -313,7 +313,8 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
     significance = significance>experiment._display.pValue
     significance = significance.astype(float)
     significance[best] = -1
-    significance = significance[:, selectDisplay]
+    if selectDisplay:
+      significance = significance[:, selectDisplay]
 
   if experiment._display.pValue == 0:
     for ti, t in enumerate(table):
@@ -396,8 +397,8 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 
 def highlightStat(s, significance):
   df = pd.DataFrame('', index=s.index, columns=s.columns)
-  # print(significance.shape)
-  # print(df.shape)
+  print(significance.shape)
+  print(df.shape)
   if len(significance):
     df = df.where(significance<=0, 'color: blue')
   return df
