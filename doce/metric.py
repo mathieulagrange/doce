@@ -6,6 +6,7 @@ import doce.util as eu
 import copy
 from itertools import compress
 import time
+from scipy import stats
 
 class Metric():
   """Stores information about the way evaluation metrics are stored and manipulated.
@@ -76,7 +77,6 @@ class Metric():
     doce.metric.Metric.reduce
 
     """
-    from scipy import stats
 
     table = []
     stat = []
