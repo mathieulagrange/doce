@@ -76,7 +76,6 @@ class Metric():
     doce.metric.Metric.reduce
 
     """
-    from scipy import stats
 
     table = []
     stat = []
@@ -147,6 +146,9 @@ class Metric():
     return reducedMetrics, rDir, rDo
 
   def significance(self, settings, table, stat, reducedMetrics, rDir, rDo):
+
+    from scipy import stats
+
     significance = np.zeros((len(table),len(reducedMetrics)))
     mii = 0
     for mi in range(len(rDir)):
