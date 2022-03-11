@@ -401,6 +401,8 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   return (df.fillna('-'), header, styler)
 
 def highlightStat(s, significance):
+  import pandas as pd
+
   df = pd.DataFrame('', index=s.index, columns=s.columns)
   print(significance.shape)
   print(df.shape)
@@ -408,6 +410,7 @@ def highlightStat(s, significance):
     df = df.where(significance<=0, 'color: blue')
   return df
 def highlightBest(s, significance):
+  import pandas as pd
   df = pd.DataFrame('', index=s.index, columns=s.columns)
   if len(significance):
     df = df.where(significance>-1, 'font-weight: bold')
