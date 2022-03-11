@@ -3,15 +3,12 @@ import shutil as sh
 import inspect
 import types
 import numpy as np
-import tables as tb
-import pandas as pd
+
 import copy
 import glob
 import doce.util as eu
 import doce.setting as es
 import logging
-from joblib import Parallel, delayed
-from subprocess import call
 import time
 from itertools import groupby
 
@@ -190,6 +187,7 @@ class Plan():
     if progress:
       print('Number of settings: '+str(len(self)))
     if nbJobs>1 or nbJobs<0:
+      from joblib import Parallel, delayed
       result = Parallel(n_jobs=nbJobs, require='sharedmem')(delayed(setting.do)(function, experiment, logFileName, *parameters) for setting in self)
     else:
       startTime = time.time()
@@ -393,6 +391,8 @@ class Plan():
 
   	This method is more conveniently used by considering the method :meth:`doce.experiment.Experiment.cleanDataSink, please see its documentation for usage.
     """
+    import tables as tb
+
     if archivePath:
       print(path)
       print(archivePath)
@@ -563,6 +563,8 @@ class Plan():
     0    one  a  b
     1    two  0  1  2  3  4  5  6  7  8  9
     """
+    import pandas as pd
+
     l = 1
     for ai, f in enumerate(self._factors):
       if isinstance(getattr(self, f), list):

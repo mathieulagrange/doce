@@ -1,4 +1,3 @@
-import smtplib
 import types
 import inspect
 import os
@@ -300,6 +299,9 @@ class Experiment():
     Sent message entitled: [explanes]  id ... hello ...
 
     """
+
+    import smtplib
+
     header = 'From: expLanes mailer <'+self._gmailId+'@gmail.com> \r\nTo: '+self.author+' '+self.address+'\r\nMIME-Version: 1.0 \r\nContent-type: text/html \r\nSubject: [explanes] '+self.name+' id '+self.status.runId+' '+title+'\r\n'
 
     server = smtplib.SMTP('smtp.gmail.com', 587)

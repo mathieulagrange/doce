@@ -2,12 +2,10 @@ import os
 import inspect
 import types
 import numpy as np
-import tables as tb
 import doce.util as eu
 import copy
 from itertools import compress
 import time
-from scipy import stats
 
 class Metric():
   """Stores information about the way evaluation metrics are stored and manipulated.
@@ -78,6 +76,8 @@ class Metric():
     doce.metric.Metric.reduce
 
     """
+    from scipy import stats
+
     table = []
     stat = []
     modificationTimeStamp = []
@@ -192,6 +192,8 @@ class Metric():
     doce.metric.Metric.reduce
 
     """
+    import tables as tb
+
     table = []
     stat = []
     h5 = tb.open_file(dataLocation, mode='r')

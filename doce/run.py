@@ -1,8 +1,6 @@
 import doce
 import sys
-import pandas as pd
 import argparse
-import argunparse
 import ast
 import importlib
 import os
@@ -137,14 +135,16 @@ def run():
   try:
     config = importlib.import_module(module)
   except:
-   print('Please provide a valid project name')
+   print(sys.argv[0]+' should implement a valid python module.')
    raise ValueError
 
   # experiment = doce.experiment.Experiment()
   # if isinstance(userData, dict):
   #   experiment.userData = userData
-
-  experiment = config.set(args)
+  if hasattr(config, 'set'):
+    experiment = config.set(args)
+  else:
+    experiment = doce.Experiment()
 
   experiment.status.verbose = args.verbose
 
@@ -191,6 +191,9 @@ def run():
 
   logFileName = ''
   if args.host>-2:
+
+    import argunparse
+
     unparser = argunparse.ArgumentUnparser()
     kwargs = copy.deepcopy(vars(args))
     kwargs['server'] = -3
@@ -262,6 +265,8 @@ def run():
     experiment.sendMail(args.select+' is over.', body) #
 
 def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
+
+  import pandas as pd
 
   selector = experiment.selector
   ma=copy.deepcopy(selector)

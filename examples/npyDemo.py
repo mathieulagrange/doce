@@ -1,6 +1,4 @@
 import doce
-from time import sleep
-from pandas import DataFrame
 import time
 import numpy as np
 from pathlib import Path
@@ -26,7 +24,7 @@ def set(args):
   experiment.setPath('output', '/tmp/'+experiment.name+'/')
 
   experiment.addPlan('plan',
-    dataType= ['float', 'double'],
+    dataType = ['float', 'double'],
     datasetSize = 1000*np.array([1, 2, 4, 8], dtype=np.intc),
     meanOffset = 10.0**np.array([0, 1, 2]),
     nbRuns = 2000
@@ -38,8 +36,8 @@ def set(args):
     duration = ['mean']
   )
 
-  experiment._display.metricPrecision = 2
-  experiment._display.bar = False
+  experiment._display.metricPrecision = 20
+  experiment._display.bar = True
 
   return experiment
 
