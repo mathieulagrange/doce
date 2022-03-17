@@ -4,6 +4,7 @@ import os
 import time
 import datetime
 import doce
+import ast
 
 class Experiment():
   """Stores high level information about the experiment and tools to control the processing and storage of data.
@@ -405,11 +406,15 @@ class Experiment():
 
   def select(self, selector, show=False):
     experimentId = 'all'
-    if ':' in selector:
-      s = selector.split(':')
+    if '/' in selector:
+      s = selector.split('/')
       experimentId = s[0]
       if len(s)>1:
         selector = s[1]
+        try:
+          selector = ast.literal_eval(selector)
+        except:
+          pass
       else:
         selector = ''
     self.selector = selector
@@ -432,6 +437,7 @@ class Experiment():
       else:
         if experimentId.isnumeric():
           experimentId = plans[int(experimentId)]
+        print('Plan '+experimentId+' is selected')
         self._plan = getattr(self, experimentId)
     if show:
       print(self._plan.asPandaFrame())

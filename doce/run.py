@@ -219,7 +219,7 @@ def run():
   if args.mail>-1:
     experiment.sendMail(args.select+' has started.', '<div> Selector = '+args.select+'</div>')
   if args.run and hasattr(config, 'step'):
-    experiment.do(selector, config.step, nbJobs=args.run, logFileName=logFileName, progress=args.progress, mailInterval = float(args.mail))
+    experiment.do(experiment.selector, config.step, nbJobs=args.run, logFileName=logFileName, progress=args.progress, mailInterval = float(args.mail))
 
 
   selectDisplay = []
