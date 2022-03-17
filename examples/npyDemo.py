@@ -4,7 +4,7 @@ import numpy as np
 from pathlib import Path
 
 if __name__ == "__main__":
-  doce.run.run()
+  doce.cli.main()
 
 # use case where:
 #   - the results are stored on disk using npy files
