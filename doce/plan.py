@@ -215,6 +215,14 @@ class Plan():
             t.update(1)
     return nbFailed
 
+  def check(self):
+   for factor in self._factors:
+     if '=' in factor or '+' in factor:
+       print('Characters = and + are not allowed for naming factors')
+     modalities = str(getattr(self, factor))
+     if '=' in factor or '+' in modalities:
+       print('Characters = and + are not allowed for naming modalities')
+
   def select(
     self,
     selector=None,

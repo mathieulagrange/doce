@@ -439,6 +439,7 @@ class Experiment():
           experimentId = plans[int(experimentId)]
         print('Plan '+experimentId+' is selected')
         self._plan = getattr(self, experimentId)
+    self._plan.check()    
     if show:
       print(self._plan.asPandaFrame())
     return self._plan.select(selector)

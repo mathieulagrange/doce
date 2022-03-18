@@ -148,7 +148,7 @@ def main():
 
   experiment.status.verbose = args.verbose
 
-  experiment.select(selector, args.plan)
+  experiment.select(selector, show=args.plan)
 
   # if experimentId != 'all':
   #   if experimentId is None:
