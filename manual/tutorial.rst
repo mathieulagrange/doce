@@ -65,6 +65,8 @@ Advanced usage
 
 Managing multiple plans
 
+Composing mathematical operators for the metrics
+
 Define your own metric operators
 
 Storage within an hdf5 file

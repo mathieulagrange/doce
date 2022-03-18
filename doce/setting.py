@@ -69,10 +69,10 @@ class Setting():
     one b two 1
     one b two 2
     """
-    return self.id(sort=False, separator='_', singleton=True, default=True)
+    return self.id(sort=False, singleton=True, default=True)
 
 
-  def id(self, format='long', sort=True, separator='_', singleton=True, default=False, hide=[], toInt=True):
+  def id(self, format='long', sort=True, separator='+', identifier='=', singleton=True, default=False, hide=[], toInt=True):
     """return a one-liner str or a list of str that describes a setting or a :class:`~doce.Plan` object.
 
   	Return a one-liner str or a list of str that describes a setting or a :class:`~doce.Plan` object with a high degree of flexibility.
@@ -104,7 +104,10 @@ class Setting():
       list the factors that should not be considered. The list is empty by default.
 
     separator: str
-      separator used to concatenate the factor and modality value, default is '_'.
+      separator used to concatenate the factors, default is '|'.
+
+    separator: str
+      separator used to concatenate the factor and modality value, default is '='.
 
   	See Also
   	--------
@@ -192,10 +195,10 @@ class Setting():
     for fIndex, f in enumerate(fNames):
       if f[0] != '_' and getattr(self, f) is not None and f not in hide:
         if (singleton or f in self._plan._nonSingleton) and (default or not hasattr(self._plan._default, f) or (not default and hasattr(self._plan._default, f) and getattr(self._plan._default, f) != getattr(self, f))):
-          id.append(f)
+          # id.append(f)
           # print(str(getattr(self, f)))
           modality = doce.util.specialCaracterNaturalNaming(str(getattr(self, f)))
-          id.append(modality)
+          id.append(f+identifier+modality)
     if 'list' not in format:
       id = separator.join(id)
       if format == 'hash':

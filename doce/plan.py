@@ -18,9 +18,9 @@ else:
     from tqdm import tqdm as tqdm
 
 class Plan():
-  """stores the different factors of the explanes experiment.
+  """stores the different factors of the doce experiment.
 
-  This class stores the different factors of the explanes experiments. For each factor, the set of different modalities can be expressed as a list or a numpy array.
+  This class stores the different factors of the doce experiments. For each factor, the set of different modalities can be expressed as a list or a numpy array.
 
   To browse the setting set defined by the Plan object, one must iterate over the Plan object.
 
@@ -653,7 +653,7 @@ class Plan():
       selector.append(m)
     return selector
 
-  def _str2list(self, strSelector):
+  def _str2list(self, strSelector, factorSeparator = '+', modalityIdentifier = '='):
     """convert string based selector to list based selector
 
     """
@@ -666,19 +666,22 @@ class Plan():
     else:
       for dm in strSelector:
         m = [-1]*len(self._factors)
-        sp = dm.split('_')
-        factors = sp[0::2]
-        modalities = sp[1::2]
+        factors = dm.split(factorSeparator)
+        # factors = sp[0::2]
+        # modalities = sp[1::2]
         for dmki, dmk in enumerate(factors):
+          dmks = dmk.split(modalityIdentifier)
+          dmk = dmks[0]
+          modality = dmks[1]
           if dmk in self._factors:
-              mod = modalities[dmki]
+              # mod = modalities[dmki]
               refMod = []
               for am in list(getattr(self, dmk)):
                 refMod.append(eu.specialCaracterNaturalNaming(str(am)))
-              if mod in refMod:
-                m[self._factors.index(dmk)] = refMod.index(mod)
+              if modality in refMod:
+                m[self._factors.index(dmk)] = refMod.index(modality)
               else:
-                print('Error: '+modalities[dmki]+' is not a modality of factor '+dmk+'.')
+                print('Error: '+modality+' is not a modality of factor '+dmk+'.')
                 return [0]
           else:
             print('Error: '+dmk+' is not a factor.')

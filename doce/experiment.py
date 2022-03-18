@@ -116,7 +116,7 @@ class Experiment():
     self._display.metricFormatInReduceLength = 2
     self._display.showRowIndex = True
     self._display.highlight = True
-    self._display.bar = True
+    self._display.bar = False
     self._display.pValue = 0.05
 
     for field, value in description.items():
@@ -297,20 +297,20 @@ class Experiment():
     >>> e=doce.Experiment()
     >>> e.address = 'mathieu.lagrange@cnrs.fr'
     >>> e.sendMail('hello', '<div> good day </div>')
-    Sent message entitled: [explanes]  id ... hello ...
+    Sent message entitled: [doce]  id ... hello ...
 
     """
 
     import smtplib
 
-    header = 'From: expLanes mailer <'+self._gmailId+'@gmail.com> \r\nTo: '+self.author+' '+self.address+'\r\nMIME-Version: 1.0 \r\nContent-type: text/html \r\nSubject: [explanes] '+self.name+' id '+self.status.runId+' '+title+'\r\n'
+    header = 'From: doce mailer <'+self._gmailId+'@gmail.com> \r\nTo: '+self.author+' '+self.address+'\r\nMIME-Version: 1.0 \r\nContent-type: text/html \r\nSubject: [doce] '+self.name+' id '+self.status.runId+' '+title+'\r\n'
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
     server.login(self._gmailId+'@gmail.com', self._gmailAppPassword)
     server.sendmail(self._gmailId, self.address, header+body+'<h3> '+self.__str__(format = 'html')+'</h3>')
     server.quit
-    print('Sent message entitled: [explanes] '+self.name+' id '+self.status.runId+' '+title+' on '+time.ctime(time.time()))
+    print('Sent message entitled: [doce] '+self.name+' id '+self.status.runId+' '+title+' on '+time.ctime(time.time()))
 
   def do(
     self,

@@ -102,7 +102,6 @@ class Metric():
             reducedMetrics[nbReducedMetrics] = True
             nbReducedMetrics+=1
             row.append(self.reduceMetric(data, reductionType, reductionDirectiveModule))
-            # print(reductionType)
             if isinstance(reductionType, str) and '*' in reductionType:
               rStat.append(data)
         else:
@@ -122,8 +121,6 @@ class Metric():
 
     significance = self.significance(settings, table, stat, reducedMetrics, rDir, rDo)
 
-    # print(metricHasData)
-    # print(reducedMetrics)
     return (table, metricHasData, reducedMetrics, modificationTimeStamp, significance)
 
   def significanceStatus(self):
@@ -137,10 +134,15 @@ class Metric():
           rDo.append(1)
         else:
           rDo.append(0)
-        if isinstance(reductionType, str) and len(reductionType) and reductionType[-1]=='-':
-          rDir.append(-1)
+        if isinstance(reductionType, str) and len(reductionType):
+           if reductionType[-1]=='-':
+             rDir.append(-1)
+           elif reductionType[-1]=='+':
+             rDir.append(1)
+           else:
+             rDir.append(0)
         else:
-          rDir.append(1)
+          rDir.append(0)
 
     reducedMetrics = [False] * nbReducedMetrics
     return reducedMetrics, rDir, rDo
@@ -155,7 +157,7 @@ class Metric():
       mv = []
       for si in range(len(table)):
         mv.append(table[si][len(settings.factors())+mi])
-      if not np.isnan(mv).all():
+      if not np.isnan(mv).all() and rDir[mi]!=0:
         if rDir[mi]<0:
           im = np.nanargmin(mv)
         else:
@@ -312,7 +314,7 @@ class Metric():
     reductionTypeDirective = reductionType
     indexPercent = -1
     if isinstance(reductionType, str):
-      split = reductionType.replace('%', '').replace('*', '').split('-')
+      split = reductionType.replace('%', '').replace('*', '').replace('+', '').split('-')
       reductionTypeDirective = split[0]
       ignore = ''
       if len(split)>1:
@@ -421,7 +423,7 @@ class Metric():
     Examples
     --------
 
-    explanes supports metrics storage using an .npy file per metric per setting.
+    doce supports metrics storage using an .npy file per metric per setting.
 
     >>> import doce
     >>> import numpy as np
@@ -451,7 +453,7 @@ class Metric():
     1   2    3.97   0.93  -8.19        13
     2   3    5.00   0.91 -12.07        98
 
-    explanes also supports metrics storage using one .h5 file sink structured with settings as groups et metrics as leaf nodes.
+    doce also supports metrics storage using one .h5 file sink structured with settings as groups et metrics as leaf nodes.
 
     >>> import doce
     >>> import numpy as np

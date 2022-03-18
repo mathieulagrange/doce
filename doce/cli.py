@@ -14,7 +14,7 @@ import re
 def main():
   """This method shall be called from the main script of the experiment to control the experiment using the command line.
 
-  This method provides a front-end for running an explanes experiment. It should be called from the main script of the experiment. The main script must define a **set** function that will be called before processing and a **step** function that will be processed for each setting. It may also define a **display** function that will used to monitor the results. This main script can define any functions that can be used within the **set**, **step**, and **display** functions.
+  This method provides a front-end for running a doce experiment. It should be called from the main script of the experiment. The main script must define a **set** function that will be called before processing and a **step** function that will be processed for each setting. It may also define a **display** function that will used to monitor the results. This main script can define any functions that can be used within the **set**, **step**, and **display** functions.
 
   Examples
 
@@ -215,7 +215,7 @@ def main():
     exit()
 
   if args.host == -3:
-    logFileName = '/tmp/explanes_'+experiment.project.name+'_'+experiment.status.runId+'.txt'
+    logFileName = '/tmp/doce_'+experiment.project.name+'_'+experiment.status.runId+'.txt'
   if args.mail>-1:
     experiment.sendMail(args.select+' has started.', '<div> Selector = '+args.select+'</div>')
   if args.run and hasattr(config, 'step'):
@@ -254,7 +254,7 @@ def main():
         body += '<div> '+header+' </div><br>'+styler.render()
 
   if args.host == -3:
-    logFileName = '/tmp/explanes_'+experiment.project.name+'_'+experiment.status.runId+'.txt'
+    logFileName = '/tmp/doce_'+experiment.project.name+'_'+experiment.status.runId+'.txt'
     if os.path.exists(logFileName):
       with open(logFileName, 'r') as file:
         log = file.read()
@@ -364,7 +364,6 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
           if not x.is_integer():
             isInteger = False
         if isInteger:
-          print(c)
           cInt[c] = 'int32'
 
   dPercent = pd.Series([experiment._display.metricPrecision-2]*len(cPercent), index=cPercent)
@@ -402,13 +401,11 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 
 def highlightStat(s, significance):
   import pandas as pd
-
   df = pd.DataFrame('', index=s.index, columns=s.columns)
-  print(significance.shape)
-  print(df.shape)
   if len(significance):
     df = df.where(significance<=0, 'color: blue')
   return df
+
 def highlightBest(s, significance):
   import pandas as pd
   df = pd.DataFrame('', index=s.index, columns=s.columns)

@@ -20,29 +20,29 @@ def set(args):
   experiment.setPath('output', '/tmp/'+experiment.name+'/')
   # set the plan (factor : modalities)
   experiment.addPlan('plan',
-    dnn_type = ['cnn', 'lstm'],
+    nn_type = ['cnn', 'lstm'],
     n_layers = np.arange(2, 10, 3),
     learning_rate = [0.001, 0.0001],
     dropout = [0, 1]
-    )
+  )
   # set some non varying parameters (here the number of cross validation folds)
   experiment.n_cross_validation_folds = 10
   # set the metrics
   experiment.setMetrics(
-    # the average and the standard deviation of the accuracy are expressed in percents
-    accuracy = ['mean%', 'std%'],
-    # the likelihood is measured by considering the root mean square
-    classification_error = ['sqrt|mean|square*-'],
-    duration = ['mean*']
+    # the average and the standard deviation of the accuracy are expressed in percents (+ specifies a higher-the-better metric)
+    accuracy = ['mean%+', 'std%'],
+    # the duration is averaged over folds (* requests statistical analysis, - specifies a lower-the-better metric)
+    duration = ['mean*-']
   )
 
   return experiment
 
 def step(setting, experiment):
-  accuracy = np.zeros((experiment.n_cross_validation_folds))
-  classification_error = np.zeros((experiment.n_cross_validation_folds))
-  duration = np.zeros((experiment.n_cross_validation_folds))
+  # the accuracy  is a function of cnn_type, and use of dropout
+  accuracy = ((len(setting.nn_type)*10+setting.dropout)*np.random.random_sample(experiment.n_cross_validation_folds))/50
+
+  # duration is a function of cnn_type, and n_layers
+  duration = len(setting.nn_type)*10+setting.n_layers+np.random.randn(experiment.n_cross_validation_folds)
 
   np.save(experiment.path.output+setting.id()+'_accuracy.npy', accuracy)
-  np.save(experiment.path.output+setting.id()+'classification_error.npy', classification_error)
   np.save(experiment.path.output+setting.id()+'_duration.npy', duration)
