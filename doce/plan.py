@@ -218,11 +218,11 @@ class Plan():
   def check(self):
    for factor in self._factors:
      if '=' in factor or '+' in factor:
-       print('Characters = and + are not allowed for naming factors')
+       print('Error: = and + are not allowed for naming factors')
        raise ValueError
      modalities = str(getattr(self, factor))
      if '=' in factor or '+' in modalities:
-       print('Characters = and + are not allowed for naming modalities')
+       print('Error: = and + are not allowed for naming modalities')
        raise ValueError
 
   def select(

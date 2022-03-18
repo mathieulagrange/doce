@@ -20,7 +20,7 @@ def set(args):
   experiment.setPath('output', '/tmp/'+experiment.name+'/')
   # set the plan (factor : modalities)
   experiment.addPlan('plan',
-    nn_type = ['cnn=+', 'lstm'],
+    nn_type = ['cnn', 'lstm'],
     n_layers = np.arange(2, 10, 3),
     learning_rate = [0.001, 0.0001],
     dropout = [0, 1]
