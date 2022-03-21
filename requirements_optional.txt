@@ -6,4 +6,3 @@ scipy
 tables
 tqdm
 numpydoc
-doctest
