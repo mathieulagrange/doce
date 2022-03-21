@@ -5,6 +5,5 @@ pandas
 scipy
 tables
 tqdm
-types
 numpydoc
 doctest

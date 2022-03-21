@@ -5,4 +5,3 @@ pandas
 scipy
 tables
 tqdm
-types
