@@ -328,6 +328,8 @@ In our example, the data can be conveniently displayed using any horizontal bar 
     fig.tight_layout()
     plt.show()
 
+.. image:: img/barh.png
+
 Advanced usage
 ~~~~~~~~~~~~~~
 
