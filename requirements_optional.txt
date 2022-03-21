@@ -1,5 +1,4 @@
 argunparse
-itertools
 joblib
 numpy
 pandas
