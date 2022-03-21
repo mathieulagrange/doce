@@ -2,7 +2,6 @@ argunparse
 joblib
 numpy
 pandas
-re
 scipy
 sys
 tables
