@@ -4,6 +4,5 @@ numpy
 pandas
 scipy
 tables
-time
 tqdm
 types
