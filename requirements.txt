@@ -3,7 +3,6 @@ joblib
 numpy
 pandas
 scipy
-sys
 tables
 time
 tqdm
