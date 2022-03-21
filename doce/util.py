@@ -156,9 +156,6 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
           columnHeader.pop(s)
         for r in settingDescription:
           r.pop(s)
-      for ri, r in enumerate(settingDescription):
-        settingDescription[ri] = ' '.join(r)
-
     else:
       constantSettingDescription = ''
       if showUniqueSetting:

@@ -220,10 +220,10 @@ class Plan():
      if '=' in factor or '+' in factor:
        print('Error: = and + are not allowed for naming factors')
        raise ValueError
-     modalities = str(getattr(self, factor))
-     if '=' in factor or '+' in modalities:
-       print('Error: = and + are not allowed for naming modalities')
-       raise ValueError
+     # modalities = str(getattr(self, factor))
+     # if '=' in factor or '+' in modalities:
+     #   print('Error: = and + are not allowed for naming modalities')
+     #   raise ValueError
 
   def select(
     self,

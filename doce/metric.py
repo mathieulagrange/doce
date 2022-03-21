@@ -639,6 +639,9 @@ class Metric():
 
     (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = eu.pruneSettingDescription(settingDescription, showUniqueSetting=True)
 
+    for ri, r in enumerate(settingDescription):
+      settingDescription[ri] = ', '.join(r)
+
     return (settingMetric, settingDescription, constantSettingDescription)
 
   def addSettingGroup(

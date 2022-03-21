@@ -213,6 +213,7 @@ Define metrics
 Before inspecting the results of our computation, we have to define how the metrics stored on disc shall be reduced and interpreted.
 
 To do so, we have to add some lines to the set function:
+
 .. code-block:: python
     :linenos:
 
@@ -291,6 +292,7 @@ Within a python file or a jupyer notebook, we can now retrieve the accuracy data
 
 .. code-block:: python
     :linenos:
+
     # your experiment file shall be in the current directory or in the python path
     import demo
 
@@ -306,6 +308,7 @@ Within a python file or a jupyer notebook, we can now retrieve the accuracy data
 The data is a list of np.arrays, the settings is a list of str and the header is a str describing the constant factors. data and settings are of the same size.
 
 In our example, the data can be conveniently displayed using any horizontal bar plot:
+
 .. code-block:: python
     :linenos:
 
@@ -330,6 +333,97 @@ Advanced usage
 
 Managing multiple plans
 =======================
+
+Most of the time, computational approaches have different needs in terms of parametrization, which add difficulties in managing plans of computations. The doce package handle this by allowing the definition of multiple plans that are then automatically merged is needed.
+
+Assume that we want to compare 3 classifiers :
+1. an svm
+2. a cnn
+3. an lstm
+
+The last two classifiers share the same factors, but the svm have only one factor, called c.
+
+We start by defining the "svm" plan:
+
+.. code-block:: python
+    :linenos:
+
+    # set the "svm" plan
+    experiment.addPlan('svm',
+      classifier = ['svm'],
+      c = [0.001, 0.0001, 0.00001]
+    )
+
+We then define the "deep" plan:
+
+.. code-block:: python
+    :linenos:
+
+    # set the "deep" plan
+    experiment.addPlan('deep',
+      classifier = ['cnn', 'lstm'],
+      n_layers = [2, 4, 8],
+      dropout = [0, 1]
+    )
+
+Selecting a given plan is done using the selector:
+
+.. code-block:: console
+
+  $ python demo_multiple_plan.py  -s svm/ -l
+  Plan svm is selected
+  classifier=svm+c=0dot001
+  classifier=svm+c=0dot0001
+  classifier=svm+c=1edash05
+
+Otherwise, the merged plan is considered:
+
+.. code-block:: console
+
+  $ python demo_multiple_plan.py  -p
+  Plan svm:
+        Factors      0       1      2
+  0  classifier    svm
+  1           c  0.001  0.0001  1e-05
+  Plan deep:
+        Factors    0     1  2
+  0  classifier  cnn  lstm
+  1    n_layers    2     4  8
+  2     dropout    0     1
+  Those plans can be selected using the selector parameter.
+  Otherwise the merged plan is considered:
+        Factors      0      1       2      3
+  0  classifier    svm    cnn    lstm
+  1           c  *0.0*  0.001  0.0001  1e-05
+  2    n_layers    *0*      2       4      8
+  3     dropout    *0*      1
+
+Computation can be done using the specified plans:
+
+  .. code-block:: console
+
+    $ python demo_multiple_plan.py  -s svm/ -r
+    Plan svm is selected
+    $ python demo_multiple_plan.py  -s deep/ -r
+    Plan deep is selected
+
+Display of metric is conveniently done using the merged plan:
+
+  .. code-block:: console
+
+    $ python demo_multiple_plan.py  -d
+    Displayed data generated from Mon Mar 21 17:22:32 2022 to Mon Mar 21 17:26:22 2022
+
+      classifier     c  n_layers  dropout  accuracyMean%
+    0        svm  1.00         0        0            8.0
+    1        svm  0.10         0        0            1.0
+    2        svm  0.01         0        0            0.0
+    3        cnn  0.00         2        1           76.0
+    4        cnn  0.00         4        1           74.0
+    5        cnn  0.00         8        1           77.0
+    6       lstm  0.00         2        1           94.0
+    7       lstm  0.00         4        1           91.0
+    8       lstm  0.00         8        1           91.0
 
 Composing mathematical operators for the metrics
 ================================================
