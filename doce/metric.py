@@ -610,6 +610,7 @@ class Metric():
     settingDescriptionFormat = copy.deepcopy(settingEncoding)
     settingDescriptionFormat['format'] = 'list'
     settingDescriptionFormat['default'] = True
+    settingDescriptionFormat['sort'] = False
 
     if isinstance(dataLocation, str):
       if dataLocation.endswith('.h5'):

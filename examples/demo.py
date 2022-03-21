@@ -8,7 +8,7 @@ if __name__ == "__main__":
   doce.cli.main()
 
 # define the doce environnment
-def set(args):
+def set(args=None):
   # define the experiment
   experiment = doce.Experiment(
     name = 'demo',

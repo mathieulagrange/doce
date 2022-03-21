@@ -224,16 +224,106 @@ To do so, we have to add some lines to the set function:
       duration = ['mean*-']
     )
 
-    
-
 Display metrics
 ===============
+
+The reduced version of the metrics can be visualized in the command-line using -d :
+
+.. code-block:: console
+
+  $ python demo.py -d
+  Displayed data generated from Mon Mar 21 13:59:13 2022 to Mon Mar 21 13:59:13 2022
+  nn_type: cnn
+     n_layers  learning_rate  dropout  accuracyMean%+  accuracyStd%  durationMean*-
+  0         2        0.00100        0            58.0           5.0            5.63
+  1         2        0.00100        1            74.0           5.0            5.21
+  2         2        0.00001        0            56.0           4.0            4.67
+  3         2        0.00001        1            78.0           3.0            4.81
+  4         5        0.00100        0            56.0           4.0            8.44
+  5         5        0.00100        1            76.0           5.0            8.20
+  6         5        0.00001        0            60.0           6.0            8.59
+  7         5        0.00001        1            75.0           4.0            7.90
+
+Only the metrics available on disc are considered in the table.
 
 Export metrics
 ==============
 
+The table can exported in various format:
+ - html
+ - pdf
+ - png
+ - tex
+ - csv
+ - xls
+
+To export the table in files called demo, please type :
+.. code-block:: console
+
+  $ python demo.py -d -E demo
+
+To only generate the html output, please type :
+.. code-block:: console
+
+  $ python demo.py -d -E demo.html
+
+For visualization purposes, the html output is perhaps the most interesting one, as it shows best values per metrics and statistical analysis :
+
+.. image:: img/demo.png
+
+The title specifies the factors with unique modality in the selection.
+
+Please note that the page as an auto-reload javascript code snippet that conveniently reloads the page at each new focus.
+The mean accuracy is defined as a higher-the-better metric; thus 78 is displayed in bold. the average duration is specified as a lower-the-better metric the 4.67 is displayed in bold. A statistical analysis as been requested (with the *), the several t-tests are operated to check whether the best setting can be assumed to be significantly better than the others. In our example, the other settings with n_layers=2 cannot be assumed to be slower than the most rapid setting.
+
 Mine metrics
 ============
+
+Reduced versions of the metrics are convenient to quickly analyse the data. For more refined purposes, such as designing a custom designed plot, one needs to have access to the raw data saved during the processing.
+
+For this example, let us first compute the performance of the cnn and lstm system at a given number of layers and learning with or without dropout:
+
+.. code-block:: console
+
+  $python demo.py -s '{"nn_type":["cnn", "lstm"],"n_layers":2,"learning_rate":0.001}' -r
+
+Within a python file or a jupyer notebook, we can now retrieve the accuracy data:
+
+.. code-block:: python
+    :linenos:
+    # your experiment file shall be in the current directory or in the python path
+    import demo
+
+    experiment = demo.set()
+    selector = {"nn_type":["cnn", "lstm"],"n_layers":2,"learning_rate":0.001}
+
+    (data, settings, header) = experiment.metric.get(
+      'accuracy',
+      experiment.plan.select(selector),
+      experiment.path.output
+      )
+
+The data is a list of np.arrays, the settings is a list of str and the header is a str describing the constant factors. data and settings are of the same size.
+
+In our example, the data can be conveniently displayed using any horizontal bar plot:
+.. code-block:: python
+    :linenos:
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    settingIds = np.arange(len(description))
+
+    fig, ax = plt.subplots()
+    ax.barh(settingIds, np.mean(data, axis=1), xerr=np.std(data, axis=1), align='center')
+    ax.set_yticks(settingIds)
+    ax.set_yticklabels(settings)
+    ax.invert_yaxis()  # labels read top-to-bottom
+    ax.set_xlabel('Accuracy')
+    ax.set_title(header)
+
+    fig.tight_layout()
+    plt.show()
 
 Advanced usage
 ~~~~~~~~~~~~~~
