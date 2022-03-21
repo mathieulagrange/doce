@@ -13,7 +13,7 @@ selector = {"nn_type":["cnn", "lstm"],"n_layers":2,"learning_rate":0.001}
 import numpy as np
 import matplotlib.pyplot as plt
 
-settingIds = np.arange(len(description))
+settingIds = np.arange(len(settings))
 
 fig, ax = plt.subplots()
 ax.barh(settingIds, np.mean(data, axis=1), xerr=np.std(data, axis=1), align='center')
