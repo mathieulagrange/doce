@@ -897,6 +897,7 @@ class Plan():
   def __format__(self, selector):
     if selector and (isinstance(selector, str) or isinstance(selector, dict)):
       selector = [selector]
+    # print(selector)
     if selector and any(isinstance(val, str) for val in selector):
       selector = self._str2list(selector)
     elif selector and any(isinstance(val, dict) for val in selector):

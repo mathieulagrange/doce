@@ -125,7 +125,9 @@ def main():
   selector = re.sub(r"[\n\t\s]*", "", args.select)
 
   try:
+    # print(selector)
     selector = ast.literal_eval(selector)
+    # print(selector)
   except:
     pass
 
@@ -424,7 +426,7 @@ def exportDataFrame(experiment, args, df, styler, header):
     if a[0]:
       exportFileName = a[0]
     else:
-      exportFileName = experiment.project.name
+      exportFileName = experiment.name
     if len(a)>1:
       args.export = '.'+a[1]
     else:

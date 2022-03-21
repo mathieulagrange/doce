@@ -3,7 +3,7 @@ import time
 import numpy as np
 from pathlib import Path
 
-# invoke the command line managment of the doce package
+# invoke the command line management of the doce package
 if __name__ == "__main__":
   doce.cli.main()
 
@@ -11,22 +11,22 @@ if __name__ == "__main__":
 def set(args):
   # define the experiment
   experiment = doce.Experiment(
-    name = 'hello',
+    name = 'demo',
     purpose = 'hello world of the doce package',
     author = 'mathieu Lagrange',
     address = 'mathieu.lagrange@ls2n.fr',
   )
   # set acces paths (here only storage is needed)
   experiment.setPath('output', '/tmp/'+experiment.name+'/')
+  # set some non varying parameters (here the number of cross validation folds)
+  experiment.n_cross_validation_folds = 10
   # set the plan (factor : modalities)
   experiment.addPlan('plan',
     nn_type = ['cnn', 'lstm'],
     n_layers = np.arange(2, 10, 3),
-    learning_rate = [0.001, 0.0001],
+    learning_rate = [0.001, 0.0001, 0.00001],
     dropout = [0, 1]
   )
-  # set some non varying parameters (here the number of cross validation folds)
-  experiment.n_cross_validation_folds = 10
   # set the metrics
   experiment.setMetrics(
     # the average and the standard deviation of the accuracy are expressed in percents (+ specifies a higher-the-better metric)
