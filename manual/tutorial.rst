@@ -286,7 +286,7 @@ For this example, let us first compute the performance of the cnn and lstm syste
 
 .. code-block:: console
 
-  $python demo.py -s '{"nn_type":["cnn", "lstm"],"n_layers":2,"learning_rate":0.001}' -r
+  $ python demo.py -s '{"nn_type":["cnn", "lstm"],"n_layers":2,"learning_rate":0.001}' -r
 
 Within a python file or a jupyer notebook, we can now retrieve the accuracy data:
 
@@ -330,8 +330,85 @@ In our example, the data can be conveniently displayed using any horizontal bar 
 
 .. image:: img/barh.png
 
-Advanced usage
-~~~~~~~~~~~~~~
+Manipulating the plan
+~~~~~~~~~~~~~~~~~~~~~
+
+The definite plan for a given experiment is only known when the experiment is over. It is therefore important to be able to fine tune the plan along with your exploration.
+
+If you are looking for adding another a whole new algorithm or processing step to your experiment, it may be worth considering multiple plans, as described in the dedicated section.
+
+Adding a modality
+=================
+
+Removing a modality
+===================
+
+
+Adding a factor
+===============
+
+Let us say you are considering two classifiers in your experiment: as cnn based and a lstm (code is available in the example directory under file factor_addition.py). The plan would be:
+
+.. code-block:: python
+    :linenos:
+
+    experiment.addPlan('plan',
+      nn_type = ['cnn', 'lstm'],
+      # dropout = [0, 1]
+    )
+
+Please note the dropout factor is commented for now. The step function simply saves a .npy file with a 0 value in it. Thus, the output directory contains:
+.. code-block:: console
+
+  $ ls -1 /tmp/factor_addition/
+  nn_type=cnn_accuracy.npy
+  nn_type=lstm_accuracy.npy
+
+
+And the display command will show:
+.. code-block:: console
+
+  $ python factor_addition.py -d
+  Displayed data generated from Thu Mar 24 10:02:24 2022 to Thu Mar 24 10:02:24 2022
+
+    nn_type  accuracyMean
+  0     cnn           0.0
+  1    lstm           0.0
+
+Now, let's add the dropout factor by uncommenting its line in the plan:
+
+.. code-block:: python
+    :linenos:
+
+    experiment.addPlan('plan',
+      nn_type = ['cnn', 'lstm'],
+      dropout = [0, 1]
+    )
+Now, the problem is that the display command will show nothing:
+.. code-block:: console
+
+  $ python factor_addition.py -d
+
+Why is that ? Well, now that we have added a new factor, the settings list is:
+.. code-block:: console
+
+  $ python factor_addition.py -l
+  nn_type=cnn+dropout=0
+  nn_type=cnn+dropout=1
+  nn_type=lstm+dropout=0
+  nn_type=lstm+dropout=1
+
+which do not match any of the stored files. In this example, we could simply recompute nn_type=cnn+dropout=0 and nn_type=lstm+dropout=0, but in production, that could mean a loss of lengthy computations. The solution is to explicitely state a default value for the factor dropout:
+
+.. code-block:: python
+    :linenos:
+
+
+
+Removing a factor
+=================
+
+Important, this kind of manipulation may lead to output data loss. Be sure to make a backup before attempting to remove a factor.
 
 Managing multiple plans
 =======================
@@ -426,6 +503,9 @@ Display of metric is conveniently done using the merged plan:
     6       lstm  0.00         2        1           94.0
     7       lstm  0.00         4        1           91.0
     8       lstm  0.00         8        1           91.0
+
+Advanced usage
+~~~~~~~~~~~~~~
 
 Composing mathematical operators for the metrics
 ================================================

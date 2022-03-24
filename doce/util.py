@@ -135,7 +135,6 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
   [['b', 1, 2], ['c', 2, 2], ['b', 2, 2]]
   """
   constantSettingDescription = ''
-
   if settingDescription:
     if nbColumnFactor == 0:
       nbColumnFactor = len(settingDescription[0])
@@ -144,7 +143,7 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
       # for si, s in enumerate(constantValue):
       #   if not columnHeader and si>0 and s is None:
       #     constantValue[si-1] = None
-      ccIndex = [i for i, x in enumerate(constantValue) if x is not None and i<=nbColumnFactor]
+      ccIndex = [i for i, x in enumerate(constantValue) if x is not None and i<nbColumnFactor] # there is an issue here possibly with get
       nbColumnFactor -= len(ccIndex)
       for s in ccIndex:
         if columnHeader:

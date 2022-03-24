@@ -57,8 +57,8 @@ def main():
         select experiment. List experiments if empty.
     -E [EXPORT], --export [EXPORT]
         export the display of reduced metrics among different file types (html, png, pdf). If parameter is empty, all exports are made. If parameter has a dot, interpreted as a filename which should be of support type. If parameter has nothing before the dot, interpreted as file type, and experiment.project.name is used. If parameter has no dot, interpreted as file name with no extension, and all exports are made.
-    -f, --factor
-      show the factors of the experiment.
+    -f, --files
+      show the file names corresponding to the settings.
     -H HOST, --host HOST
       running on specified HOST. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside.
     -i, --information
@@ -93,6 +93,7 @@ def main():
   parser.add_argument('-d', '--display', type=str, help='display metrics. If no parameter is given, consider the default display and show all metrics. If the str parameter contain a list of integers, use the default display and show only the selected metrics defined by the integer list. If the str parameter contain a name, run the display method with this name.', nargs='?', default='-1')
   # parser.add_argument('-e', '--experiment', type=str, help='select experiment. List experiments if empty.', nargs='?', default='all')
   parser.add_argument('-E', '--export', type=str, help='Export the display of reduced metrics among different file types (html, png, pdf). If parameter is empty, all exports are made. If parameter has a dot, interpreted as a filename which should be of support type. If parameter has nothing before the dot, interpreted as file type, and experiment.project.name is used. If parameter has no dot, interpreted as file name with no extension, and all exports are made.', nargs='?', default='none')
+  parser.add_argument('-f', '--files', help='list files.', action='store_true')
   parser.add_argument('-H', '--host', type=int, help='running on specified HOST. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside.', default=-2)
   parser.add_argument('-i', '--information', help='show information about the experiment.', action='store_true')
   parser.add_argument('-K', '--keep', type=str, help='keep only the selected settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. Unwanted files are moved to the path experiment.path.archive if set, deleted otherwise.', nargs='?', const='')
@@ -179,6 +180,8 @@ def main():
   #     print('Main')
   #     print(experiment._plan.asPandaFrame())
   if args.list:
+    experiment.do(experiment.selector, progress='')
+  if args.files:
     experiment.do(experiment.selector, progress='')
 
   if args.remove:
