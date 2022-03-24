@@ -180,9 +180,9 @@ def main():
   #     print('Main')
   #     print(experiment._plan.asPandaFrame())
   if args.list:
-    experiment.do(experiment.selector, progress='')
+    experiment.do(experiment.selector, progress='', function= lambda s, e: print(s))
   if args.files:
-    experiment.do(experiment.selector, progress='')
+    experiment.do(experiment.selector, progress='', function= lambda s, e: print(s.id()))
 
   if args.remove:
     experiment.cleanDataSink(args.remove, experiment.selector, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive, verbose=experiment.status.verbose)

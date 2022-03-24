@@ -275,6 +275,7 @@ For visualization purposes, the html output is perhaps the most interesting one,
 The title specifies the factors with unique modality in the selection.
 
 Please note that the page as an auto-reload javascript code snippet that conveniently reloads the page at each new focus.
+
 The mean accuracy is defined as a higher-the-better metric; thus 78 is displayed in bold. the average duration is specified as a lower-the-better metric the 4.67 is displayed in bold. A statistical analysis as been requested (with the *), the several t-tests are operated to check whether the best setting can be assumed to be significantly better than the others. In our example, the other settings with n_layers=2 cannot be assumed to be slower than the most rapid setting.
 
 Mine metrics
@@ -335,10 +336,18 @@ Manipulating the plan
 
 The definite plan for a given experiment is only known when the experiment is over. It is therefore important to be able to fine tune the plan along with your exploration.
 
-If you are looking for adding another a whole new algorithm or processing step to your experiment, it may be worth considering multiple plans, as described in the dedicated section.
+This is not trivial to achieve as it may lead to inconsistencies in stored metric naming conventions if not properly handled.
+
+If you are looking for adding another whole new algorithm or processing step to your experiment, it may be worth considering multiple plans, as described in the dedicated section.
 
 Adding a modality
 =================
+
+The addition of a modality is simply done by adding a value to the array.
+
+Note that order of modalities matters as it will determine the order in which settings are computed. This is convenient, because you can assume that when requesting the computation of all steps, the output data of step1 will be available to step2, and so on.
+
+Important, this assertion no longer holds if parallelization over settings is selected.
 
 Removing a modality
 ===================
@@ -358,6 +367,7 @@ Let us say you are considering two classifiers in your experiment: as cnn based 
     )
 
 Please note the dropout factor is commented for now. The step function simply saves a .npy file with a 0 value in it. Thus, the output directory contains:
+
 .. code-block:: console
 
   $ ls -1 /tmp/factor_addition/
@@ -366,6 +376,7 @@ Please note the dropout factor is commented for now. The step function simply sa
 
 
 And the display command will show:
+
 .. code-block:: console
 
   $ python factor_addition.py -d
@@ -384,31 +395,57 @@ Now, let's add the dropout factor by uncommenting its line in the plan:
       nn_type = ['cnn', 'lstm'],
       dropout = [0, 1]
     )
+
 Now, the problem is that the display command will show nothing:
+
 .. code-block:: console
 
   $ python factor_addition.py -d
 
-Why is that ? Well, now that we have added a new factor, the settings list is:
+Why is that ? Well, now that we have added a new factor, the settings file list is:
+
 .. code-block:: console
 
-  $ python factor_addition.py -l
-  nn_type=cnn+dropout=0
-  nn_type=cnn+dropout=1
-  nn_type=lstm+dropout=0
-  nn_type=lstm+dropout=1
+  $ python factor_addition.py -f
+  dropout=0+nn_type=cnn
+  dropout=1+nn_type=cnn
+  dropout=0+nn_type=lstm
+  dropout=1+nn_type=lstm
 
-which do not match any of the stored files. In this example, we could simply recompute nn_type=cnn+dropout=0 and nn_type=lstm+dropout=0, but in production, that could mean a loss of lengthy computations. The solution is to explicitely state a default value for the factor dropout:
+which do not match any of the stored files. In this example, we could simply recompute dropout=0+nn_type=cnn and dropout=0+nn_type=lstm, but in production, that could mean a loss of lengthy computations. The solution to this critical problem is to explicitly state a default value for the factor dropout:
 
 .. code-block:: python
     :linenos:
 
+    experiment.default(plan='plan', factor='dropout', modality=0)
+
+Now the settings file list is:
+
+.. code-block:: console
+
+  $ python factor_addition.py -f
+  nn_type=cnn
+  dropout=1+nn_type=cnn
+  nn_type=lstm
+  dropout=1+nn_type=lstm
+
+And the previously computed metrics can now be displayed as before:
+
+.. code-block:: console
+
+  $ python factor_addition.py -d
+  Displayed data generated from Thu Mar 24 10:02:24 2022 to Thu Mar 24 10:02:24 2022
+  dropout: 0
+    nn_type  accuracyMean
+  0     cnn           0.0
+  1    lstm           0.0
 
 
 Removing a factor
 =================
 
 Important, this kind of manipulation may lead to output data loss. Be sure to make a backup before attempting to remove a factor.
+
 
 Managing multiple plans
 =======================
