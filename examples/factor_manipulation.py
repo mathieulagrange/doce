@@ -11,8 +11,8 @@ if __name__ == "__main__":
 def set(args=None):
   # define the experiment
   experiment = doce.Experiment(
-    name = 'factor_addition',
-    purpose = 'factor addition demo of the doce package',
+    name = 'factor_manipulation',
+    purpose = 'factor manipulation demo of the doce package',
     author = 'mathieu Lagrange',
     address = 'mathieu.lagrange@ls2n.fr',
   )

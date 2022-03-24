@@ -343,7 +343,7 @@ If you are looking for adding another whole new algorithm or processing step to 
 Adding a modality
 =================
 
-The addition of a modality is simply done by adding a value to the array.
+The addition of a modality is simply done by adding a value to the array of a given factor.
 
 Note that order of modalities matters as it will determine the order in which settings are computed. This is convenient, because you can assume that when requesting the computation of all steps, the output data of step1 will be available to step2, and so on.
 
@@ -352,11 +352,33 @@ Important, this assertion no longer holds if parallelization over settings is se
 Removing a modality
 ===================
 
+The removal of a modality is simply done by removing the value to the array of a given factor.
+
+If you want to discard the output data that is no longer accessible, you can do it manually by considering the rm command. Let us assume that we want to remove the modality 0.001 from the factor learning_rate. You can type:
+
+.. code-block:: console
+
+  $ rm *learning_rate=0dot001*.npy <insert_path>
+
+You can also do *before* removing the modality in the array:
+
+.. code-block:: console
+
+  $ python demo.py -R output -s learning_rate=0dot001
+  INFORMATION: setting path.archive allows you to move the unwanted files to the archive path and not delete them.
+  List the 24 files ? [Y/n]
+  /tmp/demo/dropout=0+learning_rate=0dot001+n_layers=8+nn_type=lstm_accuracy.npy
+  ...
+  /tmp/demo/dropout=0+learning_rate=0dot001+n_layers=8+nn_type=cnn_accuracy.npy
+  About to remove 24 files from /tmp/demo/
+   Proceed ? [Y/n]
+
+The selector can be more precise that just one modality.
 
 Adding a factor
 ===============
 
-Let us say you are considering two classifiers in your experiment: as cnn based and a lstm (code is available in the example directory under file factor_addition.py). The plan would be:
+Let us say you are considering two classifiers in your experiment: as cnn based and a lstm (code is available in the example directory under file factor_manipulation.py). The plan would be:
 
 .. code-block:: python
     :linenos:
@@ -370,7 +392,7 @@ Please note the dropout factor is commented for now. The step function simply sa
 
 .. code-block:: console
 
-  $ ls -1 /tmp/factor_addition/
+  $ ls -1 /tmp/factor_manipulation/
   nn_type=cnn_accuracy.npy
   nn_type=lstm_accuracy.npy
 
@@ -379,7 +401,7 @@ And the display command will show:
 
 .. code-block:: console
 
-  $ python factor_addition.py -d
+  $ python factor_manipulation.py -d
   Displayed data generated from Thu Mar 24 10:02:24 2022 to Thu Mar 24 10:02:24 2022
 
     nn_type  accuracyMean
@@ -400,13 +422,13 @@ Now, the problem is that the display command will show nothing:
 
 .. code-block:: console
 
-  $ python factor_addition.py -d
+  $ python factor_manipulation.py -d
 
 Why is that ? Well, now that we have added a new factor, the settings file list is:
 
 .. code-block:: console
 
-  $ python factor_addition.py -f
+  $ python factor_manipulation.py -f
   dropout=0+nn_type=cnn
   dropout=1+nn_type=cnn
   dropout=0+nn_type=lstm
@@ -423,7 +445,7 @@ Now the settings file list is:
 
 .. code-block:: console
 
-  $ python factor_addition.py -f
+  $ python factor_manipulation.py -f
   nn_type=cnn
   dropout=1+nn_type=cnn
   nn_type=lstm
@@ -433,7 +455,7 @@ And the previously computed metrics can now be displayed as before:
 
 .. code-block:: console
 
-  $ python factor_addition.py -d
+  $ python factor_manipulation.py -d
   Displayed data generated from Thu Mar 24 10:02:24 2022 to Thu Mar 24 10:02:24 2022
   dropout: 0
     nn_type  accuracyMean
@@ -446,6 +468,46 @@ Removing a factor
 
 Important, this kind of manipulation may lead to output data loss. Be sure to make a backup before attempting to remove a factor.
 
+Let us consider that you have tested whether dropout is useful or not and have decided that dropout is always useful and that you want to remove the dropout factor to avoid clutter in the plan.
+
+Simply removing the factor will lead to the need to redo every computation. It is thus required to perform the following steps:
+ 1. keep only wanted settings (here settings with dropout=0)
+ 2. rename files by removing reference to the dropout setting.
+
+Let us assume that we have computed every settings, the files are:
+
+.. code-block:: console
+
+  $ python factor_manipulation.py -r
+  $ ls -1 /tmp/factor_manipulation/
+  dropout=1+nn_type=cnn_accuracy.npy
+  dropout=1+nn_type=lstm_accuracy.npy
+  nn_type=cnn_accuracy.npy
+  nn_type=lstm_accuracy.npy
+
+Keeping only the files of interest is done so:
+
+.. code-block:: console
+
+  $ python factor_manipulation.py -K output -s dropout=1
+  INFORMATION: setting path.archive allows you to move the unwanted files to the archive path and not delete them.
+  List the 2 files ? [Y/n]
+  /tmp/factor_manipulation/nn_type=cnn_accuracy.npy
+  /tmp/factor_manipulation/nn_type=lstm_accuracy.npy
+  About to remove 2 files from /tmp/factor_manipulation/
+   Proceed ? [Y/n]
+
+To rename files by removing reference to the dropout setting.
+
+.. code-block:: console
+
+  $ rename -n 's/(\+)?dropout=1(\+)?(_)?/$3/' /tmp/factor_manipulation/*npy
+  Use of uninitialized value $3 in substitution (s///) at (eval 2) line 1.
+  '/tmp/factor_manipulation/dropout=1+nn_type=cnn_accuracy.npy' would be renamed to '/tmp/factor_manipulation/nn_type=cnn_accuracy.npy'
+  Use of uninitialized value $3 in substitution (s///) at (eval 2) line 1.
+  '/tmp/factor_manipulation/dropout=1+nn_type=lstm_accuracy.npy' would be renamed to '/tmp/factor_manipulation/nn_type=lstm_accuracy.npy'
+
+Check that the correct files are targeted and remove the -n in the command. Now you can safely remove the dropout factor from the plan.
 
 Managing multiple plans
 =======================

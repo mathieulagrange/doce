@@ -185,9 +185,9 @@ def main():
     experiment.do(experiment.selector, progress='', function= lambda s, e: print(s.id()))
 
   if args.remove:
-    experiment.cleanDataSink(args.remove, experiment.selector, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive, verbose=experiment.status.verbose)
+    experiment.cleanDataSink(args.remove, experiment.selector, archivePath=experiment.path.archive, verbose=experiment.status.verbose)
   if args.keep:
-    experiment.cleanDataSink(args.keep, experiment.selector, reverse=True, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive, verbose=experiment.status.verbose)
+    experiment.cleanDataSink(args.keep, experiment.selector, reverse=True, archivePath=experiment.path.archive, verbose=experiment.status.verbose)
   if args.archive:
     if experiment.path.archive:
       experiment.cleanDataSink(args.archive, experiment.selector, keep=True, settingEncoding=experiment._settingEncoding, archivePath=experiment.path.archive, verbose=experiment.status.verbose)
