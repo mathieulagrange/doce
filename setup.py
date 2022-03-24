@@ -35,7 +35,6 @@ setup(
     install_requires=[
         'argparse',
         'argunparse',
-        'ast',
         'copy',
         'datetime',
         'glob',
