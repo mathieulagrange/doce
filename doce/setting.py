@@ -21,10 +21,10 @@ class Setting():
 
   >>> for setting in p:
   ...   print(setting)
-  f1 a f2 1
-  f1 a f2 2
-  f1 b f2 1
-  f1 b f2 2
+  f1=a+f2=1
+  f1=a+f2=2
+  f1=b+f2=1
+  f1=b+f2=2
 
   """
 
@@ -64,10 +64,10 @@ class Setting():
 
     >>> for setting in p:
     ...   print(setting)
-    one a two 1
-    one a two 2
-    one b two 1
-    one b two 2
+    one=a+two=1
+    one=a+two=2
+    one=b+two=1
+    one=b+two=2
     """
     return self.id(sort=False, singleton=True, default=True)
 
@@ -136,49 +136,49 @@ class Setting():
     >>> for setting in p.select([0, 1, 1]):
     ...   # default display
     ...   print(setting.id())
-    four_d_one_a_three_c_two_1
+    four=d+one=a+three=c+two=1
     >>> # list format
     >>> print(setting.id('list'))
-    ['four', 'd', 'one', 'a', 'three', 'c', 'two', '1']
+    ['four=d', 'one=a', 'three=c', 'two=1']
     >>> # hashed version of the default display
     >>> print(setting.id('hash'))
-    5ab88e338f29c2dec99880d3b9dee7e9
+    4474b298d3b23000e739e888042dab2b
     >>> # do not apply sorting of the factor
     >>> print(setting.id(sort=False))
-    one_a_two_1_three_c_four_d
+    one=a+two=1+three=c+four=d
     >>> # specify a separator
     >>> print(setting.id(separator=' '))
-    four d one a three c two 1
+    four=d one=a three=c two=1
     >>> # do not show some factors
     >>> print(setting.id(hide=['one', 'three']))
-    four_d_two_1
+    four=d+two=1
     >>> # do not show factors with only one modality
     >>> print(setting.id(singleton=False))
-    one_a_three_c_two_1
+    one=a+three=c+two=1
     >>> delattr(p, 'four')
     >>> for setting in p.select([0, 0, 0]):
     ...   print(setting.id())
-    one_a_three_none_two_0
+    one=a+three=none+two=0
 
     >>> # set the default value of factor one to a
     >>> p.default('one', 'a')
     >>> for setting in p.select([0, 1, 1]):
     ...   print(setting.id())
-    three_c_two_1
+    three=c+two=1
     >>> # do not hide the default value in the description
     >>> print(setting.id(default=True))
-    one_a_three_c_two_1
+    one=a+three=c+two=1
 
     >>> p.optional_parameter = ['value_one', 'value_two']
     >>> for setting in p.select([0, 1, 1, 0]):
     ...   print(setting.id())
-    optional_parameter_valueunderscoreone_three_c_two_1
+    optional_parameter=valueunderscoreone+three=c+two=1
     >>> delattr(p, 'optional_parameter')
 
     >>> p.optionalParameter = ['valueOne', 'valueTwo']
     >>> for setting in p.select([0, 1, 1, 0]):
     ...   print(setting.id())
-    optionalParameter_valueOne_three_c_two_1
+    optionalParameter=valueOne+three=c+two=1
 
     """
     id = []
@@ -243,20 +243,20 @@ class Setting():
     >>> for setting in p.select([1, 1]):
     ...   # the inital setting
     ...   print(setting)
-    one b two 2
+    one=b+two=2
     >>> # the same setting but with the factor 'two' set to modality 1
     >>> print(setting.replace('two', value=1))
-    one b two 1
+    one=b+two=1
     >>> # the same setting but with the first factor set to modality
     >>> print(setting.replace(1, value=1))
-    one b two 1
+    one=b+two=1
     >>> # the same setting but with the factor 'two' set to modality index 0
-    one b two 1
+    one=b+two=1
     >>> print(setting.replace('two', positional=0))
-    one b two 1
+    one=b+two=1
     >>> # the same setting but with the factor 'two' set to modality of relative index -1 with respect to the modality index of the current setting
     >>> print(setting.replace('two', relative=-1))
-    one b two 1
+    one=b+two=1
     """
 
     # get factor index

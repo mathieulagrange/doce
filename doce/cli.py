@@ -78,9 +78,9 @@ def main():
     -R [REMOVE], --remove [REMOVE]
       remove the selected settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. Unwanted files are moved to the path experiment.path.archive if set, deleted otherwise.
     -s SELECTOR, --select SELECTOR
-      selection of settings.
-    -S, --serverDefault
-      augment the command line with the content of the dict experiment._defaultServerRunArgument.
+      selection of settings using string, dict, or numeric array formats.
+    -S, --server
+      run the experiment serverside
     -v, --version
       print version.
     -V, --verbose
