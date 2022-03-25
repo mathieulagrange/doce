@@ -39,10 +39,10 @@ class Plan():
 
   >>> for setting in p:
   ...   print(setting)
-  factor1 1 factor2 2
-  factor1 1 factor2 4
-  factor1 3 factor2 2
-  factor1 3 factor2 4
+  factor1=1+factor2=2
+  factor1=1+factor2=4
+  factor1=3+factor2=2
+  factor1=3+factor2=4
   """
   def __init__(self, **factors):
       self._setting = None
@@ -258,72 +258,72 @@ class Plan():
     >>> # doce allows two ways of defining the selector. The first one is dict based:
     >>> for setting in p.select([{'f1':'b', 'f2':[1, 2]}, {'f1':'c', 'f2':[3]}]):
     ...  print(setting)
-    f1 b f2 1
-    f1 b f2 2
-    f1 c f2 3
+    f1=b+f2=1
+    f1=b+f2=2
+    f1=c+f2=3
 
     >>> # The second one is list based. In this exmaple, we select the settings with the second modality of the first factor, and with the first modality of the second factor
     >>> for setting in p.select([1, 0]):
     ...  print(setting)
-    f1 b f2 1
+    f1=b+f2=1
     >>> # select the settings with all the modalities of the first factor, and the second modality of the second factor
     >>> for setting in p.select([-1, 1]):
     ...  print(setting)
-    f1 a f2 2
-    f1 b f2 2
-    f1 c f2 2
+    f1=a+f2=2
+    f1=b+f2=2
+    f1=c+f2=2
     >>> # the selection of all the modalities of the remaining factors can be conveniently expressed
     >>> for setting in p.select([1]):
     ...  print(setting)
-    f1 b f2 1
-    f1 b f2 2
-    f1 b f2 3
+    f1=b+f2=1
+    f1=b+f2=2
+    f1=b+f2=3
     >>> # select the settings using 2 selector, where the first selects the settings with the first modality of the first factor and with the second modality of the second factor, and the second selector selects the settings with the second modality of the first factor, and with the third modality of the second factor
     >>> for setting in p.select([[0, 1], [1, 2]]):
     ...  print(setting)
-    f1 a f2 2
-    f1 b f2 3
+    f1=a+f2=2
+    f1=b+f2=3
     >>> # the latter expression may be interpreted as the selection of the settings with the first and second modalities of the first factor and with second and third modalities of the second factor. In that case, one needs to add a -1 at the end the selector (even if by doing so the length of the selector is larger than the number of factors)
     >>> for setting in p.select([[0, 1], [1, 2], -1]):
     ...  print(setting)
-    f1 a f2 2
-    f1 a f2 3
-    f1 b f2 2
-    f1 b f2 3
+    f1=a+f2=2
+    f1=a+f2=3
+    f1=b+f2=2
+    f1=b+f2=3
     >>> # if volatile is set to False (default) when the selector is set and the setting set iterated, the setting set stays ready for another iteration.
     >>> for setting in p.select([0, 1]):
     ...  pass
     >>> for setting in p:
     ...  print(setting)
-    f1 a f2 2
+    f1=a+f2=2
     >>> # if volatile is set to True when the selector is set and the setting set iterated, the setting set is reinitialized at the second iteration.
     >>> for setting in p.select([0, 1], volatile=True):
     ...  pass
     >>> for setting in p:
     ...  print(setting)
-    f1 a f2 1
-    f1 a f2 2
-    f1 a f2 3
-    f1 b f2 1
-    f1 b f2 2
-    f1 b f2 3
-    f1 c f2 1
-    f1 c f2 2
-    f1 c f2 3
+    f1=a+f2=1
+    f1=a+f2=2
+    f1=a+f2=3
+    f1=b+f2=1
+    f1=b+f2=2
+    f1=b+f2=3
+    f1=c+f2=1
+    f1=c+f2=2
+    f1=c+f2=3
     >>> # if volatile was set to False (default) when the selector was first set and the setting set iterated, the complete set of settings can be reached by calling selector with no parameters.
     >>> for setting in p.select([0, 1]):
     ...  pass
     >>> for setting in p.select():
     ...  print(setting)
-    f1 a f2 1
-    f1 a f2 2
-    f1 a f2 3
-    f1 b f2 1
-    f1 b f2 2
-    f1 b f2 3
-    f1 c f2 1
-    f1 c f2 2
-    f1 c f2 3
+    f1=a+f2=1
+    f1=a+f2=2
+    f1=a+f2=3
+    f1=b+f2=1
+    f1=b+f2=2
+    f1=b+f2=3
+    f1=c+f2=1
+    f1=c+f2=2
+    f1=c+f2=3
     """
     selector = self.__format__(selector)
 
