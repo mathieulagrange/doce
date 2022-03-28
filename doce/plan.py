@@ -11,6 +11,7 @@ import doce.setting as es
 import logging
 import time
 from itertools import groupby
+from subprocess import call
 
 if eu.inNotebook():
     from tqdm.notebook import tqdm as tqdm
@@ -186,6 +187,7 @@ class Plan():
                 datefmt='%m/%d/%Y %I:%M:%S')
     if progress:
       print('Number of settings: '+str(len(self)))
+
     if nbJobs>1 or nbJobs<0:
       from joblib import Parallel, delayed
       result = Parallel(n_jobs=nbJobs, require='sharedmem')(delayed(setting.do)(function, experiment, logFileName, *parameters) for setting in self)

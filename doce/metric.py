@@ -649,7 +649,7 @@ class Metric():
     fileId,
     setting,
     metricDimension={},
-    settingEncoding={}
+    settingEncoding={'separator':'_', 'identifier':'_'}
     ):
     """adds a group to the root of a valid PyTables Object in order to store the metrics corresponding to the specified setting.
 

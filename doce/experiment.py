@@ -439,7 +439,7 @@ class Experiment():
           experimentId = plans[int(experimentId)]
         print('Plan '+experimentId+' is selected')
         self._plan = getattr(self, experimentId)
-    self._plan.check()    
+    self._plan.check()
     if show:
       print(self._plan.asPandaFrame())
     return self._plan.select(selector)
@@ -511,15 +511,15 @@ class Experiment():
     ...   np.save(experiment.path.output+'/'+setting.id()+'_mult.npy', setting.factor1*setting.factor2)
     >>> nbFailed = e.do([], myFunction, progress='')
     >>> os.listdir(e.path.output)
-    ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_2_mult.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_1_factor2_2_sum.npy', 'factor1_1_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy', 'factor1_1_factor2_2_mult.npy', 'factor1_1_factor2_4_sum.npy']
+    ['factor1=1+factor2=4_mult.npy', 'factor1=1+factor2=4_sum.npy', 'factor1=3+factor2=4_sum.npy', 'factor1=1+factor2=2_mult.npy', 'factor1=1+factor2=2_sum.npy', 'factor1=3+factor2=2_mult.npy', 'factor1=3+factor2=4_mult.npy', 'factor1=3+factor2=2_sum.npy']
 
     >>> e.cleanDataSink('output', [0], force=True)
     >>> os.listdir(e.path.output)
-    ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_2_mult.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy']
+    ['factor1=3+factor2=4_sum.npy', 'factor1=3+factor2=2_mult.npy', 'factor1=3+factor2=4_mult.npy', 'factor1=3+factor2=2_sum.npy']
 
     >>> e.cleanDataSink('output', [1, 1], force=True, reverse=True, wildcard='*mult*')
     >>> os.listdir(e.path.output)
-    ['factor1_3_factor2_2_sum.npy', 'factor1_3_factor2_4_mult.npy', 'factor1_3_factor2_4_sum.npy']
+    ['factor1=3+factor2=4_sum.npy', 'factor1=3+factor2=4_mult.npy', 'factor1=3+factor2=2_sum.npy']
 
     Here, we remove all the files that match the wildcard *mult* in the directory /tmp/test that do not correspond to the settings that have the first factor set to the second modality and the second factor set to the second modality.
 
@@ -542,16 +542,16 @@ class Experiment():
     Last modif.: '...'
     Object Tree:
     / (RootGroup) ''
-    /factor1_1_factor2_2 (Group) 'factor1 1 factor2 2'
+    /factor1_1_factor2_2 (Group) 'factor1=1+factor2=2'
     /factor1_1_factor2_2/mult (Array(1,)) 'mult'
     /factor1_1_factor2_2/sum (Array(1,)) 'sum'
-    /factor1_1_factor2_4 (Group) 'factor1 1 factor2 4'
+    /factor1_1_factor2_4 (Group) 'factor1=1+factor2=4'
     /factor1_1_factor2_4/mult (Array(1,)) 'mult'
     /factor1_1_factor2_4/sum (Array(1,)) 'sum'
-    /factor1_3_factor2_2 (Group) 'factor1 3 factor2 2'
+    /factor1_3_factor2_2 (Group) 'factor1=3+factor2=2'
     /factor1_3_factor2_2/mult (Array(1,)) 'mult'
     /factor1_3_factor2_2/sum (Array(1,)) 'sum'
-    /factor1_3_factor2_4 (Group) 'factor1 3 factor2 4'
+    /factor1_3_factor2_4 (Group) 'factor1=3+factor2=4'
     /factor1_3_factor2_4/mult (Array(1,)) 'mult'
     /factor1_3_factor2_4/sum (Array(1,)) 'sum'
     >>> h5.close()
@@ -563,10 +563,10 @@ class Experiment():
     Last modif.: '...'
     Object Tree:
     / (RootGroup) ''
-    /factor1_3_factor2_2 (Group) 'factor1 3 factor2 2'
+    /factor1_3_factor2_2 (Group) 'factor1=3+factor2=2'
     /factor1_3_factor2_2/mult (Array(1,)) 'mult'
     /factor1_3_factor2_2/sum (Array(1,)) 'sum'
-    /factor1_3_factor2_4 (Group) 'factor1 3 factor2 4'
+    /factor1_3_factor2_4 (Group) 'factor1=3+factor2=4'
     /factor1_3_factor2_4/mult (Array(1,)) 'mult'
     /factor1_3_factor2_4/sum (Array(1,)) 'sum'
     >>> h5.close()
@@ -578,7 +578,7 @@ class Experiment():
     Last modif.: '...'
     Object Tree:
     / (RootGroup) ''
-    /factor1_3_factor2_4 (Group) 'factor1 3 factor2 4'
+    /factor1_3_factor2_4 (Group) 'factor1=3+factor2=4'
     /factor1_3_factor2_4/mult (Array(1,)) 'mult'
     /factor1_3_factor2_4/sum (Array(1,)) 'sum'
     >>> h5.close()
