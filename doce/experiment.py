@@ -162,19 +162,6 @@ class Experiment():
     create=True,
     force=False
     ):
-
-    # for sns in self.__getattribute__('path').__dict__.keys():
-    self.path.__setattr__(name, path)
-    path = os.path.abspath(os.path.expanduser(path))
-    if path:
-      if path.endswith('.h5'):
-        path = os.path.dirname(os.path.abspath(path))
-      if not os.path.exists(path):
-        if force or doce.util.query_yes_no('The '+name+' path: '+path+' does not exist. Do you want to create it ?'):
-          os.makedirs(path)
-          if not force:
-            print('Path succesfully created.')
-
     """Create directories whose path described in experiment.path are not reachable.
 
     For each path set in experiment.path, create the directory if not reachable. The user may be prompted before creation.
@@ -199,6 +186,26 @@ class Experiment():
     >>> os.listdir('/tmp/'+e.name)
     ['processing', 'output']
     """
+    # for sns in self.__getattribute__('path').__dict__.keys():
+    if not path.endswith('/'):
+      if not path.endswith('\\'):
+        if '\\' in path:
+          path = path+'\\'
+        else:
+          path = path+'/'
+
+    self.path.__setattr__(name, path)
+    path = os.path.abspath(os.path.expanduser(path))
+    if path:
+      if path.endswith('.h5'):
+        path = os.path.dirname(os.path.abspath(path))
+      if not os.path.exists(path):
+        if force or doce.util.query_yes_no('The '+name+' path: '+path+' does not exist. Do you want to create it ?'):
+          os.makedirs(path)
+          if not force:
+            print('Path succesfully created.')
+
+
 
 
   def __str__(
