@@ -205,9 +205,6 @@ class Experiment():
           if not force:
             print('Path succesfully created.')
 
-
-
-
   def __str__(
     self,
     format='str'
