@@ -159,7 +159,6 @@ class Experiment():
     self,
     name,
     path,
-    create=True,
     force=False
     ):
     """Create directories whose path described in experiment.path are not reachable.
@@ -172,7 +171,7 @@ class Experiment():
     force : bool
       If True, do not prompt the user before creating the missing directories.
 
-      If False, prompt the user before creation of each missing directory.
+      If False, prompt the user before creation of each missing directory (default).
 
     Examples
     --------
@@ -181,7 +180,7 @@ class Experiment():
     >>> import os
     >>> e=doce.Experiment()
     >>> e.name = 'experiment'
-    >>> e.path.processing = '/tmp/'+e.name+'/processing'
+    >>> e.setPath('processing', '/tmp/'+e.name+'/processing', force=True)
     >>> e.setPath('output', '/tmp/'+e.name+'/output', force=True)
     >>> os.listdir('/tmp/'+e.name)
     ['processing', 'output']

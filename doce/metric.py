@@ -701,7 +701,7 @@ class Metric():
     >>> print(h5)
     /tmp/example.h5 (File) ''
     Last modif.: '...'
-    Object Tree: 
+    Object Tree:
     / (RootGroup) ''
     /f1_1_f2_1 (Group) 'f1=1+f2=1'
     /f1_1_f2_1/m1 (Array(100,)) 'm1'
@@ -885,6 +885,6 @@ class Metric():
 
 if __name__ == '__main__':
     import doctest
-    # doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
 
-    doctest.run_docstring_examples(Metric.addSettingGroup, globals(), optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+    # doctest.run_docstring_examples(Metric.addSettingGroup, globals(), optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)

@@ -396,7 +396,7 @@ class Plan():
     reverse=False,
     force=False,
     keep=False,
-    settingEncoding={},
+    settingEncoding={'separator':'_', 'identifier':'_'},
     archivePath='',
     verbose=0):
     """clean a h5 data sink by considering the settings set.
@@ -463,6 +463,7 @@ class Plan():
 
     path = os.path.expanduser(path)
     if path.endswith('.h5'):
+      settingEncoding={'separator':'_', 'identifier':'_'}
       self.cleanH5(path, reverse, force, keep, settingEncoding, archivePath, verbose)
     else:
       fileNames = []
