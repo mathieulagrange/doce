@@ -477,24 +477,24 @@ class Metric():
     >>> print(h5)
     /tmp/example.h5 (File) ''
     Last modif.: '...'
-    Object Tree:
+        Object Tree:
     / (RootGroup) ''
-    /f1_1_f2_1 (Group) 'f1 1 f2 1'
+    /f1_1_f2_1 (Group) 'f1=1+f2=1'
     /f1_1_f2_1/m1 (Array(100,)) 'm1'
     /f1_1_f2_1/m2 (EArray(100,)) 'm2'
-    /f1_1_f2_2 (Group) 'f1 1 f2 2'
+    /f1_1_f2_2 (Group) 'f1=1+f2=2'
     /f1_1_f2_2/m1 (Array(100,)) 'm1'
     /f1_1_f2_2/m2 (EArray(100,)) 'm2'
-    /f1_1_f2_3 (Group) 'f1 1 f2 3'
+    /f1_1_f2_3 (Group) 'f1=1+f2=3'
     /f1_1_f2_3/m1 (Array(100,)) 'm1'
     /f1_1_f2_3/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_1 (Group) 'f1 2 f2 1'
+    /f1_2_f2_1 (Group) 'f1=2+f2=1'
     /f1_2_f2_1/m1 (Array(100,)) 'm1'
     /f1_2_f2_1/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_2 (Group) 'f1 2 f2 2'
+    /f1_2_f2_2 (Group) 'f1=2+f2=2'
     /f1_2_f2_2/m1 (Array(100,)) 'm1'
     /f1_2_f2_2/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_3 (Group) 'f1 2 f2 3'
+    /f1_2_f2_3 (Group) 'f1=2+f2=3'
     /f1_2_f2_3/m1 (Array(100,)) 'm1'
     /f1_2_f2_3/m2 (EArray(100,)) 'm2'
     >>> h5.close()
@@ -514,6 +514,7 @@ class Metric():
 
 
     if dataLocation.endswith('.h5'):
+      settingEncoding = {'separator':'_', 'identifier':'_'}
       modificationTimeStamp = []
       (settingDescription, metricHasData, reducedMetrics, significance) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
     else:
