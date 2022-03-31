@@ -60,13 +60,15 @@ In *doce*, the parametrization of the processing code is called a *setting*. Eac
 .. code-block:: python
     :linenos:
 
-    # set the plan (factor : modalities)
-    experiment.addPlan('plan',
-      nn_type = ['cnn', 'lstm'],
-      n_layers = np.arange(2, 10, 3),
-      learning_rate = [0.001, 0.0001],
-      dropout = [0, 1]
-    )
+    def set(args):
+      ...
+      # set the plan (factor : modalities)
+      experiment.addPlan('plan',
+        nn_type = ['cnn', 'lstm'],
+        n_layers = np.arange(2, 10, 3),
+        learning_rate = [0.001, 0.0001],
+        dropout = [0, 1]
+      )
 
 Interact with your experiment
 =============================
@@ -217,13 +219,15 @@ To do so, we have to add some lines to the set function:
 .. code-block:: python
     :linenos:
 
-    # set the metrics
-    experiment.setMetrics(
-      # the average and the standard deviation of the accuracy are expressed in percents (+ specifies a higher-the-better metric)
-      accuracy = ['mean%+', 'std%'],
-      # the duration is averaged over folds (* requests statistical analysis, - specifies a lower-the-better metric)
-      duration = ['mean*-']
-    )
+    def set(args):
+      ...
+      # set the metrics
+      experiment.setMetrics(
+        # the average and the standard deviation of the accuracy are expressed in percents (+ specifies a higher-the-better metric)
+        accuracy = ['mean%+', 'std%'],
+        # the duration is averaged over folds (* requests statistical analysis, - specifies a lower-the-better metric)
+        duration = ['mean*-']
+      )
 
 Display metrics
 ===============
@@ -276,7 +280,7 @@ The title specifies the factors with unique modality in the selection.
 
 Please note that the page as an auto-reload javascript code snippet that conveniently reloads the page at each new focus.
 
-The mean accuracy is defined as a higher-the-better metric; thus 78 is displayed in bold. the average duration is specified as a lower-the-better metric the 4.67 is displayed in bold. A statistical analysis as been requested (with the *), the several t-tests are operated to check whether the best setting can be assumed to be significantly better than the others. In our example, the other settings with n_layers=2 cannot be assumed to be slower than the most rapid setting.
+The mean accuracy is defined as a higher-the-better metric; thus 78 is displayed in bold. the average duration is specified as a lower-the-better metric the 4.67 is displayed in bold. A statistical analysis as been requested (with the \*), the several t-tests are operated to check whether the best setting can be assumed to be significantly better than the others. In our example, the other settings with n_layers=2 cannot be assumed to be slower than the most rapid setting.
 
 Mine metrics
 ============
@@ -331,7 +335,7 @@ In our example, the data can be conveniently displayed using any horizontal bar 
 
 .. image:: img/barh.png
 
-Manipulating the plan
+Customizing the plan
 ~~~~~~~~~~~~~~~~~~~~~
 
 The definite plan for a given experiment is only known when the experiment is over. It is therefore important to be able to fine tune the plan along with your exploration.
