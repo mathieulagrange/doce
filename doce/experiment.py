@@ -202,6 +202,7 @@ class Experiment():
             else:
               path = path+'/'
       if not os.path.exists(path):
+        print(self._detached)
         if self._detached or force or doce.util.query_yes_no('The '+name+' path: '+path+' does not exist. Do you want to create it ?'):
           os.makedirs(path)
           if not force:
