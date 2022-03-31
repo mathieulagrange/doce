@@ -187,18 +187,20 @@ class Experiment():
     ['processing', 'output']
     """
     # for sns in self.__getattribute__('path').__dict__.keys():
-    if not path.endswith('/'):
-      if not path.endswith('\\'):
-        if '\\' in path:
-          path = path+'\\'
-        else:
-          path = path+'/'
+
 
     self.path.__setattr__(name, path)
     path = os.path.abspath(os.path.expanduser(path))
     if path:
       if path.endswith('.h5'):
         path = os.path.dirname(os.path.abspath(path))
+      else:
+        if not path.endswith('/'):
+          if not path.endswith('\\'):
+            if '\\' in path:
+              path = path+'\\'
+            else:
+              path = path+'/'
       if not os.path.exists(path):
         if force or doce.util.query_yes_no('The '+name+' path: '+path+' does not exist. Do you want to create it ?'):
           os.makedirs(path)

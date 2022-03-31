@@ -596,9 +596,9 @@ class Metric():
 
     >>> (settingMetric, settingDescription, constantSettingDescription) = experiment.metric.get('m1', experiment._plan.select([1]), experiment.path.output)
     >>> print(constantSettingDescription)
-    f1 2
+    f1=2
     >>> print(settingDescription)
-    [['f2', '1'], ['f2', '2'], ['f2', '3']]
+    ['f2=1', 'f2=2', 'f2=3']
     >>> print(len(settingMetric))
     3
     >>> print(settingMetric[0].shape)
@@ -701,29 +701,31 @@ class Metric():
     >>> print(h5)
     /tmp/example.h5 (File) ''
     Last modif.: '...'
-    Object Tree:
+    Object Tree: 
     / (RootGroup) ''
-    /f1_1_f2_1 (Group) 'f1 1 f2 1'
+    /f1_1_f2_1 (Group) 'f1=1+f2=1'
     /f1_1_f2_1/m1 (Array(100,)) 'm1'
     /f1_1_f2_1/m2 (EArray(100,)) 'm2'
-    /f1_1_f2_2 (Group) 'f1 1 f2 2'
+    /f1_1_f2_2 (Group) 'f1=1+f2=2'
     /f1_1_f2_2/m1 (Array(100,)) 'm1'
     /f1_1_f2_2/m2 (EArray(100,)) 'm2'
-    /f1_1_f2_3 (Group) 'f1 1 f2 3'
+    /f1_1_f2_3 (Group) 'f1=1+f2=3'
     /f1_1_f2_3/m1 (Array(100,)) 'm1'
     /f1_1_f2_3/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_1 (Group) 'f1 2 f2 1'
+    /f1_2_f2_1 (Group) 'f1=2+f2=1'
     /f1_2_f2_1/m1 (Array(100,)) 'm1'
     /f1_2_f2_1/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_2 (Group) 'f1 2 f2 2'
+    /f1_2_f2_2 (Group) 'f1=2+f2=2'
     /f1_2_f2_2/m1 (Array(100,)) 'm1'
     /f1_2_f2_2/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_3 (Group) 'f1 2 f2 3'
+    /f1_2_f2_3 (Group) 'f1=2+f2=3'
     /f1_2_f2_3/m1 (Array(100,)) 'm1'
     /f1_2_f2_3/m2 (EArray(100,)) 'm2'
 
     >>> h5.close()
     """
+    import tables as tb
+
     groupName = setting.id(**settingEncoding)
     # print(groupName)
     if not fileId.__contains__('/'+groupName):
@@ -883,5 +885,6 @@ class Metric():
 
 if __name__ == '__main__':
     import doctest
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
-    # doctest.run_docstring_examples(Metric.addSettingGroup, globals(), optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+    # doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+
+    doctest.run_docstring_examples(Metric.addSettingGroup, globals(), optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
