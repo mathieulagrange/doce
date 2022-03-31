@@ -299,15 +299,21 @@ class Setting():
 
     """
     failed = 0
-    try:
-      function(self, experiment, *parameters)
-    except Exception as e:
+    if experiment.skipSetting(self) :
+      message = 'Metrics for setting '+self.id()+' already available. Skipping...'
+      print(message)
       if logFileName:
-        failed = 1
-        #print('setting '+setting.id()+' failed')
-        logging.info(traceback.format_exc())
-      else:
-        raise e
+        logging.info(message)
+    else:
+      try:
+        function(self, experiment, *parameters)
+      except Exception as e:
+        if logFileName:
+          failed = 1
+          #print('setting '+setting.id()+' failed')
+          logging.info(traceback.format_exc())
+        else:
+          raise e
     return failed
 
   def removeFactor(self, factor):

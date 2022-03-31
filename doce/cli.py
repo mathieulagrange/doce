@@ -46,6 +46,7 @@ def main():
 
   parser = argparse.ArgumentParser()
   parser.add_argument('-A', '--archive', type=str, help='archive the selected  settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. The files are copied to the path experiment.path.archive if set.', nargs='?', const='')
+  parser.add_argument('-c', '--check', help='check availability of any metric of a given setting and skip computation if available.', action='store_true')
   parser.add_argument('-C', '--copy', help='copy codebase to the host defined by the host (-H) argument.', action='store_true')
   parser.add_argument('-d', '--display', type=str, help='display metrics. If no parameter is given, consider the default display and show all metrics. If the str parameter contain a list of integers, use the default display and show only the selected metrics defined by the integer list. If the str parameter contain a name, run the display method with this name.', nargs='?', default='-1')
   # parser.add_argument('-e', '--experiment', type=str, help='select experiment. List experiments if empty.', nargs='?', default='all')
@@ -107,6 +108,7 @@ def main():
     experiment = doce.Experiment()
 
   experiment.status.verbose = args.verbose
+  experiment._resume = args.check
 
   experiment.select(selector, show=args.plan)
 
@@ -222,6 +224,7 @@ def main():
 
   if args.host == -3:
     logFileName = '/tmp/doce_'+experiment.name+'_'+experiment.status.runId+'.txt'
+    print('Log available at: '+logFileName)
     if os.path.exists(logFileName):
       with open(logFileName, 'r') as file:
         log = file.read()

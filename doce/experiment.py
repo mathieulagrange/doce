@@ -5,6 +5,7 @@ import time
 import datetime
 import doce
 import ast
+import glob
 
 class Experiment():
   """Stores high level information about the experiment and tools to control the processing and storage of data.
@@ -107,6 +108,7 @@ class Experiment():
     self._gmailId = 'expcode.mailer'
     self._gmailAppPassword = 'tagsqtlirkznoxro'
     self._defaultServerRunArgument =  {}
+    self._resume = False
 
     self._display = types.SimpleNamespace()
     self._display.factorFormatInReduce = 'long'
@@ -614,7 +616,17 @@ class Experiment():
   def default(self, plan='', factor='', modality=''):
     getattr(self, plan).default(factor, modality)
 
-
+  def skipSetting(self, setting):
+    if self._resume:
+      for path in self.__getattribute__('path').__dict__.keys():
+          if path.endswith('.h5'):
+            print('todo')
+          else:
+            if path not in ['export', 'export_raw', 'archive', 'archive_raw', 'code', 'code_raw']:
+              check = glob.glob(self.path.__getattribute__(path)+setting.id()+'_*.npy')
+              if check:
+                return True
+    return False
   # def clean(
   #   self,
   #   selector=[],
