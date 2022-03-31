@@ -180,9 +180,8 @@ def main():
     print('')
     print(message)
     exit()
-
+  print()
   if args.host == -3:
-    experiment._detached = True
     logFileName = '/tmp/doce_'+experiment.name+'_'+experiment.status.runId+'.txt'
   if args.mail>-1:
     experiment.sendMail(args.select+' has started.', '<div> Selector = '+args.select+'</div>')
