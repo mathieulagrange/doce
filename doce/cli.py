@@ -156,7 +156,6 @@ def main():
 
     import argunparse
 
-    experiment._detached = True
     unparser = argunparse.ArgumentUnparser()
     kwargs = copy.deepcopy(vars(args))
     kwargs['host'] = -3
@@ -183,6 +182,7 @@ def main():
     exit()
 
   if args.host == -3:
+    experiment._detached = True
     logFileName = '/tmp/doce_'+experiment.name+'_'+experiment.status.runId+'.txt'
   if args.mail>-1:
     experiment.sendMail(args.select+' has started.', '<div> Selector = '+args.select+'</div>')
