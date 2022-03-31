@@ -42,59 +42,16 @@ def main():
 
   $ python experiment_run.py -h
 
-    usage: npyDemo.py [-h] [-A [ARCHIVE]] [-C] [-d [DISPLAY]] [-D] [-e [EXPERIMENT]] [-E [EXPORT]] [-f] [-i] [-K [KEEP]] [-l] [-M [MAIL]] [-p userData] [-P [PROGRESS]] [-r [RUN]] [-R [REMOVE]] [-s SERVER] [-S] [-v]
-
-  optional arguments:
-    -h, --help
-      show this help message and exit.
-    -A [ARCHIVE], --archive [ARCHIVE]
-      archive the selected settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. The files are copied to the path experiment.path.archive if set.
-    -C, --copy
-      copy codebase to server defined by the server (-s) argument.
-    -d [DISPLAY], --display [DISPLAY]
-      display metrics. If no parameter is given, consider the default display and show all metrics. If the str parameter contain a list of integers, use the default display and show only the selected metrics defined by the integer list. If the str parameter contain a name, run the display method with this name.
-    -e [EXPERIMENT], --experiment [EXPERIMENT]
-        select experiment. List experiments if empty.
-    -E [EXPORT], --export [EXPORT]
-        export the display of reduced metrics among different file types (html, png, pdf). If parameter is empty, all exports are made. If parameter has a dot, interpreted as a filename which should be of support type. If parameter has nothing before the dot, interpreted as file type, and experiment.project.name is used. If parameter has no dot, interpreted as file name with no extension, and all exports are made.
-    -f, --files
-      show the file names corresponding to the settings.
-    -H HOST, --host HOST
-      running on specified HOST. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside.
-    -i, --information
-      show information about the experiment.
-    -K [KEEP], --keep [KEEP]
-      keep only the selected settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. Unwanted files are moved to the path experiment.path.archive if set, deleted otherwise.
-    -l, --list
-      list settings.
-    -M [MAIL], --mail [MAIL]
-      send email at the beginning and end of the computation. If a positive integer value x is provided, additional emails are sent every x hours.
-    -p USERDATA, --userData USERDATA
-      a dict specified as str (for example, '{"test": 1}') that will be available in Experiment.userData (userData.test 1).
-    -P [PROGRESS], --progress [PROGRESS]
-      display progress bar. Argument controls the display of the current setting: d alphanumeric description, s numeric selector, ds combination of both (default d).
-    -r [RUN], --run [RUN]
-      perform computation. Integer parameter sets the number of jobs computed in parallel (default to one core).
-    -R [REMOVE], --remove [REMOVE]
-      remove the selected settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. Unwanted files are moved to the path experiment.path.archive if set, deleted otherwise.
-    -s SELECTOR, --select SELECTOR
-      selection of settings using string, dict, or numeric array formats.
-    -S, --server
-      run the experiment serverside
-    -v, --version
-      print version.
-    -V, --verbose
-      level of verbosity (default 0: silent).
   """
 
   parser = argparse.ArgumentParser()
   parser.add_argument('-A', '--archive', type=str, help='archive the selected  settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. The files are copied to the path experiment.path.archive if set.', nargs='?', const='')
-  parser.add_argument('-C', '--copy', help='copy codebase to server defined by the server (-s) argument.', action='store_true')
+  parser.add_argument('-C', '--copy', help='copy codebase to the host defined by the host (-H) argument.', action='store_true')
   parser.add_argument('-d', '--display', type=str, help='display metrics. If no parameter is given, consider the default display and show all metrics. If the str parameter contain a list of integers, use the default display and show only the selected metrics defined by the integer list. If the str parameter contain a name, run the display method with this name.', nargs='?', default='-1')
   # parser.add_argument('-e', '--experiment', type=str, help='select experiment. List experiments if empty.', nargs='?', default='all')
-  parser.add_argument('-E', '--export', type=str, help='Export the display of reduced metrics among different file types (html, png, pdf). If parameter is empty, all exports are made. If parameter has a dot, interpreted as a filename which should be of support type. If parameter has nothing before the dot, interpreted as file type, and experiment.project.name is used. If parameter has no dot, interpreted as file name with no extension, and all exports are made.', nargs='?', default='none')
+  parser.add_argument('-E', '--export', type=str, help='Export the display of reduced metrics among different file types (html, png, pdf). If parameter is empty, all exports are made. If parameter has a dot, interpreted as a filename which should be of support type. If parameter has nothing before the dot, interpreted as file type, and experiment.name is used. If parameter has no dot, interpreted as file name with no extension, and all exports are made.', nargs='?', default='none')
   parser.add_argument('-f', '--files', help='list files.', action='store_true')
-  parser.add_argument('-H', '--host', type=int, help='running on specified HOST. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host, -3 is a flag meaning that the experiment runs serverside.', default=-2)
+  parser.add_argument('-H', '--host', type=int, help='running on specified HOST. Integer defines the index in the host array of config. -2 (default) runs attached on the local host, -1 runs detached on the local host through a screen, -3 is a flag meaning that the experiment runs in server mode (no stop at failing settings).', default=-2)
   parser.add_argument('-i', '--information', help='show information about the experiment.', action='store_true')
   parser.add_argument('-K', '--keep', type=str, help='keep only the selected settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. Unwanted files are moved to the path experiment.path.archive if set, deleted otherwise.', nargs='?', const='')
   parser.add_argument('-l', '--list', help='list settings.', action='store_true')
@@ -199,28 +156,34 @@ def main():
 
     import argunparse
 
+    experiment._detached = True
     unparser = argunparse.ArgumentUnparser()
     kwargs = copy.deepcopy(vars(args))
-    kwargs['server'] = -3
+    kwargs['host'] = -3
     command = unparser.unparse(**kwargs).replace('\'', '\"').replace('\"', '\\\"')
     if args.verbose:
       command += '; bash '
-    command = 'screen -dm bash -c \'python3 '+experiment.project.name+'.py '+command+'\''
+    command = 'screen -dm bash -c \'python3 '+experiment.name+'.py '+command+'\''
     message = 'experiment launched on local host'
     if args.host>-1:
       if args.copy:
         syncCommand = 'rsync -r '+experiment.path.code+'* '+experiment.host[args.host]+':'+experiment.path.code_raw
+        print('Sycing code repository to host: '+experiment.host[args.host])
         print(syncCommand)
         os.system(syncCommand)
+        print('')
       command = 'ssh '+experiment.host[args.host]+' "cd '+experiment.path.code_raw+'; '+command+'"'
-      message = 'experiment launched on host: '+experiment.host[args.host]
+      message = 'Experiment launched.'
+    print('Sending experiment to host: '+experiment.host[args.host])
+    print('')
     print(command)
     os.system(command)
+    print('')
     print(message)
     exit()
 
   if args.host == -3:
-    logFileName = '/tmp/doce_'+experiment.project.name+'_'+experiment.status.runId+'.txt'
+    logFileName = '/tmp/doce_'+experiment.name+'_'+experiment.status.runId+'.txt'
   if args.mail>-1:
     experiment.sendMail(args.select+' has started.', '<div> Selector = '+args.select+'</div>')
   if args.run and hasattr(config, 'step'):
@@ -259,7 +222,7 @@ def main():
         body += '<div> '+header+' </div><br>'+styler.render()
 
   if args.host == -3:
-    logFileName = '/tmp/doce_'+experiment.project.name+'_'+experiment.status.runId+'.txt'
+    logFileName = '/tmp/doce_'+experiment.name+'_'+experiment.status.runId+'.txt'
     if os.path.exists(logFileName):
       with open(logFileName, 'r') as file:
         log = file.read()
@@ -422,7 +385,7 @@ def exportDataFrame(experiment, args, df, styler, header):
   if not os.path.exists(experiment.path.export):
     os.makedirs(experiment.path.export)
   if args.export == 'all':
-    exportFileName = experiment.project.name
+    exportFileName = experiment.name
   else:
     a = args.export.split('.')
     # print(a)
