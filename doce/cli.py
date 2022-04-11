@@ -68,9 +68,6 @@ def main():
   parser.add_argument('-V', '--verbose', help='level of verbosity (default 0: silent).', action='store_true')
   args = parser.parse_args()
 
-  if args.version:
-    print("Experiment version "+experiment.version)
-    exit(1)
   if args.mail is None:
     args.mail = 0
   else:
@@ -99,6 +96,7 @@ def main():
    print(sys.argv[0]+' should implement a valid python module.')
    raise ValueError
 
+
   # experiment = doce.experiment.Experiment()
   # if isinstance(userData, dict):
   #   experiment.userData = userData
@@ -106,6 +104,10 @@ def main():
     experiment = config.set(args)
   else:
     experiment = doce.Experiment()
+
+  if args.version:
+    print("Experiment version "+experiment.version)
+    exit(1)
 
   experiment.status.verbose = args.verbose
   experiment._resume = args.check

@@ -92,6 +92,7 @@ class Experiment():
     self.description = ''
     self.author = 'no name'
     self.address = 'noname@noorg.org'
+    self.version = '0.1'
 
     self.status = types.SimpleNamespace()
     self.status.runId = str(int((time.time()-datetime.datetime(2020,1,1,0,0).timestamp())/60))
