@@ -24,4 +24,4 @@ Source
 
 The latest development version can be installed via pip::
 
-    pip install git+https://github.com/doce.py/doce
+    pip install git+https://github.com/mathieulagrange/doce
