@@ -33,7 +33,11 @@ The *doce* package is designed to require very few lines of code around your pro
 Define the experiment
 =====================
 
-In a .py file, ideally named after the name of your experiment (demo.py here, available in the examples directory), you have to implement a *set* function that contains the relevant definition of your experiment.
+In a .py file, ideally named after the name of your experiment, you have to implement a *set* function that contains the relevant definition of your experiment. The demonstrations discussed in this tutorial are available in the examples_ directory of the github repository of the project. In this first example, the demo.py_ is considered.
+
+.. _examples: https://github.com/mathieulagrange/doce/tree/main/examples
+
+.. _demo.py: https://github.com/mathieulagrange/doce/tree/main/examples/demo.py
 
 .. code-block:: python
     :linenos:
@@ -521,7 +525,9 @@ Check that the correct files are targeted and remove the -n in the command. Now 
 Managing multiple plans
 =======================
 
-Most of the time, computational approaches have different needs in terms of parametrization, which add difficulties in managing plans of computations. The doce package handle this by allowing the definition of multiple plans that are then automatically merged is needed.
+Most of the time, computational approaches have different needs in terms of parametrization, which add difficulties in managing plans of computations. The doce package handle this by allowing the definition of multiple plans that are then automatically merged is needed. In this first example, the demo_multiple_plan.py_ is considered.
+
+.. _demo_multiple_plan.py: https://github.com/mathieulagrange/doce/tree/main/examples/demo_multiple_plan.py
 
 Assume that we want to compare 3 classifiers :
 1. an svm
