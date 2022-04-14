@@ -52,6 +52,8 @@ In a .py file, ideally named after the name of your experiment (demo.py here, av
       # set some non varying parameters (here the number of cross validation folds)
       experiment.n_cross_validation_folds = 10
 
+      return experiment
+
 Define the plan
 ===============
 
@@ -69,6 +71,8 @@ In *doce*, the parametrization of the processing code is called a *setting*. Eac
         learning_rate = [0.001, 0.0001],
         dropout = [0, 1]
       )
+      ...
+
 
 Interact with your experiment
 =============================
@@ -188,13 +192,14 @@ You must define which code shall be processed for any setting, given the computi
 .. code-block:: python
     :linenos:
 
-    # the accuracy  is a function of cnn_type, and use of dropout
-    accuracy = (len(setting.nn_type)+setting.dropout+np.random.random_sample(experiment.n_cross_validation_folds))/6
-    # duration is a function of cnn_type, and n_layers
-    duration = len(setting.nn_type)+setting.n_layers+np.random.randn(experiment.n_cross_validation_folds)
-    # storage of outputs (the string between _ and .npy must be the name of the metric defined in the set function)
-    np.save(experiment.path.output+setting.id()+'_accuracy.npy', accuracy)
-    np.save(experiment.path.output+setting.id()+'_duration.npy', duration)
+    def step(setting, experiment):
+      # the accuracy  is a function of cnn_type, and use of dropout
+      accuracy = (len(setting.nn_type)+setting.dropout+np.random.random_sample(experiment.n_cross_validation_folds))/6
+      # duration is a function of cnn_type, and n_layers
+      duration = len(setting.nn_type)+setting.n_layers+np.random.randn(experiment.n_cross_validation_folds)
+      # storage of outputs (the string between _ and .npy must be the name of the metric defined in the set function)
+      np.save(experiment.path.output+setting.id()+'_accuracy.npy', accuracy)
+      np.save(experiment.path.output+setting.id()+'_duration.npy', duration)
 
 In this demo, the processing code simply stores some dummy metrics to the disk.
 
