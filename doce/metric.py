@@ -512,24 +512,27 @@ class Metric():
     2   3    3.99   1.04  -9.14        89
     """
 
+    if len(self.name()):
+      if dataLocation.endswith('.h5'):
+        settingEncoding = {'separator':'_', 'identifier':'_'}
+        modificationTimeStamp = []
+        (settingDescription, metricHasData, reducedMetrics, significance) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
+      else:
+        (settingDescription, metricHasData, reducedMetrics, modificationTimeStamp, significance) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
 
-    if dataLocation.endswith('.h5'):
-      settingEncoding = {'separator':'_', 'identifier':'_'}
-      modificationTimeStamp = []
-      (settingDescription, metricHasData, reducedMetrics, significance) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
+      nbFactors = len(settings.factors())
+      for ir, row in enumerate(settingDescription):
+        settingDescription[ir] = row[:nbFactors]+list(compress(row[nbFactors:], reducedMetrics))
+
+      columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricDisplay, metricDisplayLength, metricHasData, reducedMetricDisplay)
+      nbColumnFactor = len(settings.factors())
+
+      (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = eu.pruneSettingDescription(settingDescription, columnHeader, nbColumnFactor, factorDisplay)
+
+      return (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor, modificationTimeStamp, significance)
     else:
-      (settingDescription, metricHasData, reducedMetrics, modificationTimeStamp, significance) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
+      return ([], [], '', 0, [], [])
 
-    nbFactors = len(settings.factors())
-    for ir, row in enumerate(settingDescription):
-      settingDescription[ir] = row[:nbFactors]+list(compress(row[nbFactors:], reducedMetrics))
-
-    columnHeader = self.getColumnHeader(settings, factorDisplay, factorDisplayLength, metricDisplay, metricDisplayLength, metricHasData, reducedMetricDisplay)
-    nbColumnFactor = len(settings.factors())
-
-    (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = eu.pruneSettingDescription(settingDescription, columnHeader, nbColumnFactor, factorDisplay)
-
-    return (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor, modificationTimeStamp, significance)
 
   def get(
     self,
