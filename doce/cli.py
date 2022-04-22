@@ -338,9 +338,9 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
         if isInteger:
           cInt[c] = 'int32'
 
-  dPercent = pd.Series([experiment._display.metricPrecision-2]*len(cPercent), index=cPercent)
-  dNoPercent = pd.Series([experiment._display.metricPrecision]*len(cNoPercent), index=cNoPercent)
-  dInt = pd.Series([0]*len(cInt), index=cInt)
+  dPercent = pd.Series([experiment._display.metricPrecision-2]*len(cPercent), index=cPercent, dtype = np.intc)
+  dNoPercent = pd.Series([experiment._display.metricPrecision]*len(cNoPercent), index=cNoPercent, dtype = np.intc)
+  dInt = pd.Series([0]*len(cInt), index=cInt, dtype = np.intc)
   df=df.round(dPercent).round(dNoPercent).astype(cInt)
 
   # df['meanOffset'].map(lambda x: 0)
