@@ -1,27 +1,27 @@
-# DOCE: Design Of Computational Experiments
+DOCE: Design Of Computational Experiments
+=========================================
+
 Doce is a python library designed to help you handling the complexity of computational experiments.
 
-issues:
+## Documentation
 
-multiple experiments
-  called experiment from stimuli
-  main experiments
 
-  facteur réservé experiment
+See https://doce.readthedocs.io/ for a complete reference manual and an introductory tutorial.
 
-solution:
-  example with one experiment, explicitely called main
+The [tutorial](https://doce.readthedocs.io/en/latest/tutorial.html) should give you a quick sense of what doce can do for you.
 
-  if more than one, enforce specific naming of the 2 experiments and explain that the main experiment is now implicitely defined
+## Installation
 
-  mask ?
+### Using PyPI
 
-  experiment|mask, if no pipe implicitely main
+The latest stable release is available on PyPI, and you can install it by saying
+```
+python -m pip install doce
+```
 
-rename experiment with doce as doce defines a doce environnment
+### Using Git
 
-rename factor as experiment
-
-a doce environnment is a set of experiments, data sinks, and environnment variables.
-
-selector for export with sink selector considered also for display
+The latest version is available on GitHub, and you can install it by saying
+```
+git clone git@github.com:mathieulagrange/doce.git
+```
