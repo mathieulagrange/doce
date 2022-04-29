@@ -1,5 +1,4 @@
-![Alt text](manual/img/logo.png?raw=true "Logo" | width=100)
-<img src="manual/img/logo.png" width="100">
+<img src="manual/img/logo.png" width="200">
 
 DOCE: Design Of Computational Experiments
 =========================================
