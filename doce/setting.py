@@ -172,7 +172,7 @@ class Setting():
     >>> p.optional_parameter = ['value_one', 'value_two']
     >>> for setting in p.select([0, 1, 1, 0]):
     ...   print(setting.id())
-    optional_parameter=valueunderscoreone+three=c+two=1
+    optional_parameter=value_one+three=c+two=1
     >>> delattr(p, 'optional_parameter')
 
     >>> p.optionalParameter = ['valueOne', 'valueTwo']

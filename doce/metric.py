@@ -587,7 +587,7 @@ class Metric():
 
     >>> experiment = doce.experiment.Experiment()
     >>> experiment.name = 'example'
-    >>> experiment.setPath('output', '/tmp/'+experiment.name+'/')
+    >>> experiment.setPath('output', '/tmp/'+experiment.name+'/', force=True)
     >>> experiment.addPlan('plan', f1 = [1, 2], f2 = [1, 2, 3])
     >>> experiment.setMetrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
 

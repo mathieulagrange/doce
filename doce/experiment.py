@@ -31,6 +31,7 @@ class Experiment():
     description
     author: Mathieu Lagrange
     address: mathieu.lagrange@ls2n.fr
+    version: 0.1
     status:
       runId: ...
       verbose: 0
@@ -60,6 +61,7 @@ class Experiment():
     description
     author: Mathieu Lagrange
     address: mathieu.lagrange@ls2n.fr
+    version: 0.1
     status:
       runId: ...
       verbose: 0
@@ -242,6 +244,7 @@ class Experiment():
     description
     author: no name
     address: noname@noorg.org
+    version: 0.1
     status:
       runId: ...
       verbose: 0
@@ -258,7 +261,7 @@ class Experiment():
 
     >>> import doce
     >>> doce.Experiment().__str__(format='html')
-        '<div>name</div><div>description</div><div>author: no name</div><div>address: noname@noorg.org</div><div>status:</div><div>  runId: ...</div><div>  verbose: 0</div><div>parameter</div><div>metric</div><div>path:</div><div>  code_raw: ...</div><div>  code: ...</div><div>  archive_raw: </div><div>  archive: </div><div>  export_raw: export</div><div>  export: export</div><div>host: []</div><div></div>'
+        '<div>name</div><div>description</div><div>author: no name</div><div>address: noname@noorg.org</div><div>version: 0.1</div><div>status:</div><div>  runId: ...</div><div>  verbose: 0</div><div>parameter</div><div>metric</div><div>path:</div><div>  code_raw: ...</div><div>  code: ...</div><div>  archive_raw: </div><div>  archive: </div><div>  export_raw: export</div><div>  export: export</div><div>host: []</div><div></div>'
     """
     description = ''
     for atr in self._atrs:
