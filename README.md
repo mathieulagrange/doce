@@ -1,4 +1,6 @@
+<p align="center">
 <img src="manual/img/logo.png" width="200">
+</p>
 
 DOCE: Design Of Computational Experiments
 =========================================
