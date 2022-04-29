@@ -10,6 +10,12 @@ selector = {"nn_type":["cnn", "lstm"],"n_layers":2,"learning_rate":0.001}
   experiment.path.output
   )
 
+(data, settings, header) = experiment.get(
+  metric = 'accuracy',
+  selector = selector,
+  path = 'output'
+  )
+
 import numpy as np
 import matplotlib.pyplot as plt
 
