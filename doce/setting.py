@@ -197,7 +197,10 @@ class Setting():
         if (singleton or f in self._plan._nonSingleton) and (default or not hasattr(self._plan._default, f) or (not default and hasattr(self._plan._default, f) and getattr(self._plan._default, f) != getattr(self, f))):
           # id.append(f)
           # print(str(getattr(self, f)))
-          modality = doce.util.specialCaracterNaturalNaming(str(getattr(self, f)))
+          if isinstance(getattr(self, f), float):
+            modality = np.format_float_positional(getattr(self, f))
+          else:
+            modality = str(getattr(self, f))
           id.append(f+identifier+modality)
     if 'list' not in format:
       id = separator.join(id)
