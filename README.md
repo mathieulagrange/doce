@@ -3,12 +3,22 @@
 DOCE: Design Of Computational Experiments
 =========================================
 
-Doce is a python library designed to help you handling the complexity of computational experiments.
+*Doce* is a python library designed to help you handling the complexity of computational experiments.
 
+Experimentation and testing are a fundamental part of scientific research. They're also extremely time-consuming, tedious, and error-prone unless properly managed. *Doce* is here to help you with the management, running and reporting of your experiments, letting you focus more on the creative part of your research work.
 
+What can *Doce* can help you to do?
+
+ - Set up an experimental protocol once, and re-run it as often as needed with minimum hassle using new data, modified code, or alternative hypotheses.
+ - Systematically explore many combinations of operational parameters in a system.
+ - Re-use earlier results to only compute the later stages of a process, thus cutting down the running time.
+ - Automatically produce analysis tables.  
+ - Ease the production of paper-ready displays.
+ - Keep experimental code, data and results organized in a standardized way, to ease cooperation with others and allow you to go back painlessly on months-old or years-old work.
+
+![Alt text](manual/img/workflow.png?raw=true "Workflow")
 
 ## Documentation
-
 
 See https://doce.readthedocs.io/ for a complete reference manual and an introductory tutorial.
 
