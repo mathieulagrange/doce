@@ -630,21 +630,20 @@ Reduction can be composed with any numpy function that has a numpy array is inpu
 
 For example, let us consider a metric that is a 10x10 matrix with all values equal to 2:
 
-
-
-
 .. code-block:: python
     :linenos:
+
     def set(None):
     ...
     experiment.setMetrics(
-       m = [
-       'mean',
-       'square|mean',
-       'mean|square',
-       'sqrt|square|mean',
-       ]
+      m = [
+      'sum', # compute the sum over the flattened array
+      'square|sum', # compute the square of the sum over the flattened array
+      'sum|square', # compute the sum of the square of the flattened array
+      'sqrt|square|sum', # compute the square root of the square of the sum over the flattened array
+      ]
     )
+    ...
 
 The complete example is available in the examples directory: demo_compose_metrics.py_
 

@@ -28,10 +28,10 @@ def set(args=None):
   # set the metrics
   experiment.setMetrics(
     m = [
-    'sum',
-    'square|sum',
-    'sum|square',
-    'sqrt|square|sum',
+    'sum', # compute the sum over the flattened array
+    'square|sum', # compute the square of the sum over the flattened array
+    'sum|square', # compute the sum of the square of the flattened array
+    'sqrt|square|sum', # compute the square root of the square of the sum over the flattened array
     ]
   )
   return experiment
