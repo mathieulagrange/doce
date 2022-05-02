@@ -621,11 +621,47 @@ Display of metric is conveniently done using the merged plan:
 Advanced usage
 ~~~~~~~~~~~~~~
 
-Composing mathematical operators for the metrics
-================================================
+Composing operators for reducing the metrics
+============================================
 
-Define your own metric operators
-================================
+Reduction can be composed with any numpy function that has a numpy array is input and scalar as ouput.
+
+**Important**: prior to any processing, the array is first flattened if it has more than one dimension.
+
+For example, let us consider a metric that is a 10x10 matrix with all values equal to 2:
+
+
+
+
+.. code-block:: python
+    :linenos:
+    def set(None):
+    ...
+    experiment.setMetrics(
+       m = [
+       'mean',
+       'square|mean',
+       'mean|square',
+       'sqrt|square|mean',
+       ]
+    )
+
+The complete example is available in the examples directory: demo_compose_metrics.py_
+
+.. _demo_compose_metrics.py: https://github.com/mathieulagrange/doce/tree/main/examples/demo_compose_metrics.py
+
+
+Define your own metric reduction directive
+==========================================
+
+Let us assume that we want to reduce a metric that is represented as a matrix using the following directive: compute the average of the minimal value of each row.
+
+A custom reduction directive has to be defined for such a purpose.
+
+The complete example is available in the examples directory: demo_custom_metrics.py_
+
+.. _demo_custom_metrics.py: https://github.com/mathieulagrange/doce/tree/main/examples/demo_custom_metrics.py
+
 
 Storage within an hdf5 file
 ===========================
