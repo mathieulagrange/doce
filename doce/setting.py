@@ -316,6 +316,7 @@ class Setting():
           logging.info('Failed setting: '+self.id())
           logging.info(traceback.format_exc())
         else:
+          print('Failed setting: '+self.id())
           raise e
     return failed
 

@@ -1,4 +1,4 @@
-Tutorial
+ -cTutorial
 ^^^^^^^^
 
 This section covers the fundamentals of developing with *doce*, including
@@ -214,7 +214,7 @@ Now that we have set all this, performing the computation of some settings can s
 
 .. code-block:: console
 
-  $ python demo.py -r -s '{"nn_type"="cnn", "n_layers":[2, 5],"learning_rate":[0.001,0.00001]}'
+  $ python demo.py -c -s '{"nn_type"="cnn", "n_layers":[2, 5],"learning_rate":[0.001,0.00001]}'
 
 Adding a -P to the command line conveniently displays a per setting progress bar.
 
@@ -300,7 +300,7 @@ For this example, let us first compute the performance of the cnn and lstm syste
 
 .. code-block:: console
 
-  $ python demo.py -s '{"nn_type":["cnn", "lstm"],"n_layers":2,"learning_rate":0.001}' -r
+  $ python demo.py -s '{"nn_type":["cnn", "lstm"],"n_layers":2,"learning_rate":0.001}' -c
 
 Within a python file or a jupyer notebook, we can now retrieve the accuracy data:
 
@@ -491,7 +491,7 @@ Let us assume that we have computed every settings, the files are:
 
 .. code-block:: console
 
-  $ python factor_manipulation.py -r
+  $ python factor_manipulation.py -c
   $ ls -1 /tmp/factor_manipulation/
   dropout=1+nn_type=cnn_accuracy.npy
   dropout=1+nn_type=lstm_accuracy.npy
@@ -595,9 +595,9 @@ Computation can be done using the specified plans:
 
   .. code-block:: console
 
-    $ python demo_multiple_plan.py  -s svm/ -r
+    $ python demo_multiple_plan.py  -s svm/ -c
     Plan svm is selected
-    $ python demo_multiple_plan.py  -s deep/ -r
+    $ python demo_multiple_plan.py  -s deep/ -c
     Plan deep is selected
 
 Display of metric is conveniently done using the merged plan:
@@ -662,7 +662,7 @@ For this set of directives, the reduced table is :
 
 .. code-block:: console
 
-  $ python demo_compose_metrics.py -r -d
+  $ python demo_compose_metrics.py -c -d
 
   Displayed data generated from Tue May  3 09:34:42 2022 to Tue May  3 09:34:42 2022
 
@@ -709,7 +709,7 @@ For this set of directives, the reduced table is :
 
 .. code-block:: console
 
-  $ python demo_custom_metrics.py -r -d
+  $ python demo_custom_metrics.py -c -d
 
   Displayed data generated from Tue May  3 09:39:07 2022 to Tue May  3 09:39:07 2022
 
