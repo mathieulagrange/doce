@@ -18,7 +18,7 @@ def set(args=None):
     address = 'mathieu.lagrange@ls2n.fr',
   )
 
-# set acces paths (here only storage is needed)
+  # set acces paths (here only storage is needed)
   experiment.setPath('output', '/tmp/'+experiment.name+'/')
 
   # set the plan (factor : modalities)
@@ -38,8 +38,8 @@ def set(args=None):
 
 def step(setting, experiment):
     # metric is a matrix of 3 rows of 10 values
-    metric = np.ones((10, 10))*2
-    np.save(experiment.path.output+setting.id()+'_m.npy', metric)
+    m = np.ones((10, 10))*2
+    np.save(experiment.path.output+setting.id()+'_m.npy', m)
 
 def mean_min(data): # average over the minimal values of each row
     return np.mean(np.min(data, axis = 1))
