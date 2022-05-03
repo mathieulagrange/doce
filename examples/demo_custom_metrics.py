@@ -19,7 +19,7 @@ def set(args=None):
   )
 
 # set acces paths (here only storage is needed)
-  experiment.setPath('output', '/tmp/'+experiment.name+'/')
+  experiment.setPath('output', '/tmp/'+experiment.name+'/', force=True)
 
   # set the plan (factor : modalities)
   experiment.addPlan('plan',
