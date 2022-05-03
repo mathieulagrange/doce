@@ -313,7 +313,7 @@ class Setting():
       except Exception as e:
         if logFileName:
           failed = 1
-          #print('setting '+setting.id()+' failed')
+          logging.info('Failed setting: '+self.id())
           logging.info(traceback.format_exc())
         else:
           raise e

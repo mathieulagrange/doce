@@ -42,6 +42,9 @@ def step(setting, experiment):
   accuracy = (len(setting.nn_type)+setting.dropout+np.random.random_sample(experiment.n_cross_validation_folds))/6
   # duration is a function of cnn_type, and n_layers
 
+  if setting.nn_type:
+    tre
+    
   duration = len(setting.nn_type)+setting.n_layers+np.random.randn(experiment.n_cross_validation_folds)
   # storage of outputs (the string between _ and .npy must be the name of the metric defined in the set function)
   np.save(experiment.path.output+setting.id()+'_accuracy.npy', accuracy)

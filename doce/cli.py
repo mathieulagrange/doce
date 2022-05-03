@@ -46,9 +46,10 @@ def main():
 
   parser = argparse.ArgumentParser()
   parser.add_argument('-A', '--archive', type=str, help='archive the selected  settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. The files are copied to the path experiment.path.archive if set.', nargs='?', const='')
-  parser.add_argument('-c', '--check', help='check availability of any metric of a given setting and skip computation if available.', action='store_true')
+  parser.add_argument('-c', '--compute', type=int, help='perform computation. Integer parameter sets the number of jobs computed in parallel (default to one core).', nargs='?', const=1)
   parser.add_argument('-C', '--copy', help='copy codebase to the host defined by the host (-H) argument.', action='store_true')
   parser.add_argument('-d', '--display', type=str, help='display metrics. If no parameter is given, consider the default display and show all metrics. If the str parameter contain a list of integers, use the default display and show only the selected metrics defined by the integer list. If the str parameter contain a name, run the display method with this name.', nargs='?', default='-1')
+  parser.add_argument('-D', '--detached', help='Perform the computation in a detached mode, meaning that if one setting fails, doce continues to loop over the remaining settings to be computed.', action='store_true')
   # parser.add_argument('-e', '--experiment', type=str, help='select experiment. List experiments if empty.', nargs='?', default='all')
   parser.add_argument('-E', '--export', type=str, help='Export the display of reduced metrics among different file types (html, png, pdf). If parameter is empty, all exports are made. If parameter has a dot, interpreted as a filename which should be of support type. If parameter has nothing before the dot, interpreted as file type, and experiment.name is used. If parameter has no dot, interpreted as file name with no extension, and all exports are made.', nargs='?', default='none')
   parser.add_argument('-f', '--files', help='list files.', action='store_true')
@@ -59,10 +60,10 @@ def main():
   parser.add_argument('-M', '--mail', help='send email at the beginning and end of the computation. If a positive integer value x is provided, additional emails are sent every x hours.', nargs='?', default='-1')
   parser.add_argument('-p', '--plan', help='show the active plan of the experiment.', action='store_true')
   parser.add_argument('-P', '--progress', help='display progress bar. Argument controls the display of the current setting: d alphanumeric description, s numeric selector, ds combination of both (default d).', nargs='?', const='d')
-  parser.add_argument('-r', '--run', type=int, help='perform computation. Integer parameter sets the number of jobs computed in parallel (default to one core).', nargs='?', const=1)
   parser.add_argument('-R', '--remove', type=str, help='remove the selected  settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. Unwanted files are moved to the path experiment.path.archive if set, deleted otherwise.', nargs='?', const='')
   parser.add_argument('-s', '--select', type=str, help='selection of settings', default='[]')
-  parser.add_argument('-S', '--serverDefault', help='augment the command line with the content of the dict experiment._defaultServerRunArgument.', action='store_true')
+  parser.add_argument('-S', '--skip', help='check availability of any metric of a given setting and skip computation if available.', action='store_true')
+  # parser.add_argument('-S', '--serverDefault', help='augment the command line with the content of the dict experiment._defaultServerRunArgument.', action='store_true')
   parser.add_argument('-u', '--userData', type=str, help='a dict specified as str (for example, \'{\"test\": 1}\') that will be available in Experiment.userData (userData.test=1).', default='{}')
   parser.add_argument('-v', '--version', help='print version', action='store_true')
   parser.add_argument('-V', '--verbose', help='level of verbosity (default 0: silent).', action='store_true')
@@ -110,7 +111,7 @@ def main():
     exit(1)
 
   experiment.status.verbose = args.verbose
-  experiment._resume = args.check
+  experiment._resume = args.skip
 
   experiment.select(selector, show=args.plan)
 
@@ -129,11 +130,11 @@ def main():
   #     print('Unrecognized experiment: '+experimentId)
   # elif len(experiment.plans())>0:
 
-  if args.serverDefault:
-    args.serverDefault = False
-    for key in experiment._defaultServerRunArgument:
-      # args[key] =
-      args.__setattr__(key, experiment._defaultServerRunArgument[key])
+  # if args.serverDefault:
+  #   args.serverDefault = False
+  #   for key in experiment._defaultServerRunArgument:
+  #     # args[key] =
+  #     args.__setattr__(key, experiment._defaultServerRunArgument[key])
 
   if args.information:
       print(experiment)
@@ -185,12 +186,12 @@ def main():
     print(message)
     exit()
   print()
-  if args.host == -3:
+  if args.host == -3 or args.detached:
     logFileName = '/tmp/doce_'+experiment.name+'_'+experiment.status.runId+'.txt'
   if args.mail>-1:
     experiment.sendMail(args.select+' has started.', '<div> Selector = '+args.select+'</div>')
-  if args.run and hasattr(config, 'step'):
-    experiment.do(experiment.selector, config.step, nbJobs=args.run, logFileName=logFileName, progress=args.progress, mailInterval = float(args.mail))
+  if args.compute and hasattr(config, 'step'):
+    experiment.do(experiment.selector, config.step, nbJobs=args.compute, logFileName=logFileName, progress=args.progress, mailInterval = float(args.mail))
 
 
   selectDisplay = []
@@ -224,10 +225,10 @@ def main():
       if args.mail>-1:
         body += '<div> '+header+' </div><br>'+styler.render()
 
-  if args.host == -3:
+  if args.host == -3 or args.detached:
     logFileName = '/tmp/doce_'+experiment.name+'_'+experiment.status.runId+'.txt'
-    print('Log available at: '+logFileName)
     if os.path.exists(logFileName):
+      print('Some settings have failed. Log available at: '+logFileName)
       with open(logFileName, 'r') as file:
         log = file.read()
         if log:
