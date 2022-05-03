@@ -29,7 +29,11 @@ experiment = doce.Experiment(
   paths = {'output': '/tmp/'+info['name']+'/'})
 
 def step(setting, experiment):
-  print(setting)
+  metrics = {
+    'accuracy': np.random.randn(10),
+    'duration': np.random.randn(10)
+    }
+  return metrics
 
 if __name__ == "__main__":
   experiment.cli(step=step)
