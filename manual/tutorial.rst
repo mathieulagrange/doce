@@ -1,4 +1,4 @@
- -cTutorial
+Tutorial
 ^^^^^^^^
 
 This section covers the fundamentals of developing with *doce*, including
@@ -216,7 +216,17 @@ Now that we have set all this, performing the computation of some settings can s
 
   $ python demo.py -c -s '{"nn_type"="cnn", "n_layers":[2, 5],"learning_rate":[0.001,0.00001]}'
 
-Adding a -P to the command line conveniently displays a per setting progress bar.
+Adding a **-P** to the command line conveniently displays a per setting progress bar.
+
+Removing the **-s** will require the computation of all the settings.
+
+Some settings can fail, which will stop the entire loop. If you want to compute all the non failing settings, you can use the detached computation mode, available with **-D**.
+
+If some settings have failed, a log file is available to provide guidance for debugging your code.
+
+Once fixed, you can be interested in computing only the settings that have failed. For this, you can use the skipping computation mode, available with **-S**. In that mode, for each setting, doce will search for available metrics. If available, the setting is not computed.
+
+**Warning**: do not consider skipping if some settings have been previously succesfully computed using an outdated version of your code.
 
 Define metrics
 ==============
@@ -241,7 +251,7 @@ To do so, we have to add some lines to the set function:
 Display metrics
 ===============
 
-The reduced version of the metrics can be visualized in the command-line using -d :
+The reduced version of the metrics can be visualized in the command-line using **-d** :
 
 .. code-block:: console
 
@@ -632,6 +642,7 @@ For example, let us consider that the step function saves a metric *m* that is a
 
 .. code-block:: python
     :linenos:
+
     def step(setting, experiment):
         # metric is a matrix of 3 rows of 10 values
         m = np.ones((10, 10))*2
