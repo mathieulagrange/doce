@@ -14,8 +14,8 @@ def set(args=None):
   experiment = doce.Experiment(
     name = 'demo_h5',
     purpose = 'hello world of the doce package',
-    author = 'mathieu Lagrange',
-    address = 'mathieu.lagrange@ls2n.fr',
+    author = 'john doe',
+    address = 'john.doe@no-log.org',
   )
 
 # set acces paths (here only storage is needed)

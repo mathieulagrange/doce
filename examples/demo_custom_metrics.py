@@ -14,8 +14,8 @@ def set(args=None):
   experiment = doce.Experiment(
     name = 'custom_metrics',
     purpose = 'demonstrate custom metric reduction directives',
-    author = 'mathieu Lagrange',
-    address = 'mathieu.lagrange@ls2n.fr',
+    author = 'john doe',
+    address = 'john.doe@no-log.org',
   )
 
 # set acces paths (here only storage is needed)
