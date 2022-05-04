@@ -208,7 +208,8 @@ def main():
       selectDisplay = [int(s[0])]
       selectFactor = s[1]
     else:
-      displayMethod = args.display
+      selectDisplay = [int(args.display)]
+
 
   body = '<div> Selector = '+args.select+'</div>'
   if display:
@@ -247,7 +248,6 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
     fi = experiment._plan.factors().index(selectFactor)
     selector = experiment._plan.expandSelector(selector, selectFactor)
 
-    # print(selector)
     ms = selector[fi]
     # print(ms)
     selector[fi] = [0]
@@ -268,11 +268,12 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   if selectFactor:
     modalities = getattr(experiment._plan, selectFactor)[ms]
     header = 'metric: '+columns[nbFactorColumns+selectDisplay
-    [0]]+' '+header.replace(selectFactor+': '+str(modalities[0])+' ', '')+' '+selectFactor
+    [0]]+' for factor '+header.replace(selectFactor+': '+str(modalities[0])+' ', '')+' '+selectFactor
 
     columns = columns[:nbFactorColumns]
     for m in modalities:
       columns.append(str(m))
+
     significance = np.zeros((len(settings), len(modalities)))
     for s in range(len(table)):
       table[s] = table[s][:nbFactorColumns]
@@ -280,7 +281,8 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
     for sIndex, s in enumerate(settings):
       (sd, ch, csd, nb, md, si)  = experiment.metric.reduce(experiment._plan.select(s), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
       modificationTimeStamp += md
-      significance[sIndex, :] = si[:, selectDisplay[0]]
+      # import pdb; pdb.set_trace()
+      # significance[sIndex, :] = si[:, selectDisplay[0]]
       # print(s)
       # print(sd)
       for ssd in sd:
@@ -300,6 +302,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 
   if modificationTimeStamp:
     print('Displayed data generated from '+ time.ctime(min(modificationTimeStamp))+' to '+ time.ctime(max(modificationTimeStamp)))
+
   df = pd.DataFrame(table, columns=columns) #.fillna('-')
 
   if selectDisplay and not selectFactor and  len(columns)>=max(selectDisplay)+nbFactorColumns:

@@ -625,6 +625,7 @@ class Plan():
     return message
 
   def expandSelector(self, selector, factor):
+
     selector = self.__format__(selector)
     fi = self.factors().index(factor)
 
@@ -645,7 +646,7 @@ class Plan():
     """convert dict based selector to list based selector
 
     """
-    selector = []
+
     for dm in dictSelector:
       m = [-1]*len(self._factors)
       for dmk in dm.keys():
@@ -663,8 +664,7 @@ class Plan():
               m[self._factors.index(dmk)] = list(getattr(self, dmk)).index(dm[dmk])
         else:
           print('Error: '+dmk+' is not a factor.')
-      selector.append(m)
-    return selector
+    return m
 
   def _str2list(self, strSelector, factorSeparator = '+', modalityIdentifier = '='):
     """convert string based selector to list based selector
@@ -699,7 +699,7 @@ class Plan():
           else:
             print('Error: '+dmk+' is not a factor.')
             return [0]
-        selector.append(m)
+        selector = m
     return selector
 
   def _checkSelector(self, selector):
