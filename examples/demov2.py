@@ -23,7 +23,7 @@ metrics = {
 }
 
 experiment = doce.Experiment(
-  info=info,
+  info = info,
   plans = {'plan':plan},
   metrics = metrics,
   paths = {'output': '/tmp/'+info['name']+'/'})
