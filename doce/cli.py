@@ -245,11 +245,9 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   selector = experiment.selector
   ma=copy.deepcopy(selector)
   if selectFactor:
-    print(selector)
     fi = experiment._plan.factors().index(selectFactor)
     selector = experiment._plan.expandSelector(selector, selectFactor)
 
-    print(selector)
     ms = selector[fi]
     # print(ms)
     selector[fi] = [0]
@@ -281,7 +279,6 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
       table[s] = table[s][:nbFactorColumns]
 
     for sIndex, s in enumerate(settings):
-      print(s)
       (sd, ch, csd, nb, md, si)  = experiment.metric.reduce(experiment._plan.select(s), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
       modificationTimeStamp += md
       # import pdb; pdb.set_trace()
@@ -306,7 +303,6 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   if modificationTimeStamp:
     print('Displayed data generated from '+ time.ctime(min(modificationTimeStamp))+' to '+ time.ctime(max(modificationTimeStamp)))
 
-  print(table)
   df = pd.DataFrame(table, columns=columns) #.fillna('-')
 
   if selectDisplay and not selectFactor and  len(columns)>=max(selectDisplay)+nbFactorColumns:
