@@ -690,7 +690,7 @@ class Plan():
               # mod = modalities[dmki]
               refMod = []
               for am in list(getattr(self, dmk)):
-                refMod.append(eu.specialCaracterNaturalNaming(str(am)))
+                refMod.append(str(am))
               if modality in refMod:
                 m[self._factors.index(dmk)] = refMod.index(modality)
               else:
