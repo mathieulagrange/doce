@@ -282,7 +282,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
       (sd, ch, csd, nb, md, si)  = experiment.metric.reduce(experiment._plan.select(s), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
       modificationTimeStamp += md
       # import pdb; pdb.set_trace()
-      # significance[sIndex, :] = si[:, selectDisplay[0]]
+      significance[sIndex, :] = si[:, selectDisplay[0]]
       # print(s)
       # print(sd)
       for ssd in sd:
@@ -293,7 +293,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
     significance = significance>experiment._display.pValue
     significance = significance.astype(float)
     significance[best] = -1
-    if selectDisplay:
+    if selectDisplay and not selectFactor:
       significance = significance[:, selectDisplay]
 
   if experiment._display.pValue == 0:
@@ -302,7 +302,6 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
 
   if modificationTimeStamp:
     print('Displayed data generated from '+ time.ctime(min(modificationTimeStamp))+' to '+ time.ctime(max(modificationTimeStamp)))
-
   df = pd.DataFrame(table, columns=columns) #.fillna('-')
 
   if selectDisplay and not selectFactor and  len(columns)>=max(selectDisplay)+nbFactorColumns:
@@ -333,19 +332,30 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
         cMinus.append(c)
       else:
         cNoMinus.append(c)
-    else:
-      if isinstance(df[c][0], float):
-        isInteger = True
-        for x in df[c]:
-          if not x.is_integer():
-            isInteger = False
-        if isInteger:
-          cInt[c] = 'int32'
+    # else:
+    #   if isinstance(df[c][0], float):
+    #     isInteger = True
+    #     for x in df[c]:
+    #       if not x.is_integer():
+    #         isInteger = False
+    #     if isInteger:
+    #       cInt[c] = 'int32'
 
   dPercent = pd.Series([experiment._display.metricPrecision-2]*len(cPercent), index=cPercent, dtype = np.intc)
   dNoPercent = pd.Series([experiment._display.metricPrecision]*len(cNoPercent), index=cNoPercent, dtype = np.intc)
   dInt = pd.Series([0]*len(cInt), index=cInt, dtype = np.intc)
-  df=df.round(dPercent).round(dNoPercent).astype(cInt)
+  df=df.round(dPercent).round(dNoPercent)
+
+  for ci, c in enumerate(columns):
+    if isinstance(df[c][0], float):
+      isInteger = True
+      for x in df[c]:
+        if not x.is_integer():
+          isInteger = False
+      if isInteger:
+        cInt[c] = 'int32'
+
+  df=df.astype(cInt)
 
   # df['meanOffset'].map(lambda x: 0)
 
@@ -379,6 +389,8 @@ def highlightStat(s, significance):
   import pandas as pd
   df = pd.DataFrame('', index=s.index, columns=s.columns)
   if len(significance):
+    # print(df)
+    # print(significance)
     df = df.where(significance<=0, 'color: blue')
   return df
 
