@@ -433,6 +433,7 @@ def exportDataFrame(experiment, args, df, styler, header):
   if 'tex' in args.export or 'all' == args.export:
     df.to_latex(buf=exportFileName+'.tex', index=experiment._display.showRowIndex, bold_rows=True)
     print('tex export: '+exportFileName+'.tex')
+    print('please add to the preamble: \usepackage{booktabs}')
 
   if 'png' in args.export or 'all' == args.export:
       print('Creating image...')
