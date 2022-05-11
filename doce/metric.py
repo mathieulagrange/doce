@@ -135,10 +135,14 @@ class Metric():
         else:
           rDo.append(0)
         if isinstance(reductionType, str) and len(reductionType):
-           if reductionType[-1]=='-':
+           print(reductionType)
+           if '-' in reductionType:
              rDir.append(-1)
-           elif reductionType[-1]=='+':
+           elif '+' in reductionType:
              rDir.append(1)
+           elif '*' in reductionType:
+             rDir.append(1)
+             print('statistical testing will assume a higher the better metric. You can remove this warning by adding a + to the metric reduction directive.')
            else:
              rDir.append(0)
         else:
@@ -166,7 +170,7 @@ class Metric():
         sRow = []
         if rDo[mi] != 0:
           for si in range(len(stat)):
-            if si!=im:
+            if si!=im[0] and mv[mi] != mv[si]:
               if not np.isnan(stat[si][mii]).all():
                 (s, p) = stats.ttest_rel(stat[si][mii], stat[im[0]][mii])
                 significance[si, mi] = p
