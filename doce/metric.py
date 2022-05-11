@@ -157,18 +157,20 @@ class Metric():
       mv = []
       for si in range(len(table)):
         mv.append(table[si][len(settings.factors())+mi])
+      print(mv)
       if not np.isnan(mv).all() and rDir[mi]!=0:
         if rDir[mi]<0:
-          im = np.nanargmin(mv)
+          im = np.argwhere(mv==np.nanmin(mv)).flatten()
         else:
-          im = np.nanargmax(mv)
+          im = np.argwhere(mv==np.nanmax(mv)).flatten()
+        print(im)
         significance[im, mi] = -1
         sRow = []
         if rDo[mi] != 0:
           for si in range(len(stat)):
             if si!=im:
               if not np.isnan(stat[si][mii]).all():
-                (s, p) = stats.ttest_rel(stat[si][mii], stat[im][mii])
+                (s, p) = stats.ttest_rel(stat[si][mii], stat[im[0]][mii])
                 significance[si, mi] = p
           mii += 1
     significance = np.delete(significance, np.invert(reducedMetrics), axis=1)
