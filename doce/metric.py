@@ -157,13 +157,11 @@ class Metric():
       mv = []
       for si in range(len(table)):
         mv.append(table[si][len(settings.factors())+mi])
-      print(mv)
       if not np.isnan(mv).all() and rDir[mi]!=0:
         if rDir[mi]<0:
           im = np.argwhere(mv==np.nanmin(mv)).flatten()
         else:
           im = np.argwhere(mv==np.nanmax(mv)).flatten()
-        print(im)
         significance[im, mi] = -1
         sRow = []
         if rDo[mi] != 0:
