@@ -135,7 +135,6 @@ class Metric():
         else:
           rDo.append(0)
         if isinstance(reductionType, str) and len(reductionType):
-           print(reductionType)
            if '-' in reductionType:
              rDir.append(-1)
            elif '+' in reductionType:

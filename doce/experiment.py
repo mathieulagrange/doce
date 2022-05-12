@@ -636,6 +636,64 @@ class Experiment():
     return False
 
   def get(self, metric='', selector=[], path='None'):
+    """ Get the metric vector from an .npy or a group of a .h5 file.
+
+    Get the metric vector as a numpy array from an .npy or a group of a .h5 file.
+
+    Parameters
+    ----------
+
+    metric: str
+      The name of the metric. Must be a member of the doce.metric.Metric object.
+
+    selector: list
+      Settings selector.
+
+    path: str
+      Name of path as defined in the experiement or a valid path to a directory in the case of .npy storage, or a valid path to an .h5 file in the case of hdf5 storage.
+
+    Returns
+    -------
+
+    settingMetric: list of np.Array
+      stores for each valid setting an np.Array with the values of the metric selected.
+
+    settingDescription: list of list of str
+      stores for each valid setting, a compact description of the modalities of each factors. The factors with the same modality accross all the set of settings is stored in constantSettingDescription.
+
+    constantSettingDescription: str
+      compact description of the factors with the same modality accross all the set of settings.
+
+    Examples
+    --------
+
+    >>> import doce
+    >>> import numpy as np
+    >>> import pandas as pd
+
+    >>> experiment = doce.experiment.Experiment()
+    >>> experiment.name = 'example'
+    >>> experiment.setPath('output', '/tmp/'+experiment.name+'/', force=True)
+    >>> experiment.addPlan('plan', f1 = [1, 2], f2 = [1, 2, 3])
+    >>> experiment.setMetrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
+
+    >>> def process(setting, experiment):
+    ...  metric1 = setting.f1+setting.f2+np.random.randn(100)
+    ...  metric2 = setting.f1*setting.f2*np.random.randn(100)
+    ...  np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
+    ...  np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
+    >>> nbFailed = experiment.do([], process, progress='')
+
+    >>> (settingMetric, settingDescription, constantSettingDescription) = experiment.get(metric = 'm1', selector = [1], path='output')
+    >>> print(constantSettingDescription)
+    f1=2
+    >>> print(settingDescription)
+    ['f2=1', 'f2=2', 'f2=3']
+    >>> print(len(settingMetric))
+    3
+    >>> print(settingMetric[0].shape)
+    (100,)
+    """
 
     if path:
         if not ('\/' in path or '\\' in path):
