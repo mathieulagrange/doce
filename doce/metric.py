@@ -58,7 +58,7 @@ class Metric():
   def reduceFromNpy(
     self,
     settings,
-    dataLocation,
+    path,
     settingEncoding={},
     verbose = False,
     reductionDirectiveModule = None,
@@ -90,7 +90,7 @@ class Metric():
       nbReducedMetrics = 0
       nbMetrics = 0
       for mIndex, metric in enumerate(self.name()):
-        fileName = dataLocation+setting.id(**settingEncoding)+'_'+metric+'.npy'
+        fileName = path+setting.id(**settingEncoding)+'_'+metric+'.npy'
         if os.path.exists(fileName):
           mod = os.path.getmtime(fileName)
           modificationTimeStamp.append(mod)
@@ -182,7 +182,7 @@ class Metric():
   def reduceFromH5(
     self,
     settings,
-    dataLocation,
+    path,
     settingEncoding={},
     verbose = False,
     reductionDirectiveModule = None,
@@ -204,7 +204,7 @@ class Metric():
 
     table = []
     stat = []
-    h5 = tb.open_file(dataLocation, mode='r')
+    h5 = tb.open_file(path, mode='r')
     metricHasData = [False] * len(self.name())
 
     (reducedMetrics, rDir, rDo) = self.significanceStatus()
@@ -362,7 +362,7 @@ class Metric():
   def reduce(
     self,
     settings,
-    dataLocation,
+    path,
     settingEncoding={},
     factorDisplay='long',
     factorDisplayLength=2,
@@ -384,7 +384,7 @@ class Metric():
     settings: doce.Plan
       iterable settings.
 
-    dataLocation: str
+    path: str
       In the case of .npy storage, a valid path to the main directory. In the case of .h5 storage, a valid path to an .h5 file.
 
     settingEncoding : dict
@@ -517,12 +517,12 @@ class Metric():
     """
 
     if len(self.name()):
-      if dataLocation.endswith('.h5'):
+      if path.endswith('.h5'):
         settingEncoding = {'separator':'_', 'identifier':'_'}
         modificationTimeStamp = []
-        (settingDescription, metricHasData, reducedMetrics, significance) = self.reduceFromH5(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
+        (settingDescription, metricHasData, reducedMetrics, significance) = self.reduceFromH5(settings, path, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
       else:
-        (settingDescription, metricHasData, reducedMetrics, modificationTimeStamp, significance) = self.reduceFromNpy(settings, dataLocation, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
+        (settingDescription, metricHasData, reducedMetrics, modificationTimeStamp, significance) = self.reduceFromNpy(settings, path, settingEncoding, verbose, reductionDirectiveModule, metricSelector)
 
       nbFactors = len(settings.factors())
       for ir, row in enumerate(settingDescription):
@@ -541,8 +541,8 @@ class Metric():
   def get(
     self,
     metric,
-    settings,
-    dataLocation,
+    settings = None,
+    path = '',
     settingEncoding={},
     verbose=False
     ):
@@ -559,7 +559,7 @@ class Metric():
     settings: doce.Plan
       Iterable settings.
 
-    dataLocation: str
+    path: str
       In the case of .npy storage, a valid path to the main directory. In the case of .h5 storage, a valid path to an .h5 file.
 
     settingEncoding : dict
@@ -620,9 +620,9 @@ class Metric():
     settingDescriptionFormat['default'] = True
     settingDescriptionFormat['sort'] = False
 
-    if isinstance(dataLocation, str):
-      if dataLocation.endswith('.h5'):
-        h5 = tb.open_file(dataLocation, mode='r')
+    if isinstance(path, str):
+      if path.endswith('.h5'):
+        h5 = tb.open_file(path, mode='r')
         for setting in settings:
           if h5.root.__contains__(setting.id(**settingEncoding)):
             if verbose:
@@ -636,7 +636,7 @@ class Metric():
         h5.close()
       else:
         for setting in settings:
-          fileName = dataLocation+setting.id(**settingEncoding)+'_'+metric+'.npy'
+          fileName = path+setting.id(**settingEncoding)+'_'+metric+'.npy'
           if os.path.exists(fileName):
             if verbose:
               print('Found '+fileName)

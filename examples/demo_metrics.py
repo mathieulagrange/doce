@@ -4,11 +4,6 @@ import demo
 experiment = demo.set()
 selector = {"nn_type":["cnn", "lstm"],"n_layers":2,"learning_rate":0.001}
 
-(data, settings, header) = experiment.metric.get(
-  'accuracy',
-  experiment.plan.select(selector),
-  experiment.path.output
-  )
 
 (data, settings, header) = experiment.get(
   metric = 'accuracy',

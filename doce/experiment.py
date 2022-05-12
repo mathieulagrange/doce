@@ -7,6 +7,7 @@ import doce
 import ast
 import glob
 
+
 class Experiment():
   """Stores high level information about the experiment and tools to control the processing and storage of data.
 
@@ -633,6 +634,33 @@ class Experiment():
               if check:
                 return True
     return False
+
+  def get(self, metric='', selector=[], path='None'):
+
+    if path:
+        if not ('\/' in path or '\\' in path):
+          path = getattr(self.path, path)
+        return self.metric.get(
+          metric,
+          settings=self.plan.select(selector),
+          path=path
+          )
+    else:
+      data = []
+      settings = []
+      for path in self.path:
+        (dp, sp, hp) = self.metric.get(
+          metric,
+          settings=self.plan.select(selector),
+          path=path
+          )
+        data.append(dp)
+        settings.append(sp)
+
+      return (data, settings, hp)
+
+
+
   # def clean(
   #   self,
   #   selector=[],
