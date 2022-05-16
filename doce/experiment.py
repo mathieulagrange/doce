@@ -635,7 +635,7 @@ class Experiment():
                 return True
     return False
 
-  def get(self, metric='', selector=[], path='None'):
+  def get(self, metric='', selector=[], path=''):
     """ Get the metric vector from an .npy or a group of a .h5 file.
 
     Get the metric vector as a numpy array from an .npy or a group of a .h5 file.
@@ -706,14 +706,19 @@ class Experiment():
     else:
       data = []
       settings = []
-      for path in self.path:
-        (dp, sp, hp) = self.metric.get(
-          metric,
-          settings=self.plan.select(selector),
-          path=path
-          )
-        data.append(dp)
-        settings.append(sp)
+      for path in self.path.__dict__.keys():
+        if not path.endswith('_raw'):
+          path = getattr(self.path, path)
+          (dp, sp, hp) = self.metric.get(
+            metric,
+            settings=self.plan.select(selector),
+            path=path
+            )
+          if dp:
+            for d in dp:
+              data.append(d)
+            for s in sp:
+              settings.append(s)
 
       return (data, settings, hp)
 
