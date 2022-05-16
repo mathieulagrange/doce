@@ -323,10 +323,10 @@ Within a python file or a jupyer notebook, we can now retrieve the accuracy data
     experiment = demo.set()
     selector = {"nn_type":["cnn", "lstm"],"n_layers":2,"learning_rate":0.001}
 
-    (data, settings, header) = experiment.metric.get(
-      'accuracy',
-      experiment.plan.select(selector),
-      experiment.path.output
+    (data, settings, header) = experiment.get(
+      metric = 'accuracy',
+      selector = selector,
+      path = 'output'
       )
 
 The data is a list of np.arrays, the settings is a list of str and the header is a str describing the constant factors. data and settings are of the same size.
