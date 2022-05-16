@@ -80,11 +80,8 @@ def main():
     args.progress = ''
 
   selector = re.sub(r"[\n\t\s]*", "", args.select)
-
   try:
-    # print(selector)
     selector = ast.literal_eval(selector)
-    # print(selector)
   except:
     pass
 
@@ -203,8 +200,8 @@ def main():
   elif args.display is not None:
     if  '[' in args.display:
       selectDisplay = ast.literal_eval(args.display)
-    elif ',' in args.display:
-      s = args.display.split(',')
+    elif ':' in args.display:
+      s = args.display.split(':')
       selectDisplay = [int(s[0])]
       selectFactor = s[1]
     else:
@@ -246,6 +243,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
   ma=copy.deepcopy(selector)
   if selectFactor:
     fi = experiment._plan.factors().index(selectFactor)
+
     selector = experiment._plan.expandSelector(selector, selectFactor)
 
     ms = selector[fi]
@@ -254,13 +252,12 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
     experiment._plan.select(selector).__setSettings__()
     settings = experiment._plan._settings
     # print(settings)
-    # print(ms)
+    # print(fi)
     for s in settings:
-     s[fi] = ms
-
+      s[fi] = ms
+    # print(settings)
     # ma=copy.deepcopy(selector)
     # ma[fi]=0
-
   (table, columns, header, nbFactorColumns, modificationTimeStamp, significance) = experiment.metric.reduce(experiment._plan.select(selector), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
 
   if len(table) == 0:
@@ -277,7 +274,7 @@ def dataFrameDisplay(experiment, args, config, selectDisplay, selectFactor):
     significance = np.zeros((len(settings), len(modalities)))
     for s in range(len(table)):
       table[s] = table[s][:nbFactorColumns]
-
+    # print(settings)
     for sIndex, s in enumerate(settings):
       (sd, ch, csd, nb, md, si)  = experiment.metric.reduce(experiment._plan.select(s), experiment.path.output, factorDisplay=experiment._display.factorFormatInReduce, metricDisplay=experiment._display.metricFormatInReduce, factorDisplayLength=experiment._display.factorFormatInReduceLength, metricDisplayLength=experiment._display.metricFormatInReduceLength, verbose=args.verbose, reductionDirectiveModule=config)
       modificationTimeStamp += md

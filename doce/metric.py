@@ -169,7 +169,7 @@ class Metric():
         sRow = []
         if rDo[mi] != 0:
           for si in range(len(stat)):
-            if si!=im[0] and mv[mi] != mv[si]:
+            if si!=im[0] and mv[mii] != mv[si]:
               if not np.isnan(stat[si][mii]).all():
                 (s, p) = stats.ttest_rel(stat[si][mii], stat[im[0]][mii])
                 significance[si, mi] = p

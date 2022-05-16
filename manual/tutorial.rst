@@ -214,7 +214,7 @@ Now that we have set all this, performing the computation of some settings can s
 
 .. code-block:: console
 
-  $ python demo.py -c -s '{"nn_type"="cnn", "n_layers":[2, 5],"learning_rate":[0.001,0.00001]}'
+  $ python demo.py -c -s '{"nn_type":"cnn", "n_layers":[2, 5],"learning_rate":[0.001,0.00001]}'
 
 Adding a **-P** to the command line conveniently displays a per setting progress bar.
 
@@ -269,6 +269,43 @@ The reduced version of the metrics can be visualized in the command-line using *
   7         5        0.00001        1            75.0           4.0            7.90
 
 Only the metrics available on disc are considered in the table.
+
+You can select the metrics you want to display. To display one metric:
+
+.. code-block:: console
+
+  $ python demo.py -d 0
+  Displayed data generated from Mon May 16 15:56:16 2022 to Mon May 16 15:56:16 2022
+  nn_type: cnn
+     n_layers  learning_rate  dropout  accuracyMean%+
+  0         2        0.00100        0              58
+  ...
+
+To display an arbitrary number of metrics, say first and third:
+
+.. code-block:: console
+
+  $ python demo.py -d '[0, 2]'
+  Displayed data generated from Mon May 16 15:56:16 2022 to Mon May 16 15:56:16 2022
+  nn_type: cnn
+     n_layers  learning_rate  dropout  accuracyMean%+  durationMean*-
+  0         2        0.00100        0              58            4.31
+
+**doce** allows you to analyse the impact of a given factor on a given metric. for example, let us study the impact of **n_layers** on **durationMean**:
+
+.. code-block:: console
+
+  $ python demo.py -d 2:n_layers  -s '{"nn_type":"cnn", "n_layers":[2, 5],"learning_rate":[0.001,0.00001]}'
+
+  Displayed data generated from Mon May 16 16:47:38 2022 to Mon May 16 16:47:38 2022
+  metric: durationMean*- for factor nn_type: cnn  n_layers
+     learning_rate  dropout     2     5
+  0        0.00100        0  5.32  8.14
+  1        0.00100        1  4.85  7.69
+  2        0.00001        0  5.43  8.20
+  3        0.00001        1  5.54  7.98
+
+Note that here you have to provide the selector for **doce** to infer the correct organization of the table. This command will fail if some of the needed settings are not available.
 
 Export metrics
 ==============
