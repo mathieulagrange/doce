@@ -28,14 +28,14 @@ class Setting():
 
   """
 
-  def __init__(self, plan, settingArray=None):
+  def __init__(self, plan, setting_array = None):
     self._plan = plan
-    # underscore = ['_nonSingleton', '_default', '_plans', '_setting']
+    # underscore = ['_non_singleton', '_default', '_plans', '_setting']
     # for f in underscore:
     #   self.__setattr__(f, getattr(plan, f))
 
-    if settingArray:
-      self._setting = copy.deepcopy(settingArray)
+    if setting_array:
+      self._setting = copy.deepcopy(setting_array)
     else:
       self._setting = copy.deepcopy(plan._setting)
 
@@ -72,7 +72,17 @@ class Setting():
     return self.id(sort=False, singleton=True, default=True)
 
 
-  def id(self, format='long', sort=True, separator='+', identifier='=', singleton=True, default=False, hide=[], toInt=True):
+  def id(
+    self,
+    format = 'long',
+    sort = True,
+    separator = '+',
+    identifier = '=',
+    singleton = True,
+    default = False,
+    hide = [],
+    to_int = True):
+    
     """return a one-liner str or a list of str that describes a setting or a :class:`~doce.Plan` object.
 
   	Return a one-liner str or a list of str that describes a setting or a :class:`~doce.Plan` object with a high degree of flexibility.
@@ -114,7 +124,7 @@ class Setting():
 
     doce.Plan.default
 
-    doce.util.compressName
+    doce.util.compress_name
 
   	Examples
   	--------
@@ -175,10 +185,10 @@ class Setting():
     optional_parameter=value_one+three=c+two=1
     >>> delattr(p, 'optional_parameter')
 
-    >>> p.optionalParameter = ['valueOne', 'valueTwo']
+    >>> p.optional_parameter = ['value_one', 'value_two']
     >>> for setting in p.select([0, 1, 1, 0]):
     ...   print(setting.id())
-    optionalParameter=valueOne+three=c+two=1
+    optional_parameter=value_one+three=c+two=1
 
     """
     id = []
@@ -194,7 +204,7 @@ class Setting():
       fNames = sorted(fNames)
     for fIndex, f in enumerate(fNames):
       if f[0] != '_' and getattr(self, f) is not None and f not in hide:
-        if (singleton or f in self._plan._nonSingleton) and (default or not hasattr(self._plan._default, f) or (not default and hasattr(self._plan._default, f) and getattr(self._plan._default, f) != getattr(self, f))):
+        if (singleton or f in self._plan._non_singleton) and (default or not hasattr(self._plan._default, f) or (not default and hasattr(self._plan._default, f) and getattr(self._plan._default, f) != getattr(self, f))):
           # id.append(f)
           # print(str(getattr(self, f)))
           if isinstance(getattr(self, f), float):
@@ -267,8 +277,8 @@ class Setting():
       factor = self._plan._factors.index(factor)
     # get modality index
     if value is not None:
-      factorName = self._plan._factors[factor]
-      modalities = self._plan.__getattribute__(factorName)
+      factor_name = self._plan._factors[factor]
+      modalities = self._plan.__getattribute__(factor_name)
       positional, = np.where(modalities == value)
       positional = positional[0] # assumes no repetion
 
@@ -277,7 +287,7 @@ class Setting():
       sDesc[factor] += relative
     else:
       sDesc[factor] = positional
-    if sDesc[factor]< 0 or sDesc[factor] >= self._plan.nbModalities(factor):
+    if sDesc[factor]< 0 or sDesc[factor] >= self._plan.nb_modalities(factor):
       print('Unable to find the requested modality.')
       return None
     else:
@@ -288,7 +298,7 @@ class Setting():
     self,
     function,
     experiment,
-    logFileName,
+    log_file_name,
     *parameters
     ):
     """run the function given as parameter for the setting.
@@ -302,16 +312,16 @@ class Setting():
 
     """
     failed = 0
-    if experiment.skipSetting(self) :
+    if experiment.skip_setting(self) :
       message = 'Metrics for setting '+self.id()+' already available. Skipping...'
       print(message)
-      if logFileName:
+      if log_file_name:
         logging.info(message)
     else:
       try:
         function(self, experiment, *parameters)
       except Exception as e:
-        if logFileName:
+        if log_file_name:
           failed = 1
           logging.info('Failed setting: '+self.id())
           logging.info(traceback.format_exc())
@@ -320,7 +330,7 @@ class Setting():
           raise e
     return failed
 
-  def removeFactor(self, factor):
+  def remove_factor(self, factor):
     """returns a copy of the setting where the specified factor is removed.
 
     Parameters

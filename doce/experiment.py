@@ -11,7 +11,7 @@ import glob
 class Experiment():
   """Stores high level information about the experiment and tools to control the processing and storage of data.
 
-  The experiment class displays high level information about the experiment such as its name, description, author, author's email address, and run identification. Information about storage of data is specified using the experiment.path NameSpace. It also stores one or several Plan objects and a Metric object to respectively specify the experimental plans and the metrics considered in the experiment.
+  The experiment class displays high level information about the experiment such as its name, description, author, author's email address, and run identification. Information about storage of data is specified using the experiment.path name_space. It also stores one or several Plan objects and a Metric object to respectively specify the experimental plans and the metrics considered in the experiment.
 
   See Also
   --------
@@ -23,18 +23,18 @@ class Experiment():
 
   >>> import doce
   >>> e=doce.Experiment()
-  >>> e.name='myExperiment'
+  >>> e.name='my_experiment'
   >>> e.author='Mathieu Lagrange'
   >>> e.address='mathieu.lagrange@ls2n.fr'
   >>> e.path.processing='/tmp'
   >>> print(e)
-      name: myExperiment
+      name: my_experiment
     description
     author: Mathieu Lagrange
     address: mathieu.lagrange@ls2n.fr
     version: 0.1
     status:
-      runId: ...
+      run_id: ...
       verbose: 0
     parameter
     metric
@@ -52,19 +52,19 @@ class Experiment():
 
   Each level can be complemented with new members to store specific information:
 
-  >>> e.specificInfo = 'stuff'
+  >>> e.specific_info = 'stuff'
   >>> import types
-  >>> e.myData = types.SimpleNamespace()
-  >>> e.myData.info1= 1
-  >>> e.myData.info2= 2
+  >>> e.my_data = types.SimpleNamespace()
+  >>> e.my_data.info1= 1
+  >>> e.my_data.info2= 2
   >>> print(e)
-    name: myExperiment
+    name: my_experiment
     description
     author: Mathieu Lagrange
     address: mathieu.lagrange@ls2n.fr
     version: 0.1
     status:
-      runId: ...
+      run_id: ...
       verbose: 0
     parameter
     metric
@@ -78,8 +78,8 @@ class Experiment():
       processing_raw: /tmp
       processing: /tmp
     host: []
-    specificInfo: stuff
-    myData:
+    specific_info: stuff
+    my_data:
       info1: 1
       info2: 2
   """
@@ -98,7 +98,7 @@ class Experiment():
     self.version = '0.1'
 
     self.status = types.SimpleNamespace()
-    self.status.runId = str(int((time.time()-datetime.datetime(2020,1,1,0,0).timestamp())/60))
+    self.status.run_id = str(int((time.time()-datetime.datetime(2020,1,1,0,0).timestamp())/60))
     self.status.verbose = 0
 
     self.parameter = types.SimpleNamespace()
@@ -108,19 +108,19 @@ class Experiment():
     self.path.archive = ''
     self.path.export = 'export'
     self.host = []
-    self._archivePath = ''
-    self._gmailId = 'expcode.mailer'
-    self._gmailAppPassword = 'tagsqtlirkznoxro'
-    self._defaultServerRunArgument =  {}
+    self._archive_path = ''
+    self._gmail_id = 'expcode.mailer'
+    self._gmail_app_password = 'tagsqtlirkznoxro'
+    self._default_server_run_argument =  {}
     self._resume = False
 
     self._display = types.SimpleNamespace()
-    self._display.factorFormatInReduce = 'long'
-    self._display.metricFormatInReduce = 'long'
-    self._display.metricPrecision = 2
-    self._display.factorFormatInReduceLength = 2
-    self._display.metricFormatInReduceLength = 2
-    self._display.showRowIndex = True
+    self._display.factor_format_in_reduce = 'long'
+    self._display.metric_format_in_reduce = 'long'
+    self._display.metric_precision = 2
+    self._display.factor_format_in_reduceLength = 2
+    self._display.metric_format_in_reduceLength = 2
+    self._display.show_row_index = True
     self._display.highlight = True
     self._display.bar = False
     self._display.pValue = 0.05
@@ -140,7 +140,7 @@ class Experiment():
       self._atrs.append(name)
     return object.__setattr__(self, name, value)
 
-  # def expandPath(
+  # def expand_path(
   #   self
   #   ):
   #   """
@@ -154,14 +154,14 @@ class Experiment():
   #   >>> e.name = 'experiment'
   #   >>> e.path.processing = '/tmp/'+e.name+'/processing'
   #   >>> e.path.output = '/tmp/'+e.name+'/output'
-  #   >>> e.setPath(force=True)
+  #   >>> e.set_path(force=_true)
   #   >>> os.listdir('/tmp/'+e.name)
   #   ['processing', 'output']
   #   """
   #   for sns in self.__getattribute__('path').__dict__.keys():
   #     self.__getattribute__('path') = os.path.abspath(os.path.expanduser(self.__getattribute__('path').__getattribute__(sns)))
 
-  def setPath(
+  def set_path(
     self,
     name,
     path,
@@ -186,8 +186,8 @@ class Experiment():
     >>> import os
     >>> e=doce.Experiment()
     >>> e.name = 'experiment'
-    >>> e.setPath('processing', '/tmp/'+e.name+'/processing', force=True)
-    >>> e.setPath('output', '/tmp/'+e.name+'/output', force=True)
+    >>> e.set_path('processing', '/tmp/'+e.name+'/processing', force=True)
+    >>> e.set_path('output', '/tmp/'+e.name+'/output', force=True)
     >>> os.listdir('/tmp/'+e.name)
     ['processing', 'output']
     """
@@ -247,7 +247,7 @@ class Experiment():
     address: noname@noorg.org
     version: 0.1
     status:
-      runId: ...
+      run_id: ...
       verbose: 0
     parameter
     metric
@@ -262,7 +262,7 @@ class Experiment():
 
     >>> import doce
     >>> doce.Experiment().__str__(format='html')
-        '<div>name</div><div>description</div><div>author: no name</div><div>address: noname@noorg.org</div><div>version: 0.1</div><div>status:</div><div>  runId: ...</div><div>  verbose: 0</div><div>parameter</div><div>metric</div><div>path:</div><div>  code_raw: ...</div><div>  code: ...</div><div>  archive_raw: </div><div>  archive: </div><div>  export_raw: export</div><div>  export: export</div><div>host: []</div><div></div>'
+        '<div>name</div><div>description</div><div>author: no name</div><div>address: noname@noorg.org</div><div>version: 0.1</div><div>status:</div><div>  run_id: ...</div><div>  verbose: 0</div><div>parameter</div><div>metric</div><div>path:</div><div>  code_raw: ...</div><div>  code: ...</div><div>  archive_raw: </div><div>  archive: </div><div>  export_raw: export</div><div>  export: export</div><div>host: []</div><div></div>'
     """
     description = ''
     for atr in self._atrs:
@@ -288,13 +288,13 @@ class Experiment():
       description = '<div>'+description.replace('\r\n', '</div><div>').replace('\t', '&emsp;')+'</div>'
     return description
 
-  def sendMail(
+  def send_mail(
     self,
     title='',
     body=''):
     """Send an email to the email address given in experiment.address.
 
-    Send an email to the experiment.address email address using the smtp service from gmail. For privacy, please consider using a dedicated gmail account by setting experiment._gmailId and experiment._gmailAppPassword. For this, you will need to create a gmail account, set two-step validation and allow connection with app password (see https://support.google.com/accounts/answer/185833?hl=en).
+    Send an email to the experiment.address email address using the smtp service from gmail. For privacy, please consider using a dedicated gmail account by setting experiment._gmail_id and experiment._gmail_app_password. For this, you will need to create a gmail account, set two-step validation and allow connection with app password (see https://support.google.com/accounts/answer/185833?hl=en).
 
     Parameters
     ----------
@@ -310,35 +310,35 @@ class Experiment():
     >>> import doce
     >>> e=doce.Experiment()
     >>> e.address = 'mathieu.lagrange@cnrs.fr'
-    >>> e.sendMail('hello', '<div> good day </div>')
+    >>> e.send_mail('hello', '<div> good day </div>')
     Sent message entitled: [doce]  id ... hello ...
 
     """
 
     import smtplib
 
-    header = 'From: doce mailer <'+self._gmailId+'@gmail.com> \r\nTo: '+self.author+' '+self.address+'\r\nMIME-Version: 1.0 \r\nContent-type: text/html \r\nSubject: [doce] '+self.name+' id '+self.status.runId+' '+title+'\r\n'
+    header = 'From: doce mailer <'+self._gmail_id+'@gmail.com> \r\nTo: '+self.author+' '+self.address+'\r\nMIME-Version: 1.0 \r\nContent-type: text/html \r\nSubject: [doce] '+self.name+' id '+self.status.run_id+' '+title+'\r\n'
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
-    server.login(self._gmailId+'@gmail.com', self._gmailAppPassword)
-    server.sendmail(self._gmailId, self.address, header+body+'<h3> '+self.__str__(format = 'html')+'</h3>')
+    server.login(self._gmail_id+'@gmail.com', self._gmail_app_password)
+    server.sendmail(self._gmail_id, self.address, header+body+'<h3> '+self.__str__(format = 'html')+'</h3>')
     server.quit
-    print('Sent message entitled: [doce] '+self.name+' id '+self.status.runId+' '+title+' on '+time.ctime(time.time()))
+    print('Sent message entitled: [doce] '+self.name+' id '+self.status.run_id+' '+title+' on '+time.ctime(time.time()))
 
   def do(
     self,
     selector,
     function=None,
     *parameters,
-    nbJobs=1,
+    nb_jobs=1,
     progress='d',
-    logFileName='',
-    mailInterval=0
+    log_file_name='',
+    mail_interval=0
     ):
     """Operate the function with parameters on the :term:`settings<setting>` set generated using :term:`selector`.
 
-    Operate a given function on the setting set generated using selector. The setting set can be browsed in parallel by setting nbJobs>1. If logFileName is not empty, a faulty setting do not stop the execution, the error is stored and another setting is executed. If progress is set to True, a graphical display of the progress through the setting set is displayed.
+    Operate a given function on the setting set generated using selector. The setting set can be browsed in parallel by setting nb_jobs>1. If log_file_name is not empty, a faulty setting do not stop the execution, the error is stored and another setting is executed. If progress is set to True, a graphical display of the progress through the setting set is displayed.
 
     This function is essentially a wrapper to the function :meth:`doce.Plan.do`.
 
@@ -356,12 +356,12 @@ class Experiment():
     *parameters : any type (optional)
       parameters to be given to the function.
 
-    nbJobs : int > 0 (optional)
+    nb_jobs : int > 0 (optional)
       number of jobs.
 
-      If nbJobs = 1, the setting set is browsed sequentially in a depth first traversal of the settings tree (default).
+      If nb_jobs = 1, the setting set is browsed sequentially in a depth first traversal of the settings tree (default).
 
-      If nbJobs > 1, the settings set is browsed randomly, and settings are distributed over the different processes.
+      If nb_jobs > 1, the settings set is browsed randomly, and settings are distributed over the different processes.
 
     progress : str (optional)
       display progress of scheduling the setting set.
@@ -369,19 +369,19 @@ class Experiment():
       If str has an m, show the selector of the current setting.
       If str has an d, show a textual description of the current setting (default).
 
-    logFileName : str (optional)
+    log_file_name : str (optional)
       path to a file where potential errors will be logged.
 
       If empty, the execution is stopped on the first faulty setting (default).
 
-      If not empty, the execution is not stopped on a faulty setting, and the error is logged in the logFileName file.
+      If not empty, the execution is not stopped on a faulty setting, and the error is logged in the log_file_name file.
 
-    mailInterval : float (optional)
+    mail_interval : float (optional)
       interval for sending email about the status of the run.
 
       If 0, no email is sent (default).
 
-      It >0, an email is sent as soon as an setting is done and the difference between the current time and the time the last mail was sent is larger than mailInterval.
+      It >0, an email is sent as soon as an setting is done and the difference between the current time and the time the last mail was sent is larger than mail_interval.
 
     See Also
     --------
@@ -396,33 +396,33 @@ class Experiment():
     >>> import doce
 
     >>> e=doce.Experiment()
-    >>> e.addPlan('plan', factor1=[1, 3], factor2=[2, 5])
+    >>> e.add_plan('plan', factor1=[1, 3], factor2=[2, 5])
 
     >>> # this function displays the sum of the two modalities of the current setting
-    >>> def myFunction(setting, experiment):
+    >>> def my_function(setting, experiment):
     ...  print('{}+{}={}'.format(setting.factor1, setting.factor2, setting.factor1+setting.factor2))
 
     >>> # sequential execution of settings
-    >>> nbFailed = e.do([], myFunction, nbJobs=1, progress='')
+    >>> nb_failed = e.do([], my_function, nb_jobs=1, progress='')
     1+2=3
     1+5=6
     3+2=5
     3+5=8
     >>> # arbitrary order execution of settings due to the parallelization
-    >>> nbFailed = e.do([], myFunction, nbJobs=3, progress='') # doctest: +SKIP
+    >>> nb_failed = e.do([], my_function, nb_jobs=3, progress='') # doctest: +SKIP
     3+2=5
     1+5=6
     1+2=3
     3+5=8
     """
 
-    return self._plan.select(selector).do(function, self, *parameters, nbJobs=nbJobs, progress=progress, logFileName=logFileName, mailInterval=mailInterval)
+    return self._plan.select(selector).do(function, self, *parameters, nb_jobs=nb_jobs, progress=progress, log_file_name=log_file_name, mail_interval=mail_interval)
 
   def select(self, selector, show=False):
-    experimentId = 'all'
+    experiment_id = 'all'
     if '/' in selector:
       s = selector.split('/')
-      experimentId = s[0]
+      experiment_id = s[0]
       if len(s)>1:
         selector = s[1]
         try:
@@ -437,28 +437,28 @@ class Experiment():
     if len(plans)==1:
       self._plan = getattr(self, plans[0])
     else:
-      if experimentId == 'all':
+      if experiment_id == 'all':
         oPlans = []
         for p in plans:
           if show:
             print('Plan '+p+':')
-            print(getattr(self, p).asPandaFrame())
+            print(getattr(self, p).as_panda_frame())
           oPlans.append(getattr(self, p))
         self._plan = self._plan.merge(oPlans)
         if show and len(plans)>1:
           print('Those plans can be selected using the selector parameter.')
           print('Otherwise the merged plan is considered: ')
       else:
-        if experimentId.isnumeric():
-          experimentId = plans[int(experimentId)]
-        print('Plan '+experimentId+' is selected')
-        self._plan = getattr(self, experimentId)
+        if experiment_id.isnumeric():
+          experiment_id = plans[int(experiment_id)]
+        print('Plan '+experiment_id+' is selected')
+        self._plan = getattr(self, experiment_id)
     self._plan.check()
     if show:
-      print(self._plan.asPandaFrame())
+      print(self._plan.as_panda_frame())
     return self._plan.select(selector)
 
-  def cleanDataSink(
+  def clean_data_sink(
     self,
     path,
     selector=[],
@@ -466,13 +466,13 @@ class Experiment():
     force=False,
     keep=False,
     wildcard='*',
-    settingEncoding={},
-    archivePath = None,
+    setting_encoding={},
+    archive_path = None,
     verbose=0
     ):
     """ Perform a cleaning of a data sink (directory or h5 file).
 
-    This method is essentially a wrapper to :meth:`doce.Plan.cleanDataSink`.
+    This method is essentially a wrapper to :meth:`doce._plan.clean_data_sink`.
 
     Parameters
     ----------
@@ -480,7 +480,7 @@ class Experiment():
     path : str
       If has a / or \\\, a valid path to a directory or .h5 file.
 
-      If has no / or \\\, a member of the NameSpace self.path.
+      If has no / or \\\, a member of the name_space self.path.
 
     selector : a list of literals or a list of lists of literals (optional)
       :term:`selector` used to specify the :term:`settings<setting>` set
@@ -498,18 +498,18 @@ class Experiment():
     wildcard : str (optional)
       end of the wildcard used to select the entries to remove or to keep (default: '*').
 
-    settingEncoding : dict (optional)
+    setting_encoding : dict (optional)
       format of the id describing the :term:`setting`. Please refer to :meth:`doce.Plan.id` for further information.
 
-    archivePath : str (optional)
+    archive_path : str (optional)
       If not None, specify an existing directory where the specified data will be moved.
 
-      If None, the path doce.Experiment._archivePath is used (default).
+      If None, the path doce.Experiment._archive_path is used (default).
 
     See Also
     --------
 
-    doce.Plan.cleanDataSink, doce.Plan.id
+    doce._plan.clean_data_sink, doce.Plan.id
 
     Examples
     --------
@@ -518,20 +518,20 @@ class Experiment():
     >>> import numpy as np
     >>> import os
     >>> e=doce.Experiment()
-    >>> e.setPath('output', '/tmp/test', force=True)
-    >>> e.addPlan('plan', factor1=[1, 3], factor2=[2, 4])
-    >>> def myFunction(setting, experiment):
+    >>> e.set_path('output', '/tmp/test', force=True)
+    >>> e.add_plan('plan', factor1=[1, 3], factor2=[2, 4])
+    >>> def my_function(setting, experiment):
     ...   np.save(experiment.path.output+'/'+setting.id()+'_sum.npy', setting.factor1+setting.factor2)
     ...   np.save(experiment.path.output+'/'+setting.id()+'_mult.npy', setting.factor1*setting.factor2)
-    >>> nbFailed = e.do([], myFunction, progress='')
+    >>> nb_failed = e.do([], my_function, progress='')
     >>> os.listdir(e.path.output)
     ['factor1=1+factor2=4_mult.npy', 'factor1=1+factor2=4_sum.npy', 'factor1=3+factor2=4_sum.npy', 'factor1=1+factor2=2_mult.npy', 'factor1=1+factor2=2_sum.npy', 'factor1=3+factor2=2_mult.npy', 'factor1=3+factor2=4_mult.npy', 'factor1=3+factor2=2_sum.npy']
 
-    >>> e.cleanDataSink('output', [0], force=True)
+    >>> e.clean_data_sink('output', [0], force=True)
     >>> os.listdir(e.path.output)
     ['factor1=3+factor2=4_sum.npy', 'factor1=3+factor2=2_mult.npy', 'factor1=3+factor2=4_mult.npy', 'factor1=3+factor2=2_sum.npy']
 
-    >>> e.cleanDataSink('output', [1, 1], force=True, reverse=True, wildcard='*mult*')
+    >>> e.clean_data_sink('output', [1, 1], force=True, reverse=True, wildcard='*mult*')
     >>> os.listdir(e.path.output)
     ['factor1=3+factor2=4_sum.npy', 'factor1=3+factor2=4_mult.npy', 'factor1=3+factor2=2_sum.npy']
 
@@ -540,16 +540,16 @@ class Experiment():
     >>> import doce
     >>> import tables as tb
     >>> e=doce.Experiment()
-    >>> e.setPath('output', '/tmp/test.h5')
-    >>> e.addPlan('plan', factor1=[1, 3], factor2=[2, 4])
-    >>> e.setMetrics(sum = [''], mult = [''])
-    >>> def myFunction(setting, experiment):
+    >>> e.set_path('output', '/tmp/test.h5')
+    >>> e.add_plan('plan', factor1=[1, 3], factor2=[2, 4])
+    >>> e.set_metrics(sum = [''], mult = [''])
+    >>> def my_function(setting, experiment):
     ...   h5 = tb.open_file(experiment.path.output, mode='a')
-    ...   sg = experiment.metric.addSettingGroup(h5, setting, metricDimension={'sum': 1, 'mult': 1})
+    ...   sg = experiment.metric.add_setting_group(h5, setting, metric_dimension={'sum': 1, 'mult': 1})
     ...   sg.sum[0] = setting.factor1+setting.factor2
     ...   sg.mult[0] = setting.factor1*setting.factor2
     ...   h5.close()
-    >>> nbFailed = e.do([], myFunction, progress='')
+    >>> nb_failed = e.do([], my_function, progress='')
     >>> h5 = tb.open_file(e.path.output, mode='r')
     >>> print(h5)
     /tmp/test.h5 (File) ''
@@ -570,7 +570,7 @@ class Experiment():
     /factor1_3_factor2_4/sum (Array(1,)) 'sum'
     >>> h5.close()
 
-    >>> e.cleanDataSink('output', [0], force=True)
+    >>> e.clean_data_sink('output', [0], force=True)
     >>> h5 = tb.open_file(e.path.output, mode='r')
     >>> print(h5)
     /tmp/test.h5 (File) ''
@@ -585,7 +585,7 @@ class Experiment():
     /factor1_3_factor2_4/sum (Array(1,)) 'sum'
     >>> h5.close()
 
-    >>> e.cleanDataSink('output', [1, 1], force=True, reverse=True, wildcard='*mult*')
+    >>> e.clean_data_sink('output', [1, 1], force=True, reverse=True, wildcard='*mult*')
     >>> h5 = tb.open_file(e.path.output, mode='r')
     >>> print(h5)
     /tmp/test.h5 (File) ''
@@ -603,7 +603,7 @@ class Experiment():
     if '/' not in path and '\\' not in path:
       path = self.__getattribute__('path').__getattribute__(path)
     if path:
-      self._plan.select(selector).cleanDataSink(path, reverse=reverse, force=force, keep=keep, wildcard=wildcard, settingEncoding=settingEncoding, archivePath=archivePath, verbose=verbose)
+      self._plan.select(selector).clean_data_sink(path, reverse=reverse, force=force, keep=keep, wildcard=wildcard, setting_encoding=setting_encoding, archive_path=archive_path, verbose=verbose)
 
   def plans(self):
     # names = []
@@ -612,18 +612,18 @@ class Experiment():
     #     names.append(attribute)
     return self._plans
 
-  def addPlan(self, name, **kwargs):
+  def add_plan(self, name, **kwargs):
     self.__setattr__(name, doce.Plan(**kwargs))
     self._plan = getattr(self, name)
     self._plans.append(name)
 
-  def setMetrics(self, **kwargs):
+  def set_metrics(self, **kwargs):
     self.__setattr__('metric', doce.Metric(**kwargs))
 
   def default(self, plan='', factor='', modality=''):
     getattr(self, plan).default(factor, modality)
 
-  def skipSetting(self, setting):
+  def skip_setting(self, setting):
     if self._resume:
       for path in self.__getattribute__('path').__dict__.keys():
           if path.endswith('.h5'):
@@ -655,13 +655,13 @@ class Experiment():
     Returns
     -------
 
-    settingMetric: list of np.Array
+    setting_metric: list of np.Array
       stores for each valid setting an np.Array with the values of the metric selected.
 
-    settingDescription: list of list of str
-      stores for each valid setting, a compact description of the modalities of each factors. The factors with the same modality accross all the set of settings is stored in constantSettingDescription.
+    setting_description: list of list of str
+      stores for each valid setting, a compact description of the modalities of each factors. The factors with the same modality accross all the set of settings is stored in constant_setting_description.
 
-    constantSettingDescription: str
+    constant_setting_description: str
       compact description of the factors with the same modality accross all the set of settings.
 
     Examples
@@ -673,25 +673,25 @@ class Experiment():
 
     >>> experiment = doce.experiment.Experiment()
     >>> experiment.name = 'example'
-    >>> experiment.setPath('output', '/tmp/'+experiment.name+'/', force=True)
-    >>> experiment.addPlan('plan', f1 = [1, 2], f2 = [1, 2, 3])
-    >>> experiment.setMetrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
+    >>> experiment.set_path('output', '/tmp/'+experiment.name+'/', force=True)
+    >>> experiment.add_plan('plan', f1 = [1, 2], f2 = [1, 2, 3])
+    >>> experiment.set_metrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
 
     >>> def process(setting, experiment):
     ...  metric1 = setting.f1+setting.f2+np.random.randn(100)
     ...  metric2 = setting.f1*setting.f2*np.random.randn(100)
     ...  np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
     ...  np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
-    >>> nbFailed = experiment.do([], process, progress='')
+    >>> nb_failed = experiment.do([], process, progress='')
 
-    >>> (settingMetric, settingDescription, constantSettingDescription) = experiment.get(metric = 'm1', selector = [1], path='output')
-    >>> print(constantSettingDescription)
+    >>> (setting_metric, setting_description, constant_setting_description) = experiment.get(metric = 'm1', selector = [1], path='output')
+    >>> print(constant_setting_description)
     f1=2
-    >>> print(settingDescription)
+    >>> print(setting_description)
     ['f2=1', 'f2=2', 'f2=3']
-    >>> print(len(settingMetric))
+    >>> print(len(setting_metric))
     3
-    >>> print(settingMetric[0].shape)
+    >>> print(setting_metric[0].shape)
     (100,)
     """
 
@@ -730,17 +730,17 @@ class Experiment():
   #   reverse=False,
   #   force=False,
   #   wildcard='*',
-  #   settingEncoding={},
-  #   archivePath = None
+  #   setting_encoding={},
+  #   archive_path = None
   #   ):
-  #   """Clean all relevant directories specified in the NameSpace doce.Experiment.experiment.path.
+  #   """Clean all relevant directories specified in the name_space doce.Experiment.experiment.path.
   #
-  #   Apply :meth:`doce.Experiment.cleanDataSink` on each relevant directories specified in the NameSpace doce.Experiment.path.
+  #   Apply :meth:`doce._experiment.clean_data_sink` on each relevant directories specified in the name_space doce.Experiment.path.
   #
   #   See Also
   #   --------
   #
-  #   doce.Experiment.cleanDataSink
+  #   doce._experiment.clean_data_sink
   #
   #   Examples
   #   --------
@@ -748,7 +748,7 @@ class Experiment():
   #   >>> import doce
   #   >>> e=doce.Experiment()
   #   >>> e.path.output = '/tmp/test'
-  #   >>> e.setPath()
+  #   >>> e.set_path()
   #   >>> e.clean()
   #   checking input path
   #   checking processing path
@@ -758,8 +758,8 @@ class Experiment():
   #   """
   #   for sns in self.__getattribute__('path').__dict__.keys():
   #     print('checking '+sns+' path')
-  #     self.cleanDataSink(sns, selector, reverse, force, wildcard, settingEncoding,
-  #     archivePath)
+  #     self.clean_data_sink(sns, selector, reverse, force, wildcard, setting_encoding,
+  #     archive_path)
 
 class Path:
     def __setattr__(

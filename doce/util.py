@@ -1,49 +1,48 @@
 import sys
 import re
-import copy
 
-def specialCaracterNaturalNaming(modality):
-  modifier = {' ': 'space',
-              '!': 'exclamationmark',
-              '"': 'doublequote',
-              '#': 'sharp',
-              '$': 'dollar',
-              '%': 'percent',
-              '&': 'ampersand',
-              '\'': 'simplequote',
-              '(': 'leftparenthesis',
-              ')': 'rightparenthesis',
-              '*': 'asterisk',
-              '+': 'plus',
-              ',': 'comma',
-              '-': 'dash',
-              '.': 'dot',
-              '/': 'slash',
-              ':': 'colon',
-              ';': 'semicolon',
-              '<': 'less',
-              '=': 'equal',
-              '>': 'greater',
-              '?': 'questionmark',
-              '@': 'arobace',
-              '[': 'leftbracket',
-              '\\': 'backslash',
-              ']': 'rightbracket',
-              '^': 'caret',
-              '_': 'underscore',
-              '`': 'acute',
-              '{': 'leftbrace',
-              '|': 'pipe',
-              '}': 'rightbrace',
-              '~': 'tilde'
-              }
-  for key, value in modifier.items():
-    modality = modality.replace(key, value)
-  if modality[-4:]=='dot0':
-    modality = modality[:-4]
-  return modality
+# def special_caracter_natural_naming(modality):
+#   modifier = {' ': 'space',
+#               '!': 'exclamationmark',
+#               '"': 'doublequote',
+#               '#': 'sharp',
+#               '$': 'dollar',
+#               '%': 'percent',
+#               '&': 'ampersand',
+#               '\'': 'simplequote',
+#               '(': 'leftparenthesis',
+#               ')': 'rightparenthesis',
+#               '*': 'asterisk',
+#               '+': 'plus',
+#               ',': 'comma',
+#               '-': 'dash',
+#               '.': 'dot',
+#               '/': 'slash',
+#               ':': 'colon',
+#               ';': 'semicolon',
+#               '<': 'less',
+#               '=': 'equal',
+#               '>': 'greater',
+#               '?': 'questionmark',
+#               '@': 'arobace',
+#               '[': 'leftbracket',
+#               '\\': 'backslash',
+#               ']': 'rightbracket',
+#               '^': 'caret',
+#               '_': 'underscore',
+#               '`': 'acute',
+#               '{': 'leftbrace',
+#               '|': 'pipe',
+#               '}': 'rightbrace',
+#               '~': 'tilde'
+#               }
+#   for key, value in modifier.items():
+#     modality = modality.replace(key, value)
+#   if modality[-4:]=='dot0':
+#     modality = modality[:-4]
+#   return modality
 
-def constantColumn(
+def constant_column(
   table=None
 ):
   """detect which column(s) have the same value for all lines.
@@ -64,7 +63,7 @@ def constantColumn(
 	--------
   >>> import doce
   >>> table = [['a', 'b', 1, 2], ['a', 'c', 2, 2], ['a', 'b', 2, 2]]
-  >>> doce.util.constantColumn(table)
+  >>> doce.util.constant_column(table)
   ['a', None, None, 2]
   """
 
@@ -80,43 +79,43 @@ def constantColumn(
               values[cIndex] = None
   return values
 
-def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFactor=0, factorDisplay='long', showUniqueSetting=False):
-  """remove the columns corresponding to factors with only one modality from the settingDescription and the columnHeader.
+def prune_setting_description(setting_description, column_header = None, nb_column_factor=0, factor_display = 'long', show_unique_setting = False):
+  """remove the columns corresponding to factors with only one modality from the setting_description and the column_header.
 
-  Remove the columns corresponding to factors with only one modality from the settingDescription and the columnHeader and describes the factors with only one modality in a separate string.
+  Remove the columns corresponding to factors with only one modality from the setting_description and the column_header and describes the factors with only one modality in a separate string.
 
 	Parameters
 	----------
 
-  settingDescription: list of list of literals
+  setting_description: list of list of literals
     the body of the table.
 
-  columnHeader: list of string (optional)
+  column_header: list of string (optional)
     the column header of the table.
 
-  nbColumnFactor: int (optional)
+  nb_column_factor: int (optional)
     the number of columns corresponding to factors (default 0).
 
-  factorDisplay:
-    type of description of the factors (default 'long'), see :meth:`doce.util.compressDescription` for reference.
+  factor_display:
+    type of description of the factors (default 'long'), see :meth:`doce.util.compress_description` for reference.
 
-  showUniqueSetting: bool
-    If True, show the description of the unique setting in constantSettingDescription.
+  show_unique_setting: bool
+    If True, show the description of the unique setting in constant_setting_description.
 
 	Returns
 	-------
 
-  settingDescription: list of list of literals
-    settingDescription where the columns corresponding to factors with only one modality are removed.
+  setting_description: list of list of literals
+    setting_description where the columns corresponding to factors with only one modality are removed.
 
-  columnHeader: list of str
-    columnHeader where the columns corresponding to factors with only one modality are removed.
+  column_header: list of str
+    column_header where the columns corresponding to factors with only one modality are removed.
 
-  constantSettingDescription: str
+  constant_setting_description: str
     description of the settings with constant modality.
 
-  nbColumnFactor: int
-    number of factors in the new settingDescription.
+  nb_column_factor: int
+    number of factors in the new setting_description.
 
 	Examples
 	--------
@@ -124,51 +123,51 @@ def pruneSettingDescription(settingDescription, columnHeader=None, nbColumnFacto
 
   >>> header = ['factor_1', 'factor_2', 'metric_1', 'metric_2']
   >>> table = [['a', 'b', 1, 2], ['a', 'c', 2, 2], ['a', 'b', 2, 2]]
-  >>> (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor) = doce.util.pruneSettingDescription(table, header, 2)
-  >>> print(nbColumnFactor)
+  >>> (setting_description, column_header, constant_setting_description, nb_column_factor) = doce.util.prune_setting_description(table, header, 2)
+  >>> print(nb_column_factor)
   1
-  >>> print(constantSettingDescription)
+  >>> print(constant_setting_description)
   factor_1: a
-  >>> print(columnHeader)
+  >>> print(column_header)
   ['factor_2', 'metric_1', 'metric_2']
-  >>> print(settingDescription)
+  >>> print(setting_description)
   [['b', 1, 2], ['c', 2, 2], ['b', 2, 2]]
   """
-  constantSettingDescription = ''
-  if settingDescription:
-    if nbColumnFactor == 0:
-      nbColumnFactor = len(settingDescription[0])
-    if len(settingDescription)>1:
-      constantValue = constantColumn(settingDescription)
-      # for si, s in enumerate(constantValue):
-      #   if not columnHeader and si>0 and s is None:
-      #     constantValue[si-1] = None
-      ccIndex = [i for i, x in enumerate(constantValue) if x is not None and i<nbColumnFactor] # there is an issue here possibly with get
-      nbColumnFactor -= len(ccIndex)
-      for s in ccIndex:
-        if columnHeader:
-          constantSettingDescription += compressDescription(columnHeader[s], factorDisplay)+': '+str(constantValue[s])+' '
+  constant_setting_description = ''
+  if setting_description:
+    if nb_column_factor == 0:
+      nb_column_factor = len(setting_description[0])
+    if len(setting_description)>1:
+      constant_value = constant_column(setting_description)
+      # for si, s in enumerate(constant_value):
+      #   if not column_header and si>0 and s is None:
+      #     constant_value[si-1] = None
+      cc_index = [i for i, x in enumerate(constant_value) if x is not None and i<nb_column_factor] # there is an issue here possibly with get
+      nb_column_factor -= len(cc_index)
+      for s in cc_index:
+        if column_header:
+          constant_setting_description += compress_description(column_header[s], factor_display)+': '+str(constant_value[s])+' '
         else:
-          constantSettingDescription += settingDescription[0][s]+' '
-      for s in sorted(ccIndex, reverse=True):
-        if columnHeader:
-          columnHeader.pop(s)
-        for r in settingDescription:
+          constant_setting_description += setting_description[0][s]+' '
+      for s in sorted(cc_index, reverse=True):
+        if column_header:
+          column_header.pop(s)
+        for r in setting_description:
           r.pop(s)
     else:
-      constantSettingDescription = ''
-      if showUniqueSetting:
-        constantSettingDescription = ' '.join(str(x) for x in settingDescription[0]).strip()
+      constant_setting_description = ''
+      if show_unique_setting:
+        constant_setting_description = ' '.join(str(x) for x in setting_description[0]).strip()
 
-  return (settingDescription, columnHeader, constantSettingDescription, nbColumnFactor)
+  return (setting_description, column_header, constant_setting_description, nb_column_factor)
 
 
-def compressDescription(
+def compress_description(
   description,
   format='long',
-  atomLength=2
+  atom_length=2
   ):
-  """ reduces the number of letters for each word in a given description structured with underscores (pythonCase) or capital letters (camelCase).
+  """ reduces the number of letters for each word in a given description structured with underscores (python_case) or capital letters (camel_case).
 
 	Parameters
 	----------
@@ -176,42 +175,42 @@ def compressDescription(
     the structured description.
 
   format : str, optional
-    can be 'long' (default), do not lead to any reduction, 'shortUnderscore' assumes pythonCase delimitation, 'shortCapital' assumes camelCase delimitation, and 'short' attempts to perform reduction by guessing the type of delimitation.
+    can be 'long' (default), do not lead to any reduction, 'short_underscore' assumes python_case delimitation, 'short_capital' assumes camel_case delimitation, and 'short' attempts to perform reduction by guessing the type of delimitation.
 
 	Returns
 	-------
 
-  compressedDescription : str
+  compressed_description : str
     The compressed description.
 
 	Examples
 	--------
 
   >>> import doce
-  >>> doce.util.compressDescription('myVeryLongParameter', format='short')
+  >>> doce.util.compress_description('myVeryLongParameter', format='short')
   'myvelopa'
-  >>> doce.util.compressDescription('that_very_long_parameter', format='short', atomLength=3)
+  >>> doce.util.compress_description('that_very_long_parameter', format='short', atom_length=3)
   'thaverlonpar'
   """
 
   if format == 'short':
     if '_' in description and not description.islower() and not description.isupper():
       print('The description '+description+' has underscores and capital. Explicitely states which delimeter shall be considered for reduction.')
-      raise ValueError
+      raise value_error
     elif '_' in description:
-      format = 'shortUnderscore'
+      format = 'short_underscore'
     else:
-      format = 'shortCapital'
-  compressedDescription = description
-  if 'shortUnderscore' in format:
-    compressedDescription = ''.join([itf[0:atomLength] for itf in description.split('_')])
-  if 'shortCapital' in format:
-    compressedDescription = description[0:atomLength]+''.join([itf[0:atomLength] for itf in re.findall('[A-Z][^A-Z]*', description)]).lower()
-  if '%' in description and not '%' in compressedDescription :
-    compressedDescription += '%'
-  if description[-1] == '-' and not compressedDescription[-1] == '-':
-    compressedDescription += '-'
-  return compressedDescription
+      format = 'short_capital'
+  compressed_description = description
+  if 'short_underscore' in format:
+    compressed_description = ''.join([itf[0:atom_length] for itf in description.split('_')])
+  if 'short_capital' in format:
+    compressed_description = description[0:atom_length]+''.join([itf[0:atom_length] for itf in re.findall('[A-Z][^A-Z]*', description)]).lower()
+  if '%' in description and not '%' in compressed_description :
+    compressed_description += '%'
+  if description[-1] == '-' and not compressed_description[-1] == '-':
+    compressed_description += '-'
+  return compressed_description
 
 def query_yes_no(
   question,
@@ -246,7 +245,7 @@ def query_yes_no(
   elif default == "no":
     prompt = " [y/N] "
   else:
-    raise ValueError("invalid default answer: '%s'" % default)
+    raise value_error("invalid default answer: '%s'" % default)
 
   while True:
     sys.stdout.write(question + prompt)
@@ -259,7 +258,7 @@ def query_yes_no(
       sys.stdout.write("Please respond with 'yes' or 'no' "
                            "(or 'y' or 'n').\n")
 
-def inNotebook():
+def in_notebook():
   """detect if the experiment is running from Ipython notebook.
   """
   try:

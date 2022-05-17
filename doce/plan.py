@@ -13,7 +13,7 @@ import time
 from itertools import groupby
 from subprocess import call
 
-if eu.inNotebook():
+if eu.in_notebook():
     from tqdm.notebook import tqdm as tqdm
 else:
     from tqdm import tqdm as tqdm
@@ -48,15 +48,15 @@ class Plan():
   def __init__(self, **factors):
       self._setting = None
       self._changed = False
-      self._currentSetting = 0
+      self._current_setting = 0
       self._settings = []
       self._selector = None
-      self._expandedSelector = None
-      self._nonSingleton = []
+      self._expanded_selector = None
+      self._non_singleton = []
       self._factors = []
       self._default = types.SimpleNamespace()
-      self._selectorVolatile = True
-      self._pruneSelector = True
+      self._selector_volatile = True
+      self._prune_selector = True
 
       for factor, modalities in factors.items():
         self.__setattr__(factor, modalities)
@@ -118,25 +118,25 @@ class Plan():
 
     """
     if hasattr(self, factor):
-      # if genericDefaultModalityWarning and len([item for item in getattr(self, factor) if item in [0, 'none']]):
-      #   print('Setting an explicit default modality to factor '+factor+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <hideNoneAndZero> set to False when using method id() if (O or none). You can remove this warning by setting the flag <force> to True.')
+      # if generic_default_modality_warning and len([item for item in getattr(self, factor) if item in [0, 'none']]):
+      #   print('Setting an explicit default modality to factor '+factor+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <hide_none_and_zero> set to False when using method id() if (O or none). You can remove this warning by setting the flag <force> to True.')
       if modality not in getattr(self, factor):
         print('The default modality of factor '+factor+' should be available in the set of modalities.')
-        raise ValueError
+        raise value_error
       self._default.__setattr__(factor, modality)
     else:
       print('Please set the factor '+factor+' before choosing its default modality.')
-      raise ValueError
+      raise value_error
 
   def do(
     self,
     function,
     experiment,
     *parameters,
-    nbJobs=1,
+    nb_jobs=1,
     progress='d',
-    logFileName='',
-    mailInterval=0):
+    log_file_name='',
+    mail_interval=0):
     """iterate over the setting set and run the function given as parameter.
 
     This function is wrapped by :meth:`doce.experiment.Experiment.do`, which should be more convenient to use. Please refer to this method for usage.
@@ -153,12 +153,12 @@ class Plan():
     *parameters : any type (optional)
       parameters to be given to the function.
 
-    nbJobs : int > 0 (optional)
+    nb_jobs : int > 0 (optional)
       number of jobs.
 
-      If nbJobs = 1, the setting set is browsed sequentially in a depth first traversal of the settings tree (default).
+      If nb_jobs = 1, the setting set is browsed sequentially in a depth first traversal of the settings tree (default).
 
-      If nbJobs > 1, the settings set is browsed randomly, and settings are distributed over the different processes.
+      If nb_jobs > 1, the settings set is browsed randomly, and settings are distributed over the different processes.
 
     progress : str (optional)
       display progress of scheduling the setting set.
@@ -166,12 +166,12 @@ class Plan():
       If str has an m, show the selector of the current setting.
       If str has an d, show a textual description of the current setting (default).
 
-    logFileName : str (optional)
+    log_file_name : str (optional)
       path to a file where potential errors will be logged.
 
       If empty, the execution is stopped on the first faulty setting (default).
 
-      If not empty, the execution is not stopped on a faulty setting, and the error is logged in the logFileName file.
+      If not empty, the execution is not stopped on a faulty setting, and the error is logged in the log_file_name file.
 
     See Also
     --------
@@ -179,53 +179,53 @@ class Plan():
     doce.experiment.Experiment.do
 
     """
-    nbFailed = 0
-    if logFileName:
-      logging.basicConfig(filename=logFileName,
+    nb_failed = 0
+    if log_file_name:
+      logging.basicConfig(filename=log_file_name,
                 level=logging.DEBUG,
                 format='%(levelname)s: %(asctime)s %(message)s',
                 datefmt='%m/%d/%Y %I:%M:%S')
     if progress:
       print('Number of settings: '+str(len(self)))
 
-    if nbJobs>1 or nbJobs<0:
+    if nb_jobs>1 or nb_jobs<0:
       from joblib import Parallel, delayed
-      result = Parallel(n_jobs=nbJobs, require='sharedmem')(delayed(setting.do)(function, experiment, logFileName, *parameters) for setting in self)
+      result = Parallel(n_jobs=nb_jobs, require='sharedmem')(delayed(setting.do)(function, experiment, log_file_name, *parameters) for setting in self)
     else:
-      startTime = time.time()
-      stepTime = startTime
+      start_time = time.time()
+      step_time = start_time
       with tqdm(total=len(self), disable = progress == '') as t:
         for iSetting, setting in enumerate(self):
             description = ''
-            if nbFailed:
-                description = '[failed: '+str(nbFailed)+']'
+            if nb_failed:
+                description = '[failed: '+str(nb_failed)+']'
             if 'm' in progress:
               description += str(self._settings[iSetting])+' '
             if 'd' in progress:
               description += setting.id()
             t.set_description(description)
             if function:
-              nbFailed += setting.do(function, experiment, logFileName, *parameters)
+              nb_failed += setting.do(function, experiment, log_file_name, *parameters)
             else:
                 print(setting)
-            delay = (time.time()-stepTime)
-            if mailInterval>0 and iSetting<len(self)-1  and delay/(60**2) > mailInterval :
-              stepTime = time.time()
+            delay = (time.time()-step_time)
+            if mail_interval>0 and iSetting<len(self)-1  and delay/(60**2) > mail_interval :
+              step_time = time.time()
               percentage = int((iSetting+1)/len(self)*100)
-              message = '{}% of settings done: {} over {} <br>Time elapsed: {}'.format(percentage, iSetting+1, len(self), time.strftime('%dd %Hh %Mm %Ss', time.gmtime(stepTime-startTime)))
-              experiment.sendMail('progress {}% '.format(percentage), message)
+              message = '{}% of settings done: {} over {} <br>Time elapsed: {}'.format(percentage, iSetting+1, len(self), time.strftime('%dd %Hh %Mm %Ss', time.gmtime(step_time-start_time)))
+              experiment.send_mail('progress {}% '.format(percentage), message)
             t.update(1)
-    return nbFailed
+    return nb_failed
 
   def check(self):
    for factor in self._factors:
      if '=' in factor or '+' in factor:
        print('Error: = and + are not allowed for naming factors')
-       raise ValueError
+       raise value_error
      # modalities = str(getattr(self, factor))
      # if '=' in factor or '+' in modalities:
      #   print('Error: = and + are not allowed for naming modalities')
-     #   raise ValueError
+     #   raise value_error
 
   def select(
     self,
@@ -264,7 +264,7 @@ class Plan():
     f1=b+f2=2
     f1=c+f2=3
 
-    >>> # The second one is list based. In this exmaple, we select the settings with the second modality of the first factor, and with the first modality of the second factor
+    >>> # The second one is list based. In this example, we select the settings with the second modality of the first factor, and with the first modality of the second factor
     >>> for setting in p.select([1, 0]):
     ...  print(setting)
     f1=b+f2=1
@@ -330,8 +330,8 @@ class Plan():
     selector = self.__format__(selector)
 
     self._selector = selector
-    self._selectorVolatile = volatile
-    self._pruneSelector = prune
+    self._selector_volatile = volatile
+    self._prune_selector = prune
     return self
 
   def factors(
@@ -356,7 +356,7 @@ class Plan():
     """
     return self._factors
 
-  def nbModalities(
+  def nb_modalities(
     self,
     factor
     ):
@@ -381,54 +381,54 @@ class Plan():
     >>> p.one = ['a', 'b']
     >>> p.two = list(range(10))
 
-    >>> print(p.nbModalities('one'))
+    >>> print(p.nb_modalities('one'))
     2
-    >>> print(p.nbModalities(1))
+    >>> print(p.nb_modalities(1))
     10
     """
     if isinstance(factor, int):
       factor = self.factors()[factor]
     return len(object.__getattribute__(self, factor))
 
-  def cleanH5(
+  def clean_h5(
     self,
     path,
     reverse=False,
     force=False,
     keep=False,
-    settingEncoding={'separator':'_', 'identifier':'_'},
-    archivePath='',
+    setting_encoding={'separator':'_', 'identifier':'_'},
+    archive_path='',
     verbose=0):
     """clean a h5 data sink by considering the settings set.
 
-  	This method is more conveniently used by considering the method :meth:`doce.experiment.Experiment.cleanDataSink, please see its documentation for usage.
+  	This method is more conveniently used by considering the method :meth:`doce.experiment._experiment.clean_data_sink, please see its documentation for usage.
     """
     import tables as tb
 
-    if archivePath:
+    if archive_path:
       print(path)
-      print(archivePath)
-      sh.copyfile(path, archivePath)
-      self.cleanH5(
-        path=archivePath,
+      print(archive_path)
+      sh.copyfile(path, archive_path)
+      self.clean_h5(
+        path=archive_path,
         reverse = not reverse,
         force=True,
         keep=False,
-        settingEncoding=settingEncoding,
-        archivePath='',
+        setting_encoding=setting_encoding,
+        archive_path='',
         verbose=verbose)
     if not keep:
       h5 = tb.open_file(path, mode='a')
       if reverse:
-        ids = [setting.id(**settingEncoding) for setting in self]
+        ids = [setting.id(**setting_encoding) for setting in self]
         for g in h5.iter_nodes('/'):
           if g._v_name not in ids:
             h5.remove_node(h5.root, g._v_name, recursive=True)
       else:
         for setting in self:
-          groupName = setting.id(**settingEncoding)
-          if h5.root.__contains__(groupName):
-            h5.remove_node(h5.root, groupName, recursive=True)
+          group_name = setting.id(**setting_encoding)
+          if h5.root.__contains__(group_name):
+            h5.remove_node(h5.root, group_name, recursive=True)
       h5.close()
       if verbose:
         print('repacking')
@@ -436,74 +436,74 @@ class Plan():
       outfilename = path+'Tmp'
       command = ["ptrepack", "-o", "--chunkshape=auto", "--propindexes", path, outfilename]
       if verbose:
-        print('Original size is %.2fMiB' % (float(os.stat(path).st_size)/1024**2))
+        print('Original size is %.2f_mi_b' % (float(os.stat(path).st_size)/1024**2))
       if call(command) != 0:
         print('Unable to repack. Is ptrepack installed ?')
       else:
         if verbose:
-          print('Repacked size is %.2fMiB' % (float(os.stat(outfilename).st_size)/1024**2))
+          print('Repacked size is %.2f_mi_b' % (float(os.stat(outfilename).st_size)/1024**2))
         os.rename(outfilename, path)
 
 
-  def cleanDataSink(
+  def clean_data_sink(
     self,
     path,
     reverse=False,
     force=False,
     keep=False,
     wildcard='*',
-    settingEncoding={},
-    archivePath='',
+    setting_encoding={},
+    archive_path='',
     verbose=0
     ):
     """clean a data sink by considering the settings set.
 
-  	This method is more conveniently used by considering the method :meth:`doce.experiment.Experiment.cleanDataSink, please see its documentation for usage.
+  	This method is more conveniently used by considering the method :meth:`doce.experiment._experiment.clean_data_sink, please see its documentation for usage.
     """
 
     path = os.path.expanduser(path)
     if path.endswith('.h5'):
-      settingEncoding={'separator':'_', 'identifier':'_'}
-      self.cleanH5(path, reverse, force, keep, settingEncoding, archivePath, verbose)
+      setting_encoding={'separator':'_', 'identifier':'_'}
+      self.clean_h5(path, reverse, force, keep, setting_encoding, archive_path, verbose)
     else:
-      fileNames = []
+      file_names = []
       for setting in self:
         if verbose:
-          print('search path: '+path+'/'+setting.id(**settingEncoding)+wildcard)
-        for f in glob.glob(path+'/'+setting.id(**settingEncoding)+wildcard):
-            fileNames.append(f)
+          print('search path: '+path+'/'+setting.id(**setting_encoding)+wildcard)
+        for f in glob.glob(path+'/'+setting.id(**setting_encoding)+wildcard):
+            file_names.append(f)
       if reverse:
         complete = []
         for f in glob.glob(path+'/'+wildcard):
           complete.append(f)
-        # print(fileNames)
-        fileNames = [i for i in complete if i not in fileNames]
+        # print(file_names)
+        file_names = [i for i in complete if i not in file_names]
       #   print(complete)
-      fileNames = set(fileNames)
+      file_names = set(file_names)
       if verbose:
         print('Selected files')
-        print(fileNames)
-      # print(len(fileNames))
-      if archivePath:
+        print(file_names)
+      # print(len(file_names))
+      if archive_path:
         if keep:
           action = 'copy '
         else:
           action = 'move '
-        destination = ' to '+archivePath+' '
+        destination = ' to '+archive_path+' '
       elif not force:
         print('INFORMATION: setting path.archive allows you to move the unwanted files to the archive path and not delete them.')
         destination = ''
         action = 'remove '
-      if len(fileNames):
-        if not force and eu.query_yes_no('List the '+str(len(fileNames))+' files ?'):
-          print("\n".join(fileNames))
-        if force or eu.query_yes_no('About to '+action+str(len(fileNames))+' files from '+path+destination+' \n Proceed ?'):
-          for f in fileNames:
-            if archivePath:
+      if len(file_names):
+        if not force and eu.query_yes_no('List the '+str(len(file_names))+' files ?'):
+          print("\n".join(file_names))
+        if force or eu.query_yes_no('About to '+action+str(len(file_names))+' files from '+path+destination+' \n Proceed ?'):
+          for f in file_names:
+            if archive_path:
               if keep:
-                sh.copyfile(f, archivePath+'/'+os.path.basename(f))
+                sh.copyfile(f, archive_path+'/'+os.path.basename(f))
               else:
-                os.rename(f, archivePath+'/'+os.path.basename(f))
+                os.rename(f, archive_path+'/'+os.path.basename(f))
             else:
               os.remove(f)
       else:
@@ -519,7 +519,7 @@ class Plan():
           if hasattr(tmp._default, f) and getattr(x._default, f) != getattr(tmp._default, f):
             print(getattr(tmp._default, f))
             print('While merging factors of the different experiment, a conflict of default modalities for the factor '+f+' is detected. This may lead to an inconsistent behavior.')
-            raise ValueError
+            raise value_error
           else:
             setattr(tmp._default, f, getattr(x._default, f))
             # print(tmp._default)
@@ -554,7 +554,7 @@ class Plan():
           plan.default(f, 0)
     return plan
 
-  def asPandaFrame(self):
+  def as_panda_frame(self):
     """returns a panda frame that describes the Plan object.
 
   	Returns a panda frame describing the Plan object. For ease of definition of a selector to select some settings, the columns and the rows of the panda frame are numbered.
@@ -571,7 +571,7 @@ class Plan():
     >>> print(p)
       0  one: ['a' 'b']
       1  two: [0 1 2 3 4 5 6 7 8 9]
-    >>> print(p.asPandaFrame())
+    >>> print(p.as_panda_frame())
       Factors  0  1  2  3  4  5  6  7  8  9
     0    one  a  b
     1    two  0  1  2  3  4  5  6  7  8  9
@@ -604,13 +604,13 @@ class Plan():
     columns.append('Factors')
     for il in range(l):
       columns.append(il)
-    return pd.DataFrame(table, columns=columns)
+    return pd.DataFrame(table, columns = columns)
 
-  def constantFactors(self, selector):
+  def constant_factors(self, selector):
     self.select(selector)
     message = str(len(self))+' settings'
     cf = [ [] for _ in range(len(self._factors)) ]
-    for m in self._expandedSelector:
+    for m in self._expanded_selector:
       for fi, f in enumerate(self._factors):
         if m[fi]:
           cf[fi] = list(set(cf[fi]) | set(m[fi]))
@@ -624,7 +624,7 @@ class Plan():
       message += cst[:-2]
     return message
 
-  def expandSelector(self, selector, factor):
+  def expand_selector(self, selector, factor):
 
     selector = self.__format__(selector)
     fi = self.factors().index(factor)
@@ -643,12 +643,12 @@ class Plan():
 
     return nm
 
-  def _dict2list(self, dictSelector):
+  def _dict2list(self, dict_selector):
     """convert dict based selector to list based selector
 
     """
 
-    for dm in dictSelector:
+    for dm in dict_selector:
       m = [-1]*len(self._factors)
       for dmk in dm.keys():
         if dmk in self._factors:
@@ -667,33 +667,33 @@ class Plan():
           print('Error: '+dmk+' is not a factor.')
     return m
 
-  def _str2list(self, strSelector, factorSeparator = '+', modalityIdentifier = '='):
+  def _str2list(self, str_selector, factor_separator = '+', modality_identifier = '='):
     """convert string based selector to list based selector
 
     """
     selector = []
-    # print(strSelector)
-    if ',' in strSelector[0]:
-      for ss in strSelector[0].split(','):
+    # print(str_selector)
+    if ',' in str_selector[0]:
+      for ss in str_selector[0].split(','):
         s = self._str2list([ss])
         selector.append(s[0])
     else:
-      for dm in strSelector:
+      for dm in str_selector:
         m = [-1]*len(self._factors)
-        factors = dm.split(factorSeparator)
+        factors = dm.split(factor_separator)
         # factors = sp[0::2]
         # modalities = sp[1::2]
         for dmki, dmk in enumerate(factors):
-          dmks = dmk.split(modalityIdentifier)
+          dmks = dmk.split(modality_identifier)
           dmk = dmks[0]
           modality = dmks[1]
           if dmk in self._factors:
               # mod = modalities[dmki]
-              refMod = []
+              ref_mod = []
               for am in list(getattr(self, dmk)):
-                refMod.append(str(am))
-              if modality in refMod:
-                m[self._factors.index(dmk)] = refMod.index(modality)
+                ref_mod.append(str(am))
+              if modality in ref_mod:
+                m[self._factors.index(dmk)] = ref_mod.index(modality)
               else:
                 print('Error: '+modality+' is not a modality of factor '+dmk+'.')
                 return [0]
@@ -703,7 +703,7 @@ class Plan():
         selector = m
     return selector
 
-  def _checkSelector(self, selector):
+  def _check_selector(self, selector):
     check=True
     for s in selector:
       for fi, f in enumerate(s):
@@ -738,8 +738,8 @@ class Plan():
       raise Exception('the attribute '+name+' is shadowing a builtin function')
     if name == '_selector' or name[0] != '_':
       self._changed = True
-    if name[0] != '_' and type(value) in {list, np.ndarray} and len(value)>1 and name not in self._nonSingleton:
-      self._nonSingleton.append(name)
+    if name[0] != '_' and type(value) in {list, np.ndarray} and len(value)>1 and name not in self._non_singleton:
+      self._non_singleton.append(name)
     if name[0] != '_' and type(value) not in {list, np.ndarray} :
       value = [value]
     if name[0] != '_' and type(value) not in {np.ndarray, Plan}:
@@ -760,8 +760,8 @@ class Plan():
     self._changed = True
     if hasattr(self, name) and name[0] != '_':
       self._factors.remove(name)
-      if name in self._nonSingleton:
-        self._nonSingleton.remove(name)
+      if name in self._non_singleton:
+        self._non_singleton.remove(name)
     return object.__delattr__(self, name)
 
   # def __getattribute__(
@@ -770,7 +770,7 @@ class Plan():
   #   ):
   #
   #   value = object.__getattribute__(self, name)
-  #   if name[0] != '_' and self._setting and type(inspect.getattr_static(self, name)) != types.FunctionType:
+  #   if name[0] != '_' and self._setting and type(inspect.getattr_static(self, name)) != types._function_type:
   #     idx = self.factors().index(name)
   #     if self._setting[idx] == -2:
   #       value = None
@@ -778,7 +778,7 @@ class Plan():
   #       if  type(inspect.getattr_static(self, name)) in {list, np.ndarray} :
   #         try:
   #           value = value[self._setting[idx]]
-  #         except IndexError:
+  #         except index_error:
   #           value = 'null'
   #           print('Error: factor '+name+' have modalities 0 to '+str(len(value)-1)+'. Requested '+str(self._setting[idx]))
   #           raise
@@ -788,35 +788,35 @@ class Plan():
     self
     ):
 
-    self.__setSettings__()
-    self._currentSetting = 0
+    self.__set_settings__()
+    self._current_setting = 0
     return self
 
   def __next__(
     self
     ):
 
-    if self._currentSetting == len(self._settings):
-      if self._selectorVolatile:
+    if self._current_setting == len(self._settings):
+      if self._selector_volatile:
         self._selector = None
       raise StopIteration
     else:
-      self._setting = self._settings[self._currentSetting]
-      self._currentSetting += 1
+      self._setting = self._settings[self._current_setting]
+      self._current_setting += 1
       return es.Setting(self)
 
   def __getitem__(self, index):
-    self.__setSettings__()
+    self.__set_settings__()
     return  self
 
 
   def __len__(
     self
     ):
-    self.__setSettings__()
+    self.__set_settings__()
     return len(self._settings)
 
-  def __setSettings__(
+  def __set_settings__(
     self
     ):
     if self._changed:
@@ -825,15 +825,15 @@ class Plan():
       self._setting = None
 
       selector = copy.deepcopy(selector)
-      nbPlans = len(self.factors())
+      nb_plans = len(self.factors())
       if selector is None or len(selector)==0 or (len(selector)==1 and len(selector)==0) :
-         selector = [[-1]*nbPlans]
+         selector = [[-1]*nb_plans]
       if isinstance(selector, list) and not all(isinstance(x, list) for x in selector):
           selector = [selector]
 
       for im, m in enumerate(selector):
-        if len(m) < nbPlans:
-          selector[im] = m+[-1]*(nbPlans-len(m))
+        if len(m) < nb_plans:
+          selector[im] = m+[-1]*(nb_plans-len(m))
         for il, l in enumerate(m):
             if not isinstance(l, list) and l > -1:
                 selector[im][il] = [l]
@@ -843,9 +843,9 @@ class Plan():
           for il, l in enumerate(m):
             if isinstance(l, list):
               m[il] = list(dict.fromkeys(l))
-      self._expandedSelector = selector
+      self._expanded_selector = selector
 
-      if self._checkSelector(selector):
+      if self._check_selector(selector):
         for m in selector:
           # handle -1 in selector
           for mfi, mf in enumerate(m):
@@ -857,23 +857,23 @@ class Plan():
               else:
                 m[mfi] = [0]
 
-          s = self.__setSettingsSelector__(m, 0)
+          s = self.__set_settings_selector__(m, 0)
           if all(isinstance(ss, list) for ss in s):
             for ss in s:
               settings.append(ss)
           else:
             settings.append(s)
-        prunedSettings = [k for k,v in groupby(sorted(settings))]
-        if self._pruneSelector and len(prunedSettings) < len(settings):
-          settings = prunedSettings
+        pruned_settings = [k for k,v in groupby(sorted(settings))]
+        if self._prune_selector and len(pruned_settings) < len(settings):
+          settings = pruned_settings
         self._changed = False
         self._settings = settings
 
-  def __setSettingsSelector__(self, selector, done):
+  def __set_settings_selector__(self, selector, done):
     if done == len(selector):
       return []
 
-    s = self.__setSettingsSelector__(selector, done+1)
+    s = self.__set_settings_selector__(selector, done+1)
     if isinstance(selector[done], list):
       settings = []
       for mod in selector[done]:
