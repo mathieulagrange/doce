@@ -100,12 +100,12 @@ class Plan():
 
     print(f)
     for setting in p.select():
-      print(setting.id())
+      print(setting.identifier())
 
     p.default('f2', 2)
 
     for setting in p:
-      print(setting.id())
+      print(setting.identifier())
 
     p.f2 = [0, 1, 2, 3]
     print(f)
@@ -113,13 +113,13 @@ class Plan():
     p.default('f2', 2)
 
     for setting in p:
-      print(setting.id())
+      print(setting.identifier())
 
 
     """
     if hasattr(self, factor):
       # if generic_default_modality_warning and len([item for item in getattr(self, factor) if item in [0, 'none']]):
-      #   print('Setting an explicit default modality to factor '+factor+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <hide_none_and_zero> set to False when using method id() if (O or none). You can remove this warning by setting the flag <force> to True.')
+      #   print('Setting an explicit default modality to factor '+factor+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <hide_none_and_zero> set to False when using method identifier() if (O or none). You can remove this warning by setting the flag <force> to True.')
       if modality not in getattr(self, factor):
         print('The default modality of factor '+factor+' should be available in the set of modalities.')
         raise value_error
@@ -190,7 +190,7 @@ class Plan():
 
     if nb_jobs>1 or nb_jobs<0:
       from joblib import Parallel, delayed
-      result = Parallel(n_jobs=nb_jobs, require='sharedmem')(delayed(setting.do)(function, experiment, log_file_name, *parameters) for setting in self)
+      result = Parallel(n_jobs=nb_jobs, require='sharedmem')(delayed(setting.perform)(function, experiment, log_file_name, *parameters) for setting in self)
     else:
       start_time = time.time()
       step_time = start_time
@@ -202,10 +202,10 @@ class Plan():
             if 'm' in progress:
               description += str(self._settings[iSetting])+' '
             if 'd' in progress:
-              description += setting.id()
+              description += setting.identifier()
             t.set_description(description)
             if function:
-              nb_failed += setting.do(function, experiment, log_file_name, *parameters)
+              nb_failed += setting.perform(function, experiment, log_file_name, *parameters)
             else:
                 print(setting)
             delay = (time.time()-step_time)
@@ -396,7 +396,7 @@ class Plan():
     reverse=False,
     force=False,
     keep=False,
-    setting_encoding={'separator':'_', 'identifier':'_'},
+    setting_encoding={'factor_separator':'_', 'modality_separator':'_'},
     archive_path='',
     verbose=0):
     """clean a h5 data sink by considering the settings set.
@@ -420,13 +420,13 @@ class Plan():
     if not keep:
       h5 = tb.open_file(path, mode='a')
       if reverse:
-        ids = [setting.id(**setting_encoding) for setting in self]
+        ids = [setting.identifier(**setting_encoding) for setting in self]
         for g in h5.iter_nodes('/'):
           if g._v_name not in ids:
             h5.remove_node(h5.root, g._v_name, recursive=True)
       else:
         for setting in self:
-          group_name = setting.id(**setting_encoding)
+          group_name = setting.identifier(**setting_encoding)
           if h5.root.__contains__(group_name):
             h5.remove_node(h5.root, group_name, recursive=True)
       h5.close()
@@ -463,14 +463,14 @@ class Plan():
 
     path = os.path.expanduser(path)
     if path.endswith('.h5'):
-      setting_encoding={'separator':'_', 'identifier':'_'}
+      setting_encoding={'factor_separator':'_', 'modality_separator':'_'}
       self.clean_h5(path, reverse, force, keep, setting_encoding, archive_path, verbose)
     else:
       file_names = []
       for setting in self:
         if verbose:
-          print('search path: '+path+'/'+setting.id(**setting_encoding)+wildcard)
-        for f in glob.glob(path+'/'+setting.id(**setting_encoding)+wildcard):
+          print('search path: '+path+'/'+setting.identifier(**setting_encoding)+wildcard)
+        for f in glob.glob(path+'/'+setting.identifier(**setting_encoding)+wildcard):
             file_names.append(f)
       if reverse:
         complete = []

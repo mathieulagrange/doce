@@ -90,7 +90,7 @@ class Metric():
       nb_reduced_metrics = 0
       nb_metrics = 0
       for mIndex, metric in enumerate(self.name()):
-        file_name = path+setting.id(**setting_encoding)+'_'+metric+'.npy'
+        file_name = path+setting.identifier(**setting_encoding)+'_'+metric+'.npy'
         if os.path.exists(file_name):
           mod = os.path.getmtime(file_name)
           modification_time_stamp.append(mod)
@@ -214,11 +214,11 @@ class Metric():
       nb_reduced_metrics = 0
       nb_metrics = 0
       if verbose:
-        print('Seeking Group '+setting.id(**setting_encoding))
-      if h5.root.__contains__(setting.id(**setting_encoding)):
-        setting_group = h5.root._f_get_child(setting.id(**setting_encoding))
+        print('Seeking Group '+setting.identifier(**setting_encoding))
+      if h5.root.__contains__(setting.identifier(**setting_encoding)):
+        setting_group = h5.root._f_get_child(setting.identifier(**setting_encoding))
         # print(setting_group._v_name)
-        # print(setting.id(**setting_encoding))
+        # print(setting.identifier(**setting_encoding))
         for mIndex, metric in enumerate(self.name()):
           for reduction_type in self.__getattribute__(metric):
             # value = np.nan
@@ -441,8 +441,8 @@ class Metric():
     >>> def process(setting, experiment):
     ...   metric1 = setting.f1+setting.f2+np.random.randn(100)
     ...   metric2 = setting.f1*setting.f2*np.random.randn(100)
-    ...   np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
-    ...   np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
+    ...   np.save(experiment.path.output+setting.identifier()+'_m1.npy', metric1)
+    ...   np.save(experiment.path.output+setting.identifier()+'_m2.npy', metric2)
     >>> nb_failed = experiment.do([], process, progress='')
     >>> (setting_description, column_header, constant_setting_description, nb_column_factor, modification_time_stamp, significance) = experiment.metric.reduce(experiment._plan.select([1]), experiment.path.output)
 
@@ -517,7 +517,7 @@ class Metric():
 
     if len(self.name()):
       if path.endswith('.h5'):
-        setting_encoding = {'separator':'_', 'identifier':'_'}
+        setting_encoding = {'factor_separator':'_', 'modality_separator':'_'}
         modification_time_stamp = []
         (setting_description, metric_has_data, reduced_metrics, significance) = self.reduce_from_h5(settings, path, setting_encoding, verbose, reduction_directive_module, metric_selector)
       else:
@@ -597,8 +597,8 @@ class Metric():
     >>> def process(setting, experiment):
     ...  metric1 = setting.f1+setting.f2+np.random.randn(100)
     ...  metric2 = setting.f1*setting.f2*np.random.randn(100)
-    ...  np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
-    ...  np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
+    ...  np.save(experiment.path.output+setting.identifier()+'_m1.npy', metric1)
+    ...  np.save(experiment.path.output+setting.identifier()+'_m2.npy', metric2)
     >>> nb_failed = experiment.do([], process, progress='')
 
     >>> (setting_metric, setting_description, constant_setting_description) = experiment.metric.get('m1', experiment._plan.select([1]), experiment.path.output)
@@ -615,7 +615,7 @@ class Metric():
     setting_metric = []
     setting_description = []
     setting_descriptionFormat = copy.deepcopy(setting_encoding)
-    setting_descriptionFormat['format'] = 'list'
+    setting_descriptionFormat['style'] = 'list'
     setting_descriptionFormat['default'] = True
     setting_descriptionFormat['sort'] = False
 
@@ -623,24 +623,24 @@ class Metric():
       if path.endswith('.h5'):
         h5 = tb.open_file(path, mode='r')
         for setting in settings:
-          if h5.root.__contains__(setting.id(**setting_encoding)):
+          if h5.root.__contains__(setting.identifier(**setting_encoding)):
             if verbose:
-              print('Found group '+setting.id(**setting_encoding))
-            setting_group = h5.root._f_get_child(setting.id(**setting_encoding))
+              print('Found group '+setting.identifier(**setting_encoding))
+            setting_group = h5.root._f_get_child(setting.identifier(**setting_encoding))
             if setting_group.__contains__(metric):
               setting_metric.append(np.array(setting_group._f_get_child(metric)))
-              setting_description.append(setting.id(**setting_descriptionFormat))
+              setting_description.append(setting.identifier(**setting_descriptionFormat))
           elif verbose:
-            print('** Unable to find group '+setting.id(**setting_encoding))
+            print('** Unable to find group '+setting.identifier(**setting_encoding))
         h5.close()
       else:
         for setting in settings:
-          file_name = path+setting.id(**setting_encoding)+'_'+metric+'.npy'
+          file_name = path+setting.identifier(**setting_encoding)+'_'+metric+'.npy'
           if os.path.exists(file_name):
             if verbose:
               print('Found '+file_name)
             setting_metric.append(np.load(file_name))
-            setting_description.append(setting.id(**setting_descriptionFormat))
+            setting_description.append(setting.identifier(**setting_descriptionFormat))
           elif verbose:
             print('** Unable to find '+file_name)
 
@@ -656,7 +656,7 @@ class Metric():
     file_id,
     setting,
     metric_dimension={},
-    setting_encoding={'separator':'_', 'identifier':'_'}
+    setting_encoding={'factor_separator':'_', 'modality_separator':'_'}
     ):
     """adds a group to the root of a valid py_tables Object in order to store the metrics corresponding to the specified setting.
 
@@ -733,7 +733,7 @@ class Metric():
     """
     import tables as tb
 
-    group_name = setting.id(**setting_encoding)
+    group_name = setting.identifier(**setting_encoding)
     # print(group_name)
     if not file_id.__contains__('/'+group_name):
       setting_group = file_id.create_group('/', group_name, str(setting))

@@ -28,7 +28,7 @@ def main():
   ...   experiment._plan.factor2=[2, 4]
   ...   return experiment
   >>> def step(setting, experiment):
-  ...   print(setting.id())
+  ...   print(setting.identifier())
 
   Executing this file with the --run option gives:
 
@@ -141,7 +141,7 @@ def main():
   if args.list:
     experiment.do(experiment.selector, progress='', function= lambda s, e: print(s))
   if args.files:
-    experiment.do(experiment.selector, progress='', function= lambda s, e: print(s.id()))
+    experiment.do(experiment.selector, progress='', function= lambda s, e: print(s.identifier()))
 
   if args.remove:
     experiment.clean_data_sink(args.remove, experiment.selector, archive_path=experiment.path.archive, verbose=experiment.status.verbose)

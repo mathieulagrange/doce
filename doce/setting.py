@@ -1,4 +1,5 @@
-import doce
+"""handle setting conversion"""
+
 import hashlib
 import copy
 import logging
@@ -6,9 +7,11 @@ import traceback
 import numpy as np
 
 class Setting():
-  """stores a :term:`setting`, where each member is a factor and the value of the member is a modality.
+  """stores a :term:`setting`, where each member is a factor
+  and the value of the member is a modality.
 
-  Stores a :term:`setting`, where each member is a factor and the value of the member is a modality.
+  Stores a :term:`setting`, where each member is a factor
+  and the value of the member is a modality.
 
   Examples
   --------
@@ -39,15 +42,17 @@ class Setting():
     else:
       self._setting = copy.deepcopy(plan._setting)
 
-    for fi, f in enumerate(plan.factors()):
+    for factor_index, factor in enumerate(plan.factors()):
       # print(self._setting[fi])
       # print(f)
-      self.__setattr__(f, getattr(plan, f)[self._setting[fi]])
+      self.__setattr__(factor, getattr(plan, factor)[self._setting[factor_index]])
 
   def __str__(self):
-    """returns a one-liner str with a readable description of the Factor object or the current setting.
+    """returns a one-liner str with a readable description
+    of the Factor object or the current setting.
 
-  	returns a one-liner str with a readable description of the Factor object or the current setting if in an iterable.
+  	returns a one-liner str with a readable description
+    of the Factor object or the current setting if in an iterable.
 
   	Examples
   	--------
@@ -69,28 +74,29 @@ class Setting():
     one=b+two=1
     one=b+two=2
     """
-    return self.id(sort=False, singleton=True, default=True)
+    return self.identifier(sort=False, singleton=True, default=True)
 
-
-  def id(
+  def identifier(
     self,
-    format = 'long',
+    style = 'long',
     sort = True,
-    separator = '+',
-    identifier = '=',
+    factor_separator = '+',
+    modality_separator = '=',
     singleton = True,
     default = False,
-    hide = [],
-    to_int = True):
-    
-    """return a one-liner str or a list of str that describes a setting or a :class:`~doce.Plan` object.
+    hide = None
+    ):
 
-  	Return a one-liner str or a list of str that describes a setting or a :class:`~doce.Plan` object with a high degree of flexibility.
+    """return a one-liner str or a list of str
+    that describes a setting or a :class:`~doce.Plan` object.
+
+  	Return a one-liner str or a list of str that describes
+    a setting or a :class:`~doce.Plan` object with a high degree of flexibility.
 
   	Parameters
   	----------
 
-    format: str (optional)
+    style: str (optional)
       'long': (default)
       'list': a list of string alternating factor and the corresponding modality
       'hash': a hashed version
@@ -106,18 +112,21 @@ class Setting():
       if False, consider factors with only one modality (default).
 
     default: bool (optional)
-      if True, also consider couple of factor/modality where the modality is explicitly set to be a default value for this factor using :meth:`doce.Plan.default`.
+      if True, also consider couple of factor/modality
+      where the modality is explicitly set to be
+      a default value for this factor using :meth:`doce.Plan.default`.
 
       if False, do not show them (default).
 
     hide: list of str
-      list the factors that should not be considered. The list is empty by default.
+      list the factors that should not be considered.
 
-    separator: str
-      separator used to concatenate the factors, default is '|'.
+    factor_separator: str
+      factor_separator used to concatenate the factors, default is '|'.
 
-    separator: str
-      separator used to concatenate the factor and modality value, default is '='.
+    factor_separator: str
+      factor_separator used to concatenate
+      the factor and modality value, default is '='.
 
   	See Also
   	--------
@@ -145,89 +154,100 @@ class Setting():
 
     >>> for setting in p.select([0, 1, 1]):
     ...   # default display
-    ...   print(setting.id())
+    ...   print(setting.identifier())
     four=d+one=a+three=c+two=1
-    >>> # list format
-    >>> print(setting.id('list'))
+    >>> # list style
+    >>> print(setting.identifier('list'))
     ['four=d', 'one=a', 'three=c', 'two=1']
     >>> # hashed version of the default display
-    >>> print(setting.id('hash'))
+    >>> print(setting.identifier('hash'))
     4474b298d3b23000e739e888042dab2b
     >>> # do not apply sorting of the factor
-    >>> print(setting.id(sort=False))
+    >>> print(setting.identifier(sort=False))
     one=a+two=1+three=c+four=d
-    >>> # specify a separator
-    >>> print(setting.id(separator=' '))
+    >>> # specify a factor_separator
+    >>> print(setting.identifier(factor_separator=' '))
     four=d one=a three=c two=1
     >>> # do not show some factors
-    >>> print(setting.id(hide=['one', 'three']))
+    >>> print(setting.identifier(hide=['one', 'three']))
     four=d+two=1
     >>> # do not show factors with only one modality
-    >>> print(setting.id(singleton=False))
+    >>> print(setting.identifier(singleton=False))
     one=a+three=c+two=1
     >>> delattr(p, 'four')
     >>> for setting in p.select([0, 0, 0]):
-    ...   print(setting.id())
+    ...   print(setting.identifier())
     one=a+three=none+two=0
 
     >>> # set the default value of factor one to a
     >>> p.default('one', 'a')
     >>> for setting in p.select([0, 1, 1]):
-    ...   print(setting.id())
+    ...   print(setting.identifier())
     three=c+two=1
     >>> # do not hide the default value in the description
-    >>> print(setting.id(default=True))
+    >>> print(setting.identifier(default=True))
     one=a+three=c+two=1
 
     >>> p.optional_parameter = ['value_one', 'value_two']
     >>> for setting in p.select([0, 1, 1, 0]):
-    ...   print(setting.id())
+    ...   print(setting.identifier())
     optional_parameter=value_one+three=c+two=1
     >>> delattr(p, 'optional_parameter')
 
     >>> p.optional_parameter = ['value_one', 'value_two']
     >>> for setting in p.select([0, 1, 1, 0]):
-    ...   print(setting.id())
+    ...   print(setting.identifier())
     optional_parameter=value_one+three=c+two=1
 
     """
-    id = []
-    fNames = self._plan._factors
-    if isinstance(hide, str):
-      hide=[hide]
-    elif isinstance(hide, int) :
-      hide=[fNames[hide]]
-    elif isinstance(hide, list) and len(hide) and isinstance(hide[0], int) :
-      for oi, o in enumerate(hide):
-        hide[oi]=fNames[o]
+    if not hide:
+      hide = []
+    identifier = []
+    factors = self._plan.factors()
+    # if isinstance(hide, str):
+    #   hide=[hide]
+    # elif isinstance(hide, int) :
+    #   hide=[factors[hide]]
+    # elif hide and isinstance(hide, list) and isinstance(hide[0], int) :
+    #   for oi, o in enumerate(hide):
+    #     hide[oi]=factors[o]
     if sort:
-      fNames = sorted(fNames)
-    for fIndex, f in enumerate(fNames):
-      if f[0] != '_' and getattr(self, f) is not None and f not in hide:
-        if (singleton or f in self._plan._non_singleton) and (default or not hasattr(self._plan._default, f) or (not default and hasattr(self._plan._default, f) and getattr(self._plan._default, f) != getattr(self, f))):
-          # id.append(f)
+      factors = sorted(factors)
+    for factor in factors:
+      if factor[0] != '_' and \
+         getattr(self, factor) is not None and \
+         factor not in hide:
+        if (singleton or factor in self._plan._non_singleton) and \
+           (default or not hasattr(self._plan._default, factor) or \
+           (not default and hasattr(self._plan._default, factor) and \
+           getattr(self._plan._default, factor) != getattr(self, factor))):
+          # identifier.append(f)
           # print(str(getattr(self, f)))
-          if isinstance(getattr(self, f), float):
-            modality = np.format_float_positional(getattr(self, f))
+          if isinstance(getattr(self, factor), float):
+            modality = np.format_float_positional(getattr(self, factor))
           else:
-            modality = str(getattr(self, f))
-          id.append(f+identifier+modality)
-    if 'list' not in format:
-      id = separator.join(id)
-      if format == 'hash':
-        id  = hashlib.md5(id.encode("utf-8")).hexdigest()
-    return id
+            modality = str(getattr(self, factor))
+          identifier.append(factor+modality_separator+modality)
+    if 'list' not in style:
+      identifier = factor_separator.join(identifier)
+      if style == 'hash':
+        identifier  = hashlib.md5(identifier.encode("utf-8")).hexdigest()
+    return identifier
 
   def replace(self, factor, value=None, positional=0, relative=0):
     """returns a new doce.Plan object with one factor with modified modality.
 
-    Returns a new doce.Plan object with with one factor with modified modality. The value of the requested new modality can requested by 3 exclusive means: its value, its position in the modality array, or its relative position in the array with respect to the position of the current modality.
+    Returns a new doce.Plan object with with one factor with modified modality.
+    The value of the requested new modality can requested by 3 exclusive means:
+    its value, its position in the modality array, or its relative position
+    in the array with respect to the position of the current modality.
 
     Parameters
     ----------
 
     factor: int or str
-      if int, considered as the index inside an array of the factors sorted by order of definition.
+      if int, considered as the index inside an array of the factors
+      sorted by order of definition.
 
       If str, the name of the factor.
 
@@ -267,34 +287,34 @@ class Setting():
     one=b+two=1
     >>> print(setting.replace('two', positional=0))
     one=b+two=1
-    >>> # the same setting but with the factor 'two' set to modality of relative index -1 with respect to the modality index of the current setting
+    >>> # the same setting but with the factor 'two' set to
+    >>> # modality of relative index -1 with respect to
+    >>> # the modality index of the current setting
     >>> print(setting.replace('two', relative=-1))
     one=b+two=1
     """
 
     # get factor index
     if isinstance(factor, str):
-      factor = self._plan._factors.index(factor)
+      factor = self._plan.factors().index(factor)
     # get modality index
     if value is not None:
-      factor_name = self._plan._factors[factor]
+      factor_name = self._plan.factors()[factor]
       modalities = self._plan.__getattribute__(factor_name)
       positional, = np.where(modalities == value)
       positional = positional[0] # assumes no repetion
 
-    sDesc = copy.deepcopy(self._setting)
+    setting = copy.deepcopy(self._setting)
     if relative:
-      sDesc[factor] += relative
+      setting[factor] += relative
     else:
-      sDesc[factor] = positional
-    if sDesc[factor]< 0 or sDesc[factor] >= self._plan.nb_modalities(factor):
+      setting[factor] = positional
+    if setting[factor]< 0 or setting[factor] >= self._plan.nb_modalities(factor):
       print('Unable to find the requested modality.')
       return None
-    else:
-      s = Setting(self._plan, sDesc)
-      return s
+    return Setting(self._plan, setting)
 
-  def do(
+  def perform(
     self,
     function,
     experiment,
@@ -313,21 +333,21 @@ class Setting():
     """
     failed = 0
     if experiment.skip_setting(self) :
-      message = 'Metrics for setting '+self.id()+' already available. Skipping...'
+      message = 'Metrics for setting '+self.identifier()+' already available. Skipping...'
       print(message)
       if log_file_name:
         logging.info(message)
     else:
       try:
         function(self, experiment, *parameters)
-      except Exception as e:
+      except Exception as exception:
         if log_file_name:
           failed = 1
-          logging.info('Failed setting: '+self.id())
+          logging.info('Failed setting: %s', self.identifier())
           logging.info(traceback.format_exc())
         else:
-          print('Failed setting: '+self.id())
-          raise e
+          print('Failed setting: '+self.identifier())
+          raise exception
     return failed
 
   def remove_factor(self, factor):
@@ -340,12 +360,12 @@ class Setting():
       the name of the factor.
 
     """
-    s = copy.deepcopy(self)
-    delattr(s, factor)
-    return s
+    setting_copy = copy.deepcopy(self)
+    delattr(setting_copy, factor)
+    return setting_copy
 
 
 if __name__ == '__main__':
-    import doctest
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
-    # doctest.run_docstring_examples(Setting.id, globals())
+  import doctest
+  doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+  # doctest.run_docstring_examples(Setting.id, globals())

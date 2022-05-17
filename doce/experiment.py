@@ -521,8 +521,8 @@ class Experiment():
     >>> e.set_path('output', '/tmp/test', force=True)
     >>> e.add_plan('plan', factor1=[1, 3], factor2=[2, 4])
     >>> def my_function(setting, experiment):
-    ...   np.save(experiment.path.output+'/'+setting.id()+'_sum.npy', setting.factor1+setting.factor2)
-    ...   np.save(experiment.path.output+'/'+setting.id()+'_mult.npy', setting.factor1*setting.factor2)
+    ...   np.save(experiment.path.output+'/'+setting.identifier()+'_sum.npy', setting.factor1+setting.factor2)
+    ...   np.save(experiment.path.output+'/'+setting.identifier()+'_mult.npy', setting.factor1*setting.factor2)
     >>> nb_failed = e.do([], my_function, progress='')
     >>> os.listdir(e.path.output)
     ['factor1=1+factor2=4_mult.npy', 'factor1=1+factor2=4_sum.npy', 'factor1=3+factor2=4_sum.npy', 'factor1=1+factor2=2_mult.npy', 'factor1=1+factor2=2_sum.npy', 'factor1=3+factor2=2_mult.npy', 'factor1=3+factor2=4_mult.npy', 'factor1=3+factor2=2_sum.npy']
@@ -630,7 +630,7 @@ class Experiment():
             print('todo')
           else:
             if path not in ['export', 'export_raw', 'archive', 'archive_raw', 'code', 'code_raw']:
-              check = glob.glob(self.path.__getattribute__(path)+setting.id()+'_*.npy')
+              check = glob.glob(self.path.__getattribute__(path)+setting.identifier()+'_*.npy')
               if check:
                 return True
     return False
@@ -680,8 +680,8 @@ class Experiment():
     >>> def process(setting, experiment):
     ...  metric1 = setting.f1+setting.f2+np.random.randn(100)
     ...  metric2 = setting.f1*setting.f2*np.random.randn(100)
-    ...  np.save(experiment.path.output+setting.id()+'_m1.npy', metric1)
-    ...  np.save(experiment.path.output+setting.id()+'_m2.npy', metric2)
+    ...  np.save(experiment.path.output+setting.identifier()+'_m1.npy', metric1)
+    ...  np.save(experiment.path.output+setting.identifier()+'_m2.npy', metric2)
     >>> nb_failed = experiment.do([], process, progress='')
 
     >>> (setting_metric, setting_description, constant_setting_description) = experiment.get(metric = 'm1', selector = [1], path='output')
