@@ -31,13 +31,13 @@ def constant_column(
   indexes = [True] * len(table[0])
   values = [None] * len(table[0])
 
-  for r in table:
-    for c_index, c in enumerate(r):
-      if values[c_index] is None and indexes[c_index]:
-        values[c_index] = c
-      elif values[c_index] != c:
-        indexes[c_index] = False
-        values[c_index] = None
+  for row in table:
+    for col_index, col in enumerate(row):
+      if values[col_index] is None and indexes[col_index]:
+        values[col_index] = col
+      elif values[col_index] != col:
+        indexes[col_index] = False
+        values[col_index] = None
   return values
 
 def prune_setting_description(
@@ -73,7 +73,7 @@ def prune_setting_description(
 
   show_unique_setting: bool
     If True, show the description of the unique setting
-    in constant_setting_description.
+    in cst_setting_desc.
 
 	Returns
 	-------
@@ -86,7 +86,7 @@ def prune_setting_description(
     column_header where the columns corresponding
     to factors with only one modality are removed.
 
-  constant_setting_description: str
+  cst_setting_desc: str
     description of the settings with constant modality.
 
   nb_column_factor: int
@@ -100,18 +100,18 @@ def prune_setting_description(
   >>> table = [['a', 'b', 1, 2], ['a', 'c', 2, 2], ['a', 'b', 2, 2]]
   >>> (setting_description,
   ...  column_header,
-  ...  constant_setting_description,
+  ...  cst_setting_desc,
   ...  nb_column_factor) = doce.util.prune_setting_description(table, header, 2)
   >>> print(nb_column_factor)
   1
-  >>> print(constant_setting_description)
+  >>> print(cst_setting_desc)
   factor_1: a
   >>> print(column_header)
   ['factor_2', 'metric_1', 'metric_2']
   >>> print(setting_description)
   [['b', 1, 2], ['c', 2, 2], ['b', 2, 2]]
   """
-  constant_setting_description = ''
+  cst_setting_desc = ''
   if setting_description:
     if nb_column_factor == 0:
       nb_column_factor = len(setting_description[0])
@@ -119,38 +119,43 @@ def prune_setting_description(
       constant_value = constant_column(setting_description)
       # for si, s in enumerate(constant_value):
       #   if not column_header and si>0 and s is None:
-      #     constant_value[si-1] = None
-      cc_index = [
+      #     constant_value[ccol_indi-1] = None
+      ccol_index = [
         i for i, x in enumerate(constant_value)
         if x is not None and i<nb_column_factor
         ] # there is an issue here possibly with get
-      nb_column_factor -= len(cc_index)
-      for s in cc_index:
+      nb_column_factor -= len(ccol_index)
+      for ccol_ind in ccol_index:
         if column_header:
-          constant_setting_description += compress_description(column_header[s], factor_display)+': '+str(constant_value[s])+' '
+          # cst_setting_desc += compress_description(column_header[ccol_ind],
+           # factor_display)+': '+str(constant_value[ccol_ind])+' '
+          cst_setting_desc += '{desc}: {value} '.format(
+            desc = compress_description(column_header[ccol_ind], factor_display),
+            value = str(constant_value[ccol_ind])
+            )
         else:
-          constant_setting_description += setting_description[0][s]+' '
-      for s in sorted(cc_index, reverse=True):
+          cst_setting_desc += setting_description[0][ccol_ind]+' '
+      for ccol_ind in sorted(ccol_index, reverse=True):
         if column_header:
-          column_header.pop(s)
-        for r in setting_description:
-          r.pop(s)
+          column_header.pop(ccol_ind)
+        for setting_desc in setting_description:
+          setting_desc.pop(ccol_ind)
     else:
-      constant_setting_description = ''
+      cst_setting_desc = ''
       if show_unique_setting:
-        constant_setting_description = ' '.join(str(x) for x in setting_description[0]).strip()
+        cst_setting_desc = ' '.join(str(x) for x in setting_description[0]).strip()
 
   return (
     setting_description,
     column_header,
-    constant_setting_description,
+    cst_setting_desc,
     nb_column_factor
     )
 
 
 def compress_description(
   description,
-  format='long',
+  desc_type='long',
   atom_length=2
   ):
   """ reduces the number of letters for each word in a given description
@@ -161,7 +166,7 @@ def compress_description(
   description : str
     the structured description.
 
-  format : str, optional
+  desc_type : str, optional
     can be
     'long' (default), do not lead to any reduction,
     'short_underscore' assumes python_case delimitation,
@@ -178,30 +183,32 @@ def compress_description(
 	--------
 
   >>> import doce
-  >>> doce.util.compress_description('myVeryLongParameter', format='short')
+  >>> doce.util.compress_description('myVeryLongParameter', desc_type='short')
   'myvelopa'
   >>> doce.util.compress_description(
   ...  'that_very_long_parameter',
-  ...  format='short',
+  ...  desc_type='short',
   ...  atom_length=3
   ...  )
   'thaverlonpar'
   """
 
-  if format == 'short':
+  if desc_type == 'short':
     if '_' in description and not description.islower() and not description.isupper():
-      print('The description '+description+''' has underscores and capital. Explicitely states which delimeter shall be considered for reduction.''')
+      print('''The description {desc} has underscores and capital. \
+      Explicitely states which delimeter \
+      shall be considered for reduction.'''.format(desc=description))
       raise ValueError
     if '_' in description:
-      format = 'short_underscore'
+      desc_type = 'short_underscore'
     else:
-      format = 'short_capital'
+      desc_type = 'short_capital'
   compressed_description = description
-  if 'short_underscore' in format:
+  if 'short_underscore' in desc_type:
     compressed_description = ''.join([itf[0:atom_length] for itf in description.split('_')])
-  if 'short_capital' in format:
+  if 'short_capital' in desc_type:
     compressed_description = description[0:atom_length]+''.join([itf[0:atom_length] for itf in re.findall('[A-Z][^A-Z]*', description)]).lower()
-  if '%' in description and not '%' in compressed_description :
+  if '%' in description and '%' not in compressed_description :
     compressed_description += '%'
   if description[-1] == '-' and not compressed_description[-1] == '-':
     compressed_description += '-'
