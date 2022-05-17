@@ -1,4 +1,4 @@
-"""handle low level functionalities"""
+"""handle low level functionalities of the doce module"""
 
 import sys
 import re

@@ -1,4 +1,4 @@
-"""handle setting conversion"""
+"""handle the manipulation of settings: the unique description of a parametrization of the system probed by the experiment."""
 
 import hashlib
 import copy
