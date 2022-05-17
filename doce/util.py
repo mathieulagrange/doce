@@ -183,7 +183,10 @@ def compress_description(
 	--------
 
   >>> import doce
-  >>> doce.util.compress_description('myVeryLongParameter', desc_type='short')
+  >>> doce.util.compress_description(
+  ... 'myVeryLongParameter',
+  ... desc_type='short'
+  ... )
   'myvelopa'
   >>> doce.util.compress_description(
   ...  'that_very_long_parameter',
