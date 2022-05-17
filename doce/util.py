@@ -129,10 +129,9 @@ def prune_setting_description(
         if column_header:
           # cst_setting_desc += compress_description(column_header[ccol_ind],
            # factor_display)+': '+str(constant_value[ccol_ind])+' '
-          cst_setting_desc += '{desc}: {value} '.format(
-            desc = compress_description(column_header[ccol_ind], factor_display),
-            value = str(constant_value[ccol_ind])
-            )
+          desc = compress_description(column_header[ccol_ind], factor_display),
+          value = str(constant_value[ccol_ind])
+          cst_setting_desc += f'{desc}: {value} '
         else:
           cst_setting_desc += setting_description[0][ccol_ind]+' '
       for ccol_ind in sorted(ccol_index, reverse=True):
@@ -198,9 +197,9 @@ def compress_description(
 
   if desc_type == 'short':
     if '_' in description and not description.islower() and not description.isupper():
-      print('''The description {desc} has underscores and capital. \
+      print(f'''The description {description} has underscores and capital. \
       Explicitely states which delimeter \
-      shall be considered for reduction.'''.format(desc=description))
+      shall be considered for reduction.''')
       raise ValueError
     if '_' in description:
       desc_type = 'short_underscore'

@@ -122,13 +122,13 @@ class Plan():
       #   print('Setting an explicit default modality to factor '+factor+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <hide_none_and_zero> set to False when using method identifier() if (O or none). You can remove this warning by setting the flag <force> to True.')
       if modality not in getattr(self, factor):
         print('The default modality of factor '+factor+' should be available in the set of modalities.')
-        raise value_error
+        raise ValueError
       self._default.__setattr__(factor, modality)
     else:
       print('Please set the factor '+factor+' before choosing its default modality.')
-      raise value_error
+      raise ValueError
 
-  def do(
+  def perform(
     self,
     function,
     experiment,
@@ -221,11 +221,11 @@ class Plan():
    for factor in self._factors:
      if '=' in factor or '+' in factor:
        print('Error: = and + are not allowed for naming factors')
-       raise value_error
+       raise ValueError
      # modalities = str(getattr(self, factor))
      # if '=' in factor or '+' in modalities:
      #   print('Error: = and + are not allowed for naming modalities')
-     #   raise value_error
+     #   raise ValueError
 
   def select(
     self,
@@ -452,7 +452,7 @@ class Plan():
     force=False,
     keep=False,
     wildcard='*',
-    setting_encoding={},
+    setting_encoding=None,
     archive_path='',
     verbose=0
     ):
@@ -460,7 +460,8 @@ class Plan():
 
   	This method is more conveniently used by considering the method :meth:`doce.experiment._experiment.clean_data_sink, please see its documentation for usage.
     """
-
+    if not setting_encoding:
+      setting_encoding = {}
     path = os.path.expanduser(path)
     if path.endswith('.h5'):
       setting_encoding={'factor_separator':'_', 'modality_separator':'_'}
@@ -519,9 +520,8 @@ class Plan():
           if hasattr(tmp._default, f) and getattr(x._default, f) != getattr(tmp._default, f):
             print(getattr(tmp._default, f))
             print('While merging factors of the different experiment, a conflict of default modalities for the factor '+f+' is detected. This may lead to an inconsistent behavior.')
-            raise value_error
-          else:
-            setattr(tmp._default, f, getattr(x._default, f))
+            raise ValueError
+          setattr(tmp._default, f, getattr(x._default, f))
             # print(tmp._default)
     for x in plans:
       for f in x.factors():
