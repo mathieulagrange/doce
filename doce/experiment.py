@@ -152,27 +152,6 @@ class Experiment():
       self._atrs.append(name)
     return object.__setattr__(self, name, value)
 
-  # def expand_path(
-  #   self
-  #   ):
-  #   """
-  #
-  #   Examples
-  #   --------
-  #
-  #   >>> import doce
-  #   >>> import os
-  #   >>> e=doce.Experiment()
-  #   >>> e.name = 'experiment'
-  #   >>> e.path.processing = '/tmp/'+e.name+'/processing'
-  #   >>> e.path.output = '/tmp/'+e.name+'/output'
-  #   >>> e.set_path(force=_true)
-  #   >>> os.listdir('/tmp/'+e.name)
-  #   ['processing', 'output']
-  #   """
-  #   for sns in self.__getattribute__('path').__dict__.keys():
-  #     self.__getattribute__('path') = os.path.abspath(os.path.expanduser(self.__getattribute__('path').__getattribute__(sns)))
-
   def set_path(
     self,
     name,
@@ -199,9 +178,9 @@ class Experiment():
     >>> import os
     >>> e=doce.Experiment()
     >>> e.name = 'experiment'
-    >>> e.set_path('processing', '/tmp/'+e.name+'/processing', force=True)
-    >>> e.set_path('output', '/tmp/'+e.name+'/output', force=True)
-    >>> os.listdir('/tmp/'+e.name)
+    >>> e.set_path('processing', '/tmp/{e.name}/processing', force=True)
+    >>> e.set_path('output', '/tmp/{e.name}/output', force=True)
+    >>> os.listdir(f'/tmp/{e.name}')
     ['processing', 'output']
     """
     # for sns in self.__getattribute__('path').__dict__.keys():
@@ -215,10 +194,10 @@ class Experiment():
         if not path.endswith('/'):
           if not path.endswith('\\'):
             if '\\' in path:
-              path = path+'\\'
+              path = f'{path}\\'
               self.path.__setattr__(name, path)
             else:
-              path = path+'/'
+              path = f'{path}/'
               self.path.__setattr__(name, path)
 
       if not os.path.exists(path):
@@ -289,16 +268,16 @@ class Experiment():
             description+=':'
           description+='\r\n'
           for sns in self.__getattribute__(atr).__dict__.keys():
-            description+='  '+sns+': '+str(self.__getattribute__(atr).__getattribute__(sns))+'\r\n'
+            description+=f'  {sns}: {str(self.__getattribute__(atr).__getattribute__(sns))}\r\n'
         elif isinstance(self.__getattribute__(atr), str) or isinstance(self.__getattribute__(atr), list):
           description+=atr
           if str(self.__getattribute__(atr)):
-            description +=': '+str(self.__getattribute__(atr))
+            description += f': {str(self.__getattribute__(atr))}'
           description += '\r\n'
         else:
           description+=atr
           if str(self.__getattribute__(atr)):
-            description +=': \r\n'+str(self.__getattribute__(atr))
+            description += f': \r\n{str(self.__getattribute__(atr))}'
           description += '\r\n'
     if style == 'html':
       desc = description.replace('\r\n', '</div><div>').replace('\t', '&emsp;')
@@ -343,9 +322,10 @@ class Experiment():
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
     server.login(self._gmail_id+'@gmail.com', self._gmail_app_password)
-    server.sendmail(self._gmail_id, self.address, header+body+'<h3> '+self.__str__(style = 'html')+'</h3>')
+    exp_desc = self.__str__(style = 'html')
+    server.sendmail(self._gmail_id, self.address, f'{header}{body}<h3> {exp_desc}</h3>')
     server.quit
-    print('Sent message entitled: [doce] '+self.name+' id '+self.status.run_id+' '+title+' on '+time.ctime(time.time()))
+    print(f'Sent message entitled: [doce] {self.name} id {self.status.run_id} {title} at {time.ctime(time.time())}')
 
   def perform(
     self,
@@ -477,20 +457,20 @@ class Experiment():
       self._plan = getattr(self, plans[0])
     else:
       if experiment_id == 'all':
-        oPlans = []
-        for p in plans:
+        o_plans = []
+        for plan in plans:
           if show:
-            print('Plan '+p+':')
-            print(getattr(self, p).as_panda_frame())
-          oPlans.append(getattr(self, p))
-        self._plan = self._plan.merge(oPlans)
+            print(f'Plan {plan}:')
+            print(getattr(self, plan).as_panda_frame())
+          o_plans.append(getattr(self, plan))
+        self._plan = self._plan.merge(o_plans)
         if show and len(plans)>1:
           print('Those plans can be selected using the selector parameter.')
           print('Otherwise the merged plan is considered: ')
       else:
         if experiment_id.isnumeric():
           experiment_id = plans[int(experiment_id)]
-        print('Plan '+experiment_id+' is selected')
+        print('Plan {experiment_id} is selected')
         self._plan = getattr(self, experiment_id)
     self._plan.check()
     if show:
@@ -561,8 +541,8 @@ class Experiment():
     >>> e.set_path('output', '/tmp/test', force=True)
     >>> e.add_plan('plan', factor1=[1, 3], factor2=[2, 4])
     >>> def my_function(setting, experiment):
-    ...   np.save(experiment.path.output+'/'+setting.identifier()+'_sum.npy', setting.factor1+setting.factor2)
-    ...   np.save(experiment.path.output+'/'+setting.identifier()+'_mult.npy', setting.factor1*setting.factor2)
+    ...   np.save(f'{experiment.path.output}/{setting.identifier()}_sum.npy', setting.factor1+setting.factor2)
+    ...   np.save(f'{experiment.path.output}/{setting.identifier()}_mult.npy', setting.factor1*setting.factor2)
     >>> nb_failed = e.perform([], my_function, progress='')
     >>> os.listdir(e.path.output)
     ['factor1=1+factor2=4_mult.npy', 'factor1=1+factor2=4_sum.npy', 'factor1=3+factor2=4_sum.npy', 'factor1=1+factor2=2_mult.npy', 'factor1=1+factor2=2_sum.npy', 'factor1=3+factor2=2_mult.npy', 'factor1=3+factor2=4_mult.npy', 'factor1=3+factor2=2_sum.npy']
@@ -731,7 +711,7 @@ class Experiment():
 
     >>> experiment = doce.experiment.Experiment()
     >>> experiment.name = 'example'
-    >>> experiment.set_path('output', '/tmp/'+experiment.name+'/', force=True)
+    >>> experiment.set_path('output', f'/tmp/{experiment.name}/', force=True)
     >>> experiment.add_plan('plan', f1 = [1, 2], f2 = [1, 2, 3])
     >>> experiment.set_metrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
 
@@ -769,18 +749,18 @@ class Experiment():
     for path in self.path.__dict__.keys():
       if not path.endswith('_raw'):
         path = getattr(self.path, path)
-        (dp, sp, hp) = self.metric.get(
+        (data_path, setting_path, header_path) = self.metric.get(
           metric,
           settings=self._plan.select(selector),
           path=path
           )
-        if dp:
-          for d in dp:
-            data.append(d)
-          for s in sp:
-            settings.append(s)
+        if data_path:
+          for data_setting in data_path:
+            data.append(data_setting)
+          for setting_description in setting_path:
+            settings.append(setting_description)
 
-    return (data, settings, hp)
+    return (data, settings, header_path)
 
 class Path:
   """handle storage of path to disk """
