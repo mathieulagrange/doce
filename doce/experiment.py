@@ -261,15 +261,15 @@ class Experiment():
     """
     description = ''
     for atr in self._atrs:
-      if type(inspect.getattr_static(self, atr)) != types.FunctionType:
-        if type(self.__getattribute__(atr)) in [types.SimpleNamespace, Path]:
+      if isinstance(inspect.getattr_static(self, atr), types.FunctionType):
+        if isinstance(self.__getattribute__(atr), (types.SimpleNamespace, Path)):
           description += atr
           if len(self.__getattribute__(atr).__dict__.keys()):
             description+=':'
           description+='\r\n'
           for sns in self.__getattribute__(atr).__dict__.keys():
             description+=f'  {sns}: {str(self.__getattribute__(atr).__getattribute__(sns))}\r\n'
-        elif isinstance(self.__getattribute__(atr), str) or isinstance(self.__getattribute__(atr), list):
+        elif isinstance(self.__getattribute__(atr), (str, list)):
           description+=atr
           if str(self.__getattribute__(atr)):
             description += f': {str(self.__getattribute__(atr))}'
@@ -324,7 +324,7 @@ class Experiment():
     server.login(self._gmail_id+'@gmail.com', self._gmail_app_password)
     exp_desc = self.__str__(style = 'html')
     server.sendmail(self._gmail_id, self.address, f'{header}{body}<h3> {exp_desc}</h3>')
-    server.quit
+    server.quit()
     print(f'Sent message entitled: [doce] {self.name} id {self.status.run_id} {title} at {time.ctime(time.time())}')
 
   def perform(
@@ -440,10 +440,10 @@ class Experiment():
   def select(self, selector, show=False):
     experiment_id = 'all'
     if '/' in selector:
-      s = selector.split('/')
-      experiment_id = s[0]
-      if len(s)>1:
-        selector = s[1]
+      selector_split = selector.split('/')
+      experiment_id = selector_split[0]
+      if len(selector_split)>1:
+        selector = selector_split[1]
         try:
           selector = ast.literal_eval(selector)
         except:
@@ -746,13 +746,13 @@ class Experiment():
         )
     data = []
     settings = []
-    for path in self.path.__dict__.keys():
+    for path_iterator in self.path.__dict__:
       if not path.endswith('_raw'):
-        path = getattr(self.path, path)
+        path_iterator = getattr(self.path, path_iterator)
         (data_path, setting_path, header_path) = self.metric.get(
           metric,
           settings=self._plan.select(selector),
-          path=path
+          path=path_iterator
           )
         if data_path:
           for data_setting in data_path:
