@@ -129,7 +129,7 @@ def prune_setting_description(
         if column_header:
           # cst_setting_desc += compress_description(column_header[ccol_ind],
            # factor_display)+': '+str(constant_value[ccol_ind])+' '
-          desc = compress_description(column_header[ccol_ind], factor_display),
+          desc = compress_description(column_header[ccol_ind], factor_display)
           value = str(constant_value[ccol_ind])
           cst_setting_desc += f'{desc}: {value} '
         else:

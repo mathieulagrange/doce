@@ -1,20 +1,26 @@
 import os
 import inspect
 import types
-import numpy as np
-import doce.util as eu
 import copy
 from itertools import compress
 import time
+import numpy as np
+import doce.util as eu
+
 
 class Metric():
   """Stores information about the way evaluation metrics are stored and manipulated.
 
-  Stores information about the way evaluation metrics are stored and manipulated. Each member of this class describes an evaluation metric and the way it may be abstracted. Two name_spaces (doce.metric.Metric._unit, doce.metric.Metric._description) are available to respectively provide information about the unit of the metric and its semantic.
+  Stores information about the way evaluation metrics are stored and manipulated.
+  Each member of this class describes an evaluation metric and the way it may be abstracted.
+  Two name_spaces (doce.metric.Metric._unit, doce.metric.Metric._description) are available
+  to respectively provide information about the unit of the metric and its semantic.
 
-  Each metric may be reduced by any mathematical operation that operate on a vector made available by the numpy library with default parameters.
+  Each metric may be reduced by any mathematical operation that operate on a vector
+  made available by the numpy library with default parameters.
 
-  Two pruning strategies can be complemented to this description in order to remove some items of the metric vector before being abstracted.
+  Two pruning strategies can be complemented to this description in order to remove
+  some items of the metric vector before being abstracted.
 
   One can select one value of the vector by providing its index.
 
@@ -27,7 +33,8 @@ class Metric():
   >>> m._unit.duration = 'second'
   >>> m._description = 'duration of the processing'
 
-  It is sometimes useful to store complementary data useful for plotting that must not be considered during the reduction.
+  It is sometimes useful to store complementary data useful for plotting
+  that must not be considered during the reduction.
 
   >>> m.metric1 = ['median-0', 'min-0', 'max-0']
 
@@ -35,7 +42,9 @@ class Metric():
 
   >>> m.metric2 = ['median-2', 'min-2', 'max-2', '0%']
 
-  In this case, the odd values will be removed before reduction and the last reduction will select the first value of the metric vector, expressed in percents by multiplying it by 100.
+  In this case, the odd values will be removed before reduction and the last reduction
+  will select the first value of the metric vector, expressed in percents by multiplying it by 100.
+
   """
   def __init__(self, **metrics):
     self._unit = types.SimpleNamespace()
@@ -66,9 +75,12 @@ class Metric():
     ):
     """Handle reduction of the metrics when considering numpy storage.
 
-    The method handles the reduction of the metrics when considering numpy storage. For each metric, a .npy file is assumed to be available which the following naming convention: <id_of_setting>_<metric_name>.npy.
+    The method handles the reduction of the metrics when considering numpy storage.
+    For each metric, a .npy file is assumed to be available which the following
+    naming convention: <id_of_setting>_<metric_name>.npy.
 
-    The method :meth:`doce.metric.Metric.reduce` wraps this method and should be considered as the main user interface, please see its documentation for usage.
+    The method :meth:`doce.metric.Metric.reduce` wraps this method and
+    should be considered as the main user interface, please see its documentation for usage.
 
     See Also
     --------
@@ -141,7 +153,8 @@ class Metric():
              rDir.append(1)
            elif '*' in reduction_type:
              rDir.append(1)
-             print('statistical testing will assume a higher the better metric. You can remove this warning by adding a + to the metric reduction directive.')
+             print('statistical testing will assume a higher the better metric. \
+             You can remove this warning by adding a + to the metric reduction directive.')
            else:
              rDir.append(0)
         else:
@@ -191,7 +204,9 @@ class Metric():
 
     The method handles the reduction of the metrics when considering h5 storage.
 
-    The method :meth:`doce.metric.Metric.reduce` wraps this method and should be considered as the main user interface, please see its documentation for usage.
+    The method :meth:`doce.metric.Metric.reduce` wraps this method and
+    should be considered as the main user interface,
+    please see its documentation for usage.
 
     See Also
     --------
@@ -261,7 +276,10 @@ class Metric():
           data)
         return data
       else:
-        if reduction_typeDirective and not hasattr(reduction_directive_module, reduction_typeDirective):
+        if (
+          reduction_typeDirective and
+          not hasattr(reduction_directive_module, reduction_typeDirective)
+          ):
           return np.nan
         # print(reduction_typeDirective)
         return getattr(reduction_directive_module, reduction_typeDirective)(data)
@@ -272,9 +290,11 @@ class Metric():
     reduction_type,
     reduction_directive_module=None
     ):
-    """Apply reduction directive to a metric vector after potentially remove non wanted items from the vector.
+    """Apply reduction directive to a metric vector after potentially remove
+    non wanted items from the vector.
 
-    The data vector is reduced by considering the reduction directive after potentially remove non wanted items from the vector.
+    The data vector is reduced by considering the reduction directive
+    after potentially remove non wanted items from the vector.
 
     Parameters
     ----------
@@ -283,7 +303,10 @@ class Metric():
       1-D vector to be reduced.
 
     reduction_type : str
-      type of reduction to be applied to the data vector. Can be any method supplied by the reduction_directive_module. If unavailable, a numpy method with this name that can applied to a vector and returns a value is searched for. Selectors and layout can also be specified.
+      type of reduction to be applied to the data vector. Can be any method
+      supplied by the reduction_directive_module. If unavailable, a numpy method
+      with this name that can applied to a vector and returns a value is searched for.
+      Selectors and layout can also be specified.
 
     reduction_directive_module : str (optional)
       Python module to perform the reduction. If None, numpy is considered.
@@ -324,7 +347,9 @@ class Metric():
         ignore = split[1]
       index_percent = reduction_type.find('%')
 
-    if isinstance(reduction_typeDirective, int) or not reduction_directive_module or not hasattr(reduction_directive_module, reduction_typeDirective):
+    if (isinstance(reduction_typeDirective, int) or
+      not reduction_directive_module or
+      not hasattr(reduction_directive_module, reduction_typeDirective)):
       reduction_directive_module = np
       data = data.flatten()
 
@@ -373,9 +398,12 @@ class Metric():
     expand_factor = None,
     metric_selector = None
     ):
-    """Apply the reduction directives described in each members of doce.metric.Metric objects for the settings given as parameters.
+    """Apply the reduction directives described in each members of doce.metric.
+    Metric objects for the settings given as parameters.
 
-    For each setting in the iterable settings, available data corresponding to the metrics specified as members of the doce.metric.Metric object are reduced using specified reduction methods.
+    For each setting in the iterable settings, available data corresponding
+    to the metrics specified as members of the doce.metric.Metric object
+    are reduced using specified reduction methods.
 
     Parameters
     ----------
@@ -384,41 +412,54 @@ class Metric():
       iterable settings.
 
     path: str
-      In the case of .npy storage, a valid path to the main directory. In the case of .h5 storage, a valid path to an .h5 file.
+      In the case of .npy storage, a valid path to the main directory.
+      In the case of .h5 storage, a valid path to an .h5 file.
 
     setting_encoding : dict
       Encoding of the setting. See doce.Plan.id for references.
 
     reduced_metric_display : str (optional)
-      If set to 'capitalize' (default), the description of the reduced metric is done in a Camel case fashion: metric_reduction.
+      If set to 'capitalize' (default), the description of the reduced metric
+      is done in a Camel case fashion: metric_reduction.
 
-      If set to 'underscore', the description of the reduced metric is done in a Python case fashion: metric_reduction.
+      If set to 'underscore', the description of the reduced metric is done
+      in a Python case fashion: metric_reduction.
 
     factor : doce.Plan
       The doce.Plan describing the factors of the experiment.
 
     factor_display : str (optional)
-      The expected format of the display of factors. 'long' (default) do not lead to any reduction. If factor_display contains 'short', a reduction of each word is performed. 'short_underscore' assumes python_case delimitation. 'short_capital' assumes camel_case delimitation. 'short' attempts to perform reduction by guessing the type of delimitation.
+      The expected format of the display of factors. 'long' (default) do not lead to any reduction.
+      If factor_display contains 'short', a reduction of each word is performed.
+       - 'short_underscore' assumes python_case delimitation.
+       - 'short_capital' assumes camel_case delimitation.
+       - 'short' attempts to perform reduction by guessing the type of delimitation.
 
     factor_display_length : int (optional)
-      If factor_display has 'short', factor_display_length specifies the maximal length of each word of the description of the factor.
+      If factor_display has 'short', factor_display_length specifies the maximal
+      length of each word of the description of the factor.
 
     verbose : bool
-      In the case of .npy metric storage, if verbose is set to True, print the file_name seeked for each metric as well as its time of last modification.
+      In the case of .npy metric storage, if verbose is set to True,
+      print the file_name seeked for each metric as well as its time of last modification.
 
-      In the case of .h5 metric storage, if verbose is set to True, print the group seeked for each metric.
+      In the case of .h5 metric storage, if verbose is set to True,
+      print the group seeked for each metric.
 
     Returns
     -------
 
     setting_description : list of lists of literals
-      A setting_description, stored as a list of list of literals of the same size. The main list stores the rows of the setting_description.
+      A setting_description, stored as a list of list of literals of the same size.
+      The main list stores the rows of the setting_description.
 
     column_header : list of str
-      The column header of the setting_description as a list of str, describing the factors (left side), and the reduced metrics (right side).
+      The column header of the setting_description as a list of str,
+      describing the factors (left side), and the reduced metrics (right side).
 
     constant_setting_description : str
-      When a factor is equally valued for all the settings, the factor column is removed from the setting_description and stored in constant_setting_description along its value.
+      When a factor is equally valued for all the settings, the factor column is removed
+      from the setting_description and stored in constant_setting_description along its value.
 
     nb_column_factor : int
       The number of factors in the column header.
@@ -443,8 +484,13 @@ class Metric():
     ...   metric2 = setting.f1*setting.f2*np.random.randn(100)
     ...   np.save(experiment.path.output+setting.identifier()+'_m1.npy', metric1)
     ...   np.save(experiment.path.output+setting.identifier()+'_m2.npy', metric2)
-    >>> nb_failed = experiment.do([], process, progress='')
-    >>> (setting_description, column_header, constant_setting_description, nb_column_factor, modification_time_stamp, significance) = experiment.metric.reduce(experiment._plan.select([1]), experiment.path.output)
+    >>> nb_failed = experiment.perform([], process, progress='')
+    >>> (setting_description,
+    ... column_header,
+    ... constant_setting_description,
+    ... nb_column_factor,
+    ... modification_time_stamp,
+    ... significance) = experiment.metric.reduce(experiment._plan.select([1]), experiment.path.output)
 
     >>> df = pd.DataFrame(setting_description, columns=column_header)
     >>> df[column_header[nb_column_factor:]] = df[column_header[nb_column_factor:]].round(decimals=2)
@@ -456,7 +502,8 @@ class Metric():
     1   2    3.97   0.93  -8.19        13
     2   3    5.00   0.91 -12.07        98
 
-    doce also supports metrics storage using one .h5 file sink structured with settings as groups et metrics as leaf nodes.
+    doce also supports metrics storage using one .h5 file sink structured
+    with settings as groups et metrics as leaf nodes.
 
     >>> import doce
     >>> import numpy as np
@@ -475,7 +522,7 @@ class Metric():
     ...   setting_group.m1[:] = setting.f1+setting.f2+np.random.randn(100)
     ...   setting_group.m2[:] = setting.f1*setting.f2*np.random.randn(100)
     ...   h5.close()
-    >>> nb_failed = experiment.do([], process, progress='')
+    >>> nb_failed = experiment.perform([], process, progress='')
     >>> h5 = tb.open_file(experiment.path.output, mode='r')
     >>> print(h5)
     /tmp/example.h5 (File) ''
@@ -502,7 +549,12 @@ class Metric():
     /f1_2_f2_3/m2 (EArray(100,)) 'm2'
     >>> h5.close()
 
-    >>> (setting_description, column_header, constant_setting_description, nb_column_factor, modification_time_stamp, significance) = experiment.metric.reduce(experiment.plan.select([0]), experiment.path.output)
+    >>> (setting_description,
+    ... column_header,
+    ... constant_setting_description,
+    ... nb_column_factor,
+    ... modification_time_stamp,
+    ... significance) = experiment.metric.reduce(experiment.plan.select([0]), experiment.path.output)
 
     >>> df = pd.DataFrame(setting_description, columns=column_header)
     >>> df[column_header[nb_column_factor:]] = df[column_header[nb_column_factor:]].round(decimals=2)
@@ -519,20 +571,58 @@ class Metric():
       if path.endswith('.h5'):
         setting_encoding = {'factor_separator':'_', 'modality_separator':'_'}
         modification_time_stamp = []
-        (setting_description, metric_has_data, reduced_metrics, significance) = self.reduce_from_h5(settings, path, setting_encoding, verbose, reduction_directive_module, metric_selector)
+        (setting_description,
+        metric_has_data,
+        reduced_metrics,
+        significance) = self.reduce_from_h5(
+          settings,
+          path,
+          setting_encoding,
+          verbose,
+          reduction_directive_module,
+          metric_selector)
       else:
-        (setting_description, metric_has_data, reduced_metrics, modification_time_stamp, significance) = self.reduce_from_npy(settings, path, setting_encoding, verbose, reduction_directive_module, metric_selector)
+        (setting_description,
+        metric_has_data,
+        reduced_metrics,
+        modification_time_stamp,
+        significance) = self.reduce_from_npy(
+          settings,
+          path,
+          setting_encoding,
+          verbose,
+          reduction_directive_module,
+          metric_selector)
 
       nb_factors = len(settings.factors())
       for ir, row in enumerate(setting_description):
         setting_description[ir] = row[:nb_factors]+list(compress(row[nb_factors:], reduced_metrics))
 
-      column_header = self.get_column_header(settings, factor_display, factor_display_length, metric_display, metric_display_length, metric_has_data, reduced_metric_display)
+      column_header = self.get_column_header(
+        settings,
+        factor_display,
+        factor_display_length,
+        metric_display,
+        metric_display_length,
+        metric_has_data,
+        reduced_metric_display)
       nb_column_factor = len(settings.factors())
 
-      (setting_description, column_header, constant_setting_description, nb_column_factor) = eu.prune_setting_description(setting_description, column_header, nb_column_factor, factor_display)
+      (setting_description,
+      column_header,
+      constant_setting_description,
+      nb_column_factor) = eu.prune_setting_description(
+        setting_description,
+        column_header,
+        nb_column_factor,
+        factor_display)
 
-      return (setting_description, column_header, constant_setting_description, nb_column_factor, modification_time_stamp, significance)
+      return (setting_description,
+        column_header,
+        constant_setting_description,
+        nb_column_factor,
+        modification_time_stamp,
+        significance)
     else:
       return ([], [], '', 0, [], [])
 
@@ -559,15 +649,18 @@ class Metric():
       Iterable settings.
 
     path: str
-      In the case of .npy storage, a valid path to the main directory. In the case of .h5 storage, a valid path to an .h5 file.
+      In the case of .npy storage, a valid path to the main directory.
+      In the case of .h5 storage, a valid path to an .h5 file.
 
     setting_encoding : dict
       Encoding of the setting. See doce.Plan.id for references.
 
     verbose : bool
-      In the case of .npy metric storage, if verbose is set to True, print the file_name seeked for the metric.
+      In the case of .npy metric storage, if verbose is set to True,
+      print the file_name seeked for the metric.
 
-      In the case of .h5 metric storage, if verbose is set to True, print the group seeked for the metric.
+      In the case of .h5 metric storage, if verbose is set to True,
+      print the group seeked for the metric.
 
     Returns
     -------
@@ -576,7 +669,8 @@ class Metric():
       stores for each valid setting an np.Array with the values of the metric selected.
 
     setting_description: list of list of str
-      stores for each valid setting, a compact description of the modalities of each factors. The factors with the same modality accross all the set of settings is stored in constant_setting_description.
+      stores for each valid setting, a compact description of the modalities of each factors.
+      The factors with the same modality accross all the set of settings is stored in constant_setting_description.
 
     constant_setting_description: str
       compact description of the factors with the same modality accross all the set of settings.
@@ -599,9 +693,14 @@ class Metric():
     ...  metric2 = setting.f1*setting.f2*np.random.randn(100)
     ...  np.save(experiment.path.output+setting.identifier()+'_m1.npy', metric1)
     ...  np.save(experiment.path.output+setting.identifier()+'_m2.npy', metric2)
-    >>> nb_failed = experiment.do([], process, progress='')
+    >>> nb_failed = experiment.perform([], process, progress='')
 
-    >>> (setting_metric, setting_description, constant_setting_description) = experiment.metric.get('m1', experiment._plan.select([1]), experiment.path.output)
+    >>> (setting_metric,
+    ...  setting_description,
+    ...  constant_setting_description) = experiment.metric.get(
+    ...      'm1',
+    ...      experiment._plan.select([1]),
+    ...      experiment.path.output)
     >>> print(constant_setting_description)
     f1=2
     >>> print(setting_description)
@@ -644,7 +743,10 @@ class Metric():
           elif verbose:
             print('** Unable to find '+file_name)
 
-    (setting_description, column_header, constant_setting_description, nb_column_factor) = eu.prune_setting_description(setting_description, show_unique_setting = True)
+    (setting_description,
+    column_header,
+    constant_setting_description,
+    nb_column_factor) = eu.prune_setting_description(setting_description, show_unique_setting = True)
 
     for ri, r in enumerate(setting_description):
       setting_description[ri] = ', '.join(r)
@@ -658,9 +760,15 @@ class Metric():
     metric_dimension={},
     setting_encoding={'factor_separator':'_', 'modality_separator':'_'}
     ):
-    """adds a group to the root of a valid py_tables Object in order to store the metrics corresponding to the specified setting.
+    """adds a group to the root of a valid py_tables Object in order to
+    store the metrics corresponding to the specified setting.
 
-    adds a group to the root of a valid py_tables Object in order to store the metrics corresponding to the specified setting. The encoding of the setting is used to set the name of the group. For each metric, a Floating point Pytable Array is created. For any metric, if no dimension is provided in the metric_dimension dict, an expandable array is instantiated. If a dimension is available, a static size array is instantiated.
+    adds a group to the root of a valid py_tables Object in order to
+    store the metrics corresponding to the specified setting.
+    The encoding of the setting is used to set the name of the group.
+    For each metric, a Floating point Pytable Array is created.
+    For any metric, if no dimension is provided in the metric_dimension dict,
+    an expandable array is instantiated. If a dimension is available, a static size array is instantiated.
 
     Parameters
     ----------
@@ -672,7 +780,9 @@ class Metric():
     an instantiated Factor object describing a setting.
 
     metric_dimension: dict
-    for metrics for which the dimensionality of the storage vector is known, each key of the dict is a valid metric name and each conresponding value is the size of the storage vector.
+    for metrics for which the dimensionality of the storage vector is known,
+    each key of the dict is a valid metric name and each corresponding value
+    is the size of the storage vector.
 
     setting_encoding : dict
     Encoding of the setting. See doce.Plan.id for references.
@@ -702,7 +812,7 @@ class Metric():
     ...  sg.m1[:] = setting.f1+setting.f2+np.random.randn(100)
     ...  sg.m2.append(setting.f1*setting.f2*np.random.randn(100))
     ...  h5.close()
-    >>> nb_failed = experiment.do([], process, progress='')
+    >>> nb_failed = experiment.perform([], process, progress='')
 
     >>> h5 = tb.open_file(experiment.path.output, mode='r')
     >>> print(h5)
@@ -750,7 +860,11 @@ class Metric():
 
       if metric in metric_dimension:
         if not setting_group.__contains__(metric):
-          file_id.create_array(setting_group, metric, np.zeros((metric_dimension[metric]))*np.nan, description)
+          file_id.create_array(
+            setting_group,
+            metric,
+            np.zeros((metric_dimension[metric]))*np.nan,
+            description)
       else:
         if setting_group.__contains__(metric):
           setting_group._f_get_child(metric)._f_remove()
@@ -770,7 +884,8 @@ class Metric():
     ):
     """Builds the column header of the reduction setting_description.
 
-    This method builds the column header of the reduction setting_description by formating the Factor names from the doce.Plan class and by describing the reduced metrics.
+    This method builds the column header of the reduction setting_description
+    by formating the Factor names from the doce.Plan class and by describing the reduced metrics.
 
     Parameters
     ----------
@@ -779,18 +894,26 @@ class Metric():
       The doce.Plan describing the factors of the experiment.
 
     factor_display : str (optional)
-      The expected format of the display of factors. 'long' (default) do not lead to any reduction. If factor_display contains 'short', a reduction of each word is performed. 'short_underscore' assumes python_case delimitation. 'short_capital' assumes camel_case delimitation. 'short' attempts to perform reduction by guessing the type of delimitation.
+      The expected format of the display of factors. 'long' (default) do not lead to any reduction.
+      If factor_display contains 'short', a reduction of each word is performed.
+       - 'short_underscore' assumes python_case delimitation.
+       - 'short_capital' assumes camel_case delimitation.
+       - 'short' attempts to perform reduction by guessing the type of delimitation.
 
     factor_display_length : int (optional)
-      If factor_display has 'short', factor_display_length specifies the maximal length of each word of the description of the factor.
+      If factor_display has 'short', factor_display_length specifies the maximal length
+      of each word of the description of the factor.
 
     metric_has_data : list of bool
-      Specify for each metric described in the doce.metric.Metric object, whether data has been loaded or not.
+      Specify for each metric described in the doce.metric.Metric object,
+      whether data has been loaded or not.
 
     reduced_metric_display : str (optional)
-      If set to 'capitalize' (default), the description of the reduced metric is done in a Camel case fashion: metric_reduction.
+      If set to 'capitalize' (default), the description of the reduced metric is done
+      in a Camel case fashion: metricReduction.
 
-      If set to 'underscore', the description of the reduced metric is done in a Python case fashion: metric_reduction.
+      If set to 'underscore', the description of the reduced metric is done
+      in a snake case fashion: metric_reduction.
 
     See Also
     --------
@@ -809,7 +932,8 @@ class Metric():
           elif reduced_metric_display == 'underscore':
             name = metric+'_'+reduction_type
           else:
-            print('Unrecognized reduced_metric_display value. Should be \'capitalize\' or \'underscore\'. Got:'+reduced_metric_display)
+            print(f'''Unrecognized reduced_metric_display value. \
+            Should be \'capitalize\' or \'underscore\'. Got:{reduced_metric_display}''')
             raise value_error
           column_header.append(eu.compress_description(name, metric_display, metric_display_length))
     return column_header
@@ -819,7 +943,8 @@ class Metric():
     ):
     """Returns a list of str with the names of the metrics.
 
-    Returns a list of str with the names of the metricsdefined as members of the doce.metric.Metric object.
+    Returns a list of str with the names of the metrics defined as members
+    of the doce.metric.Metric object.
 
     Examples
     --------
