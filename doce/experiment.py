@@ -7,7 +7,9 @@ import time
 import datetime
 import ast
 import glob
-
+import copy
+import numpy as np
+import doce.util as eu
 import doce
 
 
@@ -130,8 +132,8 @@ class Experiment():
     self._display.factor_format_in_reduce = 'long'
     self._display.metric_format_in_reduce = 'long'
     self._display.metric_precision = 2
-    self._display.factor_format_in_reduceLength = 2
-    self._display.metric_format_in_reduceLength = 2
+    self._display.factor_format_in_reduce_length = 2
+    self._display.metric_format_in_reduce_length = 2
     self._display.show_row_index = True
     self._display.highlight = True
     self._display.bar = False
@@ -178,8 +180,8 @@ class Experiment():
     >>> import os
     >>> e=doce.Experiment()
     >>> e.name = 'experiment'
-    >>> e.set_path('processing', '/tmp/{e.name}/processing', force=True)
-    >>> e.set_path('output', '/tmp/{e.name}/output', force=True)
+    >>> e.set_path('processing', f'/tmp/{e.name}/processing', force=True)
+    >>> e.set_path('output', f'/tmp/{e.name}/output', force=True)
     >>> os.listdir(f'/tmp/{e.name}')
     ['processing', 'output']
     """
@@ -261,7 +263,7 @@ class Experiment():
     """
     description = ''
     for atr in self._atrs:
-      if isinstance(inspect.getattr_static(self, atr), types.FunctionType):
+      if not isinstance(inspect.getattr_static(self, atr), types.FunctionType):
         if isinstance(self.__getattribute__(atr), (types.SimpleNamespace, Path)):
           description += atr
           if len(self.__getattribute__(atr).__dict__.keys()):
@@ -739,7 +741,7 @@ class Experiment():
     if path:
       if not (r'\/' in path or r'\\' in path):
         path = getattr(self.path, path)
-      return self.metric.get(
+      return get_from_path(
         metric,
         settings=self._plan.select(selector),
         path=path
@@ -749,7 +751,7 @@ class Experiment():
     for path_iterator in self.path.__dict__:
       if not path.endswith('_raw'):
         path_iterator = getattr(self.path, path_iterator)
-        (data_path, setting_path, header_path) = self.metric.get(
+        (data_path, setting_path, header_path) = get_from_path(
           metric,
           settings=self._plan.select(selector),
           path=path_iterator
@@ -761,6 +763,134 @@ class Experiment():
             settings.append(setting_description)
 
     return (data, settings, header_path)
+
+def get_from_path(
+  metric,
+  settings = None,
+  path = '',
+  setting_encoding=None,
+  verbose=False
+  ):
+  """ Get the metric vector from an .npy or a group of a .h5 file.
+
+  Get the metric vector as a numpy array from an .npy or a group of a .h5 file.
+
+  Parameters
+  ----------
+
+  metric: str
+    The name of the metric. Must be a member of the doce.metric.Metric object.
+
+  settings: doce.Plan
+    Iterable settings.
+
+  path: str
+    In the case of .npy storage, a valid path to the main directory.
+    In the case of .h5 storage, a valid path to an .h5 file.
+
+  setting_encoding : dict
+    Encoding of the setting. See doce.Plan.id for references.
+
+  verbose : bool
+    In the case of .npy metric storage, if verbose is set to True,
+    print the file_name seeked for the metric.
+
+    In the case of .h5 metric storage, if verbose is set to True,
+    print the group seeked for the metric.
+
+  Returns
+  -------
+
+  setting_metric: list of np.Array
+    stores for each valid setting an np.Array with the values of the metric selected.
+
+  setting_description: list of list of str
+    stores for each valid setting, a compact description of the modalities of each factors.
+    The factors with the same modality accross all the set of settings is stored in constant_setting_description.
+
+  constant_setting_description: str
+    compact description of the factors with the same modality accross all the set of settings.
+
+  Examples
+  --------
+
+  >>> import doce
+  >>> import numpy as np
+  >>> import pandas as pd
+
+  >>> experiment = doce.experiment.Experiment()
+  >>> experiment.name = 'example'
+  >>> experiment.set_path('output', '/tmp/'+experiment.name+'/', force=True)
+  >>> experiment.add_plan('plan', f1 = [1, 2], f2 = [1, 2, 3])
+  >>> experiment.set_metrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
+
+  >>> def process(setting, experiment):
+  ...  metric1 = setting.f1+setting.f2+np.random.randn(100)
+  ...  metric2 = setting.f1*setting.f2*np.random.randn(100)
+  ...  np.save(experiment.path.output+setting.identifier()+'_m1.npy', metric1)
+  ...  np.save(experiment.path.output+setting.identifier()+'_m2.npy', metric2)
+  >>> nb_failed = experiment.perform([], process, progress='')
+
+  >>> (setting_metric,
+  ...  setting_description,
+  ...  constant_setting_description) = get_from_path(
+  ...      'm1',
+  ...      experiment._plan.select([1]),
+  ...      experiment.path.output)
+  >>> print(constant_setting_description)
+  f1=2
+  >>> print(setting_description)
+  ['f2=1', 'f2=2', 'f2=3']
+  >>> print(len(setting_metric))
+  3
+  >>> print(setting_metric[0].shape)
+  (100,)
+  """
+
+  setting_metric = []
+  setting_description = []
+  if not setting_encoding:
+    setting_encoding = {}
+  setting_description_format = copy.deepcopy(setting_encoding)
+  setting_description_format['style'] = 'list'
+  setting_description_format['default'] = True
+  setting_description_format['sort'] = False
+
+  if isinstance(path, str):
+    if path.endswith('.h5'):
+      h5_fid = tb.open_file(path, mode='r')
+      for setting in settings:
+        if h5_fid.root.__contains__(setting.identifier(**setting_encoding)):
+          if verbose:
+            print('Found group '+setting.identifier(**setting_encoding))
+          setting_group = h5_fid.root._f_get_child(setting.identifier(**setting_encoding))
+          if setting_group.__contains__(metric):
+            setting_metric.append(np.array(setting_group._f_get_child(metric)))
+            setting_description.append(setting.identifier(**setting_description_format))
+        elif verbose:
+          print('** Unable to find group '+setting.identifier(**setting_encoding))
+      h5_fid.close()
+    else:
+      for setting in settings:
+        file_name = path+setting.identifier(**setting_encoding)+'_'+metric+'.npy'
+        if os.path.exists(file_name):
+          if verbose:
+            print('Found '+file_name)
+          setting_metric.append(np.load(file_name))
+          setting_description.append(setting.identifier(**setting_description_format))
+        elif verbose:
+          print('** Unable to find '+file_name)
+
+  (setting_description, _,
+  constant_setting_description,
+  _) = eu.prune_setting_description(setting_description, show_unique_setting = True)
+
+  for ri, r in enumerate(setting_description):
+    setting_description[ri] = ', '.join(r)
+
+  return (setting_metric, setting_description, constant_setting_description)
+
+
 
 class Path:
   """handle storage of path to disk """

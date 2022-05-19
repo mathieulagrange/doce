@@ -1,12 +1,10 @@
 import os
 import inspect
 import types
-import copy
 from itertools import compress
 import time
 import numpy as np
 import doce.util as eu
-
 
 class Metric():
   """Stores information about the way evaluation metrics are stored and manipulated.
@@ -90,103 +88,112 @@ class Metric():
     """
 
     table = []
-    stat = []
+    raw_data = []
     modification_time_stamp = []
     metric_has_data = [False] * len(self.name())
 
-    (reduced_metrics, rDir, rDo) = self.significance_status()
+    (reduced_metrics, metric_direction, do_testing) = self.significance_status()
 
-    for sIndex, setting in enumerate(settings):
+    for setting in settings:
       row = []
-      rStat = []
+      raw_data_row = []
       nb_reduced_metrics = 0
-      nb_metrics = 0
-      for mIndex, metric in enumerate(self.name()):
+      for metric_index, metric in enumerate(self.name()):
         file_name = path+setting.identifier(**setting_encoding)+'_'+metric+'.npy'
         if os.path.exists(file_name):
           mod = os.path.getmtime(file_name)
           modification_time_stamp.append(mod)
           if verbose:
             print('Found '+file_name+', last modified '+time.ctime(mod))
-          metric_has_data[mIndex] = True
+          metric_has_data[metric_index] = True
           data = np.load(file_name)
           for reduction_type in self.__getattribute__(metric):
             reduced_metrics[nb_reduced_metrics] = True
             nb_reduced_metrics+=1
             row.append(self.reduce_metric(data, reduction_type, reduction_directive_module))
             if isinstance(reduction_type, str) and '*' in reduction_type:
-              rStat.append(data)
+              raw_data_row.append(data)
         else:
           if verbose:
             print('** Unable to find '+file_name)
           for reduction_type in self.__getattribute__(metric):
             row.append(np.nan)
             if isinstance(reduction_type, str) and '*' in reduction_type:
-              rStat.append(np.nan)
+              raw_data_row.append(np.nan)
             nb_reduced_metrics+=1
 
-      if len(row) and not all(np.isnan(c) for c in row):
+      if row and not all(np.isnan(c) for c in row):
         for factor_name in reversed(settings.factors()):
           row.insert(0, setting.__getattribute__(factor_name))
         table.append(row)
-        stat.append(rStat)
+        raw_data.append(raw_data_row)
 
-    significance = self.significance(settings, table, stat, reduced_metrics, rDir, rDo)
+    significance = self.significance(settings, table, raw_data, reduced_metrics, metric_direction, do_testing)
 
     return (table, metric_has_data, reduced_metrics, modification_time_stamp, significance)
 
   def significance_status(self):
     nb_reduced_metrics = 0
-    rDir = []
-    rDo = []
-    for mIndex, metric in enumerate(self.name()):
+    metric_direction = []
+    do_testing = []
+    for metric_index, metric in enumerate(self.name()):
       for reduction_type in self.__getattribute__(metric):
         nb_reduced_metrics += 1
         if isinstance(reduction_type, str) and '*' in reduction_type:
-          rDo.append(1)
+          do_testing.append(1)
         else:
-          rDo.append(0)
+          do_testing.append(0)
         if isinstance(reduction_type, str) and len(reduction_type):
-           if '-' in reduction_type:
-             rDir.append(-1)
-           elif '+' in reduction_type:
-             rDir.append(1)
-           elif '*' in reduction_type:
-             rDir.append(1)
-             print('statistical testing will assume a higher the better metric. \
-             You can remove this warning by adding a + to the metric reduction directive.')
-           else:
-             rDir.append(0)
+          if '-' in reduction_type:
+            metric_direction.append(-1)
+          elif '+' in reduction_type:
+            metric_direction.append(1)
+          elif '*' in reduction_type:
+            metric_direction.append(1)
+            print('Statistical testing will assume a higher the better metric. \
+            You can remove this warning by adding a + to the metric reduction directive.')
+          else:
+            metric_direction.append(0)
         else:
-          rDir.append(0)
+          metric_direction.append(0)
 
     reduced_metrics = [False] * nb_reduced_metrics
-    return reduced_metrics, rDir, rDo
+    return reduced_metrics, metric_direction, do_testing
 
-  def significance(self, settings, table, stat, reduced_metrics, rDir, rDo):
+  def significance(
+    self,
+    settings,
+    table,
+    raw_data,
+    reduced_metrics,
+    metric_direction,
+    do_testing):
 
     from scipy import stats
 
     significance = np.zeros((len(table),len(reduced_metrics)))
-    mii = 0
-    for mi in range(len(rDir)):
+    metric_stat_index = 0
+    for direction_index, direction in enumerate(metric_direction):
       mv = []
-      for si in range(len(table)):
-        mv.append(table[si][len(settings.factors())+mi])
-      if not np.isnan(mv).all() and rDir[mi]!=0:
-        if rDir[mi]<0:
-          im = np.argwhere(mv==np.nanmin(mv)).flatten()
+      for table_row in table:
+        mv.append(table_row[len(settings.factors())+direction_index])
+      if not np.isnan(mv).all() and direction!=0:
+        if metric_direction[direction_index]<0:
+          best_index = np.argwhere(mv==np.nanmin(mv)).flatten()
         else:
-          im = np.argwhere(mv==np.nanmax(mv)).flatten()
-        significance[im, mi] = -1
-        sRow = []
-        if rDo[mi] != 0:
-          for si in range(len(stat)):
-            if si!=im[0] and mv[mii] != mv[si]:
-              if not np.isnan(stat[si][mii]).all():
-                (s, p) = stats.ttest_rel(stat[si][mii], stat[im[0]][mii])
-                significance[si, mi] = p
-          mii += 1
+          best_index = np.argwhere(mv==np.nanmax(mv)).flatten()
+        significance[best_index, direction_index] = -1
+        if do_testing[direction_index] != 0:
+          for raw_data_row_index, raw_data_row in enumerate(raw_data):
+            if (raw_data_row_index!=best_index[0] and
+                mv[metric_stat_index] != mv[raw_data_row_index]):
+              if not np.isnan(raw_data[raw_data_row_index][metric_stat_index]).all():
+                (statistic, p_value) = stats.ttest_rel(
+                  raw_data_row[metric_stat_index],
+                  raw_data[best_index[0]][metric_stat_index]
+                  )
+                significance[raw_data_row_index, direction_index] = p_value
+          metric_stat_index += 1
     significance = np.delete(significance, np.invert(reduced_metrics), axis=1)
 
     return significance
@@ -198,7 +205,6 @@ class Metric():
     setting_encoding={},
     verbose = False,
     reduction_directive_module = None,
-    metric_selector = None # TODO
     ):
     """Handle reduction of the metrics when considering numpy storage.
 
@@ -217,72 +223,70 @@ class Metric():
     import tables as tb
 
     table = []
-    stat = []
-    h5 = tb.open_file(path, mode='r')
+    raw_data = []
+    h5_fid = tb.open_file(path, mode='r')
     metric_has_data = [False] * len(self.name())
 
-    (reduced_metrics, rDir, rDo) = self.significance_status()
+    (reduced_metrics, metric_direction, do_testing) = self.significance_status()
 
-    for sIndex, setting in enumerate(settings):
+    for setting in settings:
       row = []
-      rStat = []
+      raw_data_row = []
       nb_reduced_metrics = 0
-      nb_metrics = 0
       if verbose:
         print('Seeking Group '+setting.identifier(**setting_encoding))
-      if h5.root.__contains__(setting.identifier(**setting_encoding)):
-        setting_group = h5.root._f_get_child(setting.identifier(**setting_encoding))
+      if h5_fid.root.__contains__(setting.identifier(**setting_encoding)):
+        setting_group = h5_fid.root._f_get_child(setting.identifier(**setting_encoding))
         # print(setting_group._v_name)
         # print(setting.identifier(**setting_encoding))
-        for mIndex, metric in enumerate(self.name()):
+        for metric_index, metric in enumerate(self.name()):
           for reduction_type in self.__getattribute__(metric):
             # value = np.nan
             no_data = True
             if setting_group.__contains__(metric):
               data = setting_group._f_get_child(metric)
               if data.shape[0] > 0:
-                metric_has_data[mIndex] = True
+                metric_has_data[metric_index] = True
                 reduced_metrics[nb_reduced_metrics] = True
                 nb_reduced_metrics+=1
                 no_data = False
               if isinstance(reduction_type, str) and '*' in reduction_type:
-                rStat.append(np.array(data))
+                raw_data_row.append(np.array(data))
             if no_data:
               row.append(np.nan)
               if isinstance(reduction_type, str) and '*' in reduction_type:
-                rStat.append(np.nan)
+                raw_data_row.append(np.nan)
               nb_reduced_metrics+=1
             else:
               row.append(self.reduce_metric(np.array(data), reduction_type, reduction_directive_module))
-        if len(row) and not all(np.isnan(c) for c in row):
+        if row and not all(np.isnan(c) for c in row):
           for factor_name in reversed(settings.factors()):
             row.insert(0, setting.__getattribute__(factor_name))
         table.append(row)
-        stat.append(rStat)
-    h5.close()
-    significance = self.significance(settings, table, stat, reduced_metrics, rDir, rDo)
+        raw_data.append(raw_data_row)
+    h5_fid.close()
+    significance = self.significance(settings, table, raw_data, reduced_metrics, metric_direction, do_testing)
     return (table, metric_has_data, reduced_metrics, significance)
 
   def apply_reduction(
     self,
     reduction_directive_module,
-    reduction_typeDirective,
+    reduction_type_directive,
     data):
 
-      if '|' in reduction_typeDirective:
-        for r in reversed(reduction_typeDirective.split('|')):
-          data = self.apply_reduction(reduction_directive_module,
-          r,
-          data)
-        return data
-      else:
-        if (
-          reduction_typeDirective and
-          not hasattr(reduction_directive_module, reduction_typeDirective)
-          ):
-          return np.nan
-        # print(reduction_typeDirective)
-        return getattr(reduction_directive_module, reduction_typeDirective)(data)
+    if '|' in reduction_type_directive:
+      for reduction_directive in reversed(reduction_type_directive.split('|')):
+        data = self.apply_reduction(reduction_directive_module,
+        reduction_directive,
+        data)
+      return data
+    if (
+      reduction_type_directive and
+      not hasattr(reduction_directive_module, reduction_type_directive)
+      ):
+      return np.nan
+    # print(reduction_type_directive)
+    return getattr(reduction_directive_module, reduction_type_directive)(data)
 
   def reduce_metric(
     self,
@@ -337,41 +341,50 @@ class Metric():
 
     if reduction_directive_module == 'None':
       reduction_directive_module = np
-    reduction_typeDirective = reduction_type
+    reduction_type_directive = reduction_type
     index_percent = -1
     if isinstance(reduction_type, str):
       split = reduction_type.replace('%', '').replace('*', '').replace('+', '').split('-')
-      reduction_typeDirective = split[0]
+      reduction_type_directive = split[0]
       ignore = ''
       if len(split)>1:
         ignore = split[1]
       index_percent = reduction_type.find('%')
 
-    if (isinstance(reduction_typeDirective, int) or
+    if (isinstance(reduction_type_directive, int) or
       not reduction_directive_module or
-      not hasattr(reduction_directive_module, reduction_typeDirective)):
+      not hasattr(reduction_directive_module, reduction_type_directive)):
       reduction_directive_module = np
       data = data.flatten()
 
     # index_percent=-1
-    if reduction_typeDirective:
-      if isinstance(reduction_typeDirective, int):
+    if reduction_type_directive:
+      if isinstance(reduction_type_directive, int):
         if data.size>1:
-          value = float(data[reduction_typeDirective])
+          value = float(data[reduction_type_directive])
         else:
           value = float(data)
       elif ignore:
         if ignore == '0':
-          value = self.apply_reduction(reduction_directive_module,reduction_typeDirective,data[1:])
+          value = self.apply_reduction(
+            reduction_directive_module,
+            reduction_type_directive,
+            data[1:])
         elif ignore == '1':
-          value = self.apply_reduction(reduction_directive_module,reduction_typeDirective,data[::2])
+          value = self.apply_reduction(
+            reduction_directive_module,
+            reduction_type_directive,
+            data[::2])
         elif ignore == '2':
-          value = self.apply_reduction(reduction_directive_module,reduction_typeDirective,data[1::2])
+          value = self.apply_reduction(
+            reduction_directive_module,
+            reduction_type_directive,
+            data[1::2])
         else:
           print('Unrecognized pruning directive')
-          raise value_error
+          raise ValueError
       else :
-          value = self.apply_reduction(reduction_directive_module,reduction_typeDirective,data)
+          value = self.apply_reduction(reduction_directive_module,reduction_type_directive,data)
     else:
       if not isinstance(data, np.ndarray):
         data = np.array(data)
@@ -394,9 +407,7 @@ class Metric():
     metric_display_length = 2,
     reduced_metric_display = 'capitalize',
     verbose = False,
-    reduction_directive_module = None,
-    expand_factor = None,
-    metric_selector = None
+    reduction_directive_module = None
     ):
     """Apply the reduction directives described in each members of doce.metric.
     Metric objects for the settings given as parameters.
@@ -490,7 +501,8 @@ class Metric():
     ... constant_setting_description,
     ... nb_column_factor,
     ... modification_time_stamp,
-    ... significance) = experiment.metric.reduce(experiment._plan.select([1]), experiment.path.output)
+    ... significance
+    ... ) = experiment.metric.reduce(experiment._plan.select([1]), experiment.path.output)
 
     >>> df = pd.DataFrame(setting_description, columns=column_header)
     >>> df[column_header[nb_column_factor:]] = df[column_header[nb_column_factor:]].round(decimals=2)
@@ -567,7 +579,7 @@ class Metric():
     2   3    3.99   1.04  -9.14        89
     """
 
-    if len(self.name()):
+    if self.name():
       if path.endswith('.h5'):
         setting_encoding = {'factor_separator':'_', 'modality_separator':'_'}
         modification_time_stamp = []
@@ -579,8 +591,7 @@ class Metric():
           path,
           setting_encoding,
           verbose,
-          reduction_directive_module,
-          metric_selector)
+          reduction_directive_module)
       else:
         (setting_description,
         metric_has_data,
@@ -591,12 +602,11 @@ class Metric():
           path,
           setting_encoding,
           verbose,
-          reduction_directive_module,
-          metric_selector)
+          reduction_directive_module)
 
       nb_factors = len(settings.factors())
-      for ir, row in enumerate(setting_description):
-        setting_description[ir] = row[:nb_factors]+list(compress(row[nb_factors:], reduced_metrics))
+      for row_index, row in enumerate(setting_description):
+        setting_description[row_index] = row[:nb_factors]+list(compress(row[nb_factors:], reduced_metrics))
 
       column_header = self.get_column_header(
         settings,
@@ -623,142 +633,14 @@ class Metric():
         nb_column_factor,
         modification_time_stamp,
         significance)
-    else:
-      return ([], [], '', 0, [], [])
-
-
-  def get(
-    self,
-    metric,
-    settings = None,
-    path = '',
-    setting_encoding={},
-    verbose=False
-    ):
-    """ Get the metric vector from an .npy or a group of a .h5 file.
-
-    Get the metric vector as a numpy array from an .npy or a group of a .h5 file.
-
-    Parameters
-    ----------
-
-    metric: str
-      The name of the metric. Must be a member of the doce.metric.Metric object.
-
-    settings: doce.Plan
-      Iterable settings.
-
-    path: str
-      In the case of .npy storage, a valid path to the main directory.
-      In the case of .h5 storage, a valid path to an .h5 file.
-
-    setting_encoding : dict
-      Encoding of the setting. See doce.Plan.id for references.
-
-    verbose : bool
-      In the case of .npy metric storage, if verbose is set to True,
-      print the file_name seeked for the metric.
-
-      In the case of .h5 metric storage, if verbose is set to True,
-      print the group seeked for the metric.
-
-    Returns
-    -------
-
-    setting_metric: list of np.Array
-      stores for each valid setting an np.Array with the values of the metric selected.
-
-    setting_description: list of list of str
-      stores for each valid setting, a compact description of the modalities of each factors.
-      The factors with the same modality accross all the set of settings is stored in constant_setting_description.
-
-    constant_setting_description: str
-      compact description of the factors with the same modality accross all the set of settings.
-
-    Examples
-    --------
-
-    >>> import doce
-    >>> import numpy as np
-    >>> import pandas as pd
-
-    >>> experiment = doce.experiment.Experiment()
-    >>> experiment.name = 'example'
-    >>> experiment.set_path('output', '/tmp/'+experiment.name+'/', force=True)
-    >>> experiment.add_plan('plan', f1 = [1, 2], f2 = [1, 2, 3])
-    >>> experiment.set_metrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
-
-    >>> def process(setting, experiment):
-    ...  metric1 = setting.f1+setting.f2+np.random.randn(100)
-    ...  metric2 = setting.f1*setting.f2*np.random.randn(100)
-    ...  np.save(experiment.path.output+setting.identifier()+'_m1.npy', metric1)
-    ...  np.save(experiment.path.output+setting.identifier()+'_m2.npy', metric2)
-    >>> nb_failed = experiment.perform([], process, progress='')
-
-    >>> (setting_metric,
-    ...  setting_description,
-    ...  constant_setting_description) = experiment.metric.get(
-    ...      'm1',
-    ...      experiment._plan.select([1]),
-    ...      experiment.path.output)
-    >>> print(constant_setting_description)
-    f1=2
-    >>> print(setting_description)
-    ['f2=1', 'f2=2', 'f2=3']
-    >>> print(len(setting_metric))
-    3
-    >>> print(setting_metric[0].shape)
-    (100,)
-    """
-
-    setting_metric = []
-    setting_description = []
-    setting_descriptionFormat = copy.deepcopy(setting_encoding)
-    setting_descriptionFormat['style'] = 'list'
-    setting_descriptionFormat['default'] = True
-    setting_descriptionFormat['sort'] = False
-
-    if isinstance(path, str):
-      if path.endswith('.h5'):
-        h5 = tb.open_file(path, mode='r')
-        for setting in settings:
-          if h5.root.__contains__(setting.identifier(**setting_encoding)):
-            if verbose:
-              print('Found group '+setting.identifier(**setting_encoding))
-            setting_group = h5.root._f_get_child(setting.identifier(**setting_encoding))
-            if setting_group.__contains__(metric):
-              setting_metric.append(np.array(setting_group._f_get_child(metric)))
-              setting_description.append(setting.identifier(**setting_descriptionFormat))
-          elif verbose:
-            print('** Unable to find group '+setting.identifier(**setting_encoding))
-        h5.close()
-      else:
-        for setting in settings:
-          file_name = path+setting.identifier(**setting_encoding)+'_'+metric+'.npy'
-          if os.path.exists(file_name):
-            if verbose:
-              print('Found '+file_name)
-            setting_metric.append(np.load(file_name))
-            setting_description.append(setting.identifier(**setting_descriptionFormat))
-          elif verbose:
-            print('** Unable to find '+file_name)
-
-    (setting_description,
-    column_header,
-    constant_setting_description,
-    nb_column_factor) = eu.prune_setting_description(setting_description, show_unique_setting = True)
-
-    for ri, r in enumerate(setting_description):
-      setting_description[ri] = ', '.join(r)
-
-    return (setting_metric, setting_description, constant_setting_description)
+    return ([], [], '', 0, [], [])
 
   def add_setting_group(
     self,
     file_id,
     setting,
-    metric_dimension={},
-    setting_encoding={'factor_separator':'_', 'modality_separator':'_'}
+    metric_dimension=None,
+    setting_encoding=None
     ):
     """adds a group to the root of a valid py_tables Object in order to
     store the metrics corresponding to the specified setting.
@@ -843,6 +725,8 @@ class Metric():
     """
     import tables as tb
 
+    if not setting_encoding:
+      setting_encoding={'factor_separator':'_', 'modality_separator':'_'}
     group_name = setting.identifier(**setting_encoding)
     # print(group_name)
     if not file_id.__contains__('/'+group_name):
@@ -858,7 +742,7 @@ class Metric():
       if hasattr(self._unit, metric):
         description += ' in ' + getattr(self._unit, metric)
 
-      if metric in metric_dimension:
+      if metric_dimension and metric in metric_dimension:
         if not setting_group.__contains__(metric):
           file_id.create_array(
             setting_group,
@@ -879,7 +763,7 @@ class Metric():
     factor_display_length=2,
     metric_display='long',
     metric_display_length=2,
-    metric_has_data=[],
+    metric_has_data=None,
     reduced_metric_display = 'capitalize',
     ):
     """Builds the column header of the reduction setting_description.
@@ -924,8 +808,8 @@ class Metric():
     column_header = []
     for factor_name in plan.factors():
       column_header.append(eu.compress_description(factor_name, factor_display, factor_display_length))
-    for mIndex, metric in enumerate(self.name()):
-      if metric_has_data[mIndex]:
+    for metric_index, metric in enumerate(self.name()):
+      if metric_has_data[metric_index]:
         for reduction_type in self.__getattribute__(metric):
           if reduced_metric_display == 'capitalize':
             name = metric+str(reduction_type).capitalize()
@@ -934,7 +818,7 @@ class Metric():
           else:
             print(f'''Unrecognized reduced_metric_display value. \
             Should be \'capitalize\' or \'underscore\'. Got:{reduced_metric_display}''')
-            raise value_error
+            raise ValueError
           column_header.append(eu.compress_description(name, metric_display, metric_display_length))
     return column_header
 
@@ -1000,23 +884,27 @@ class Metric():
     duration: ['mean'], the duration of the trial in seconds
     mse: ['mean'], the Mean Square Error
     """
-    cString = ''
+    metric_descriptor = ''
     atrs = dict(vars(type(self)))
     atrs.update(vars(self))
     atrs = [a for a in atrs if a[0] !=  '_']
 
     for atr in atrs:
-      if type(inspect.getattr_static(self, atr)) != types.FunctionType:
-        cString+='  '+atr+': '+str(self.__getattribute__(atr))
+      if not isinstance(inspect.getattr_static(self, atr), types.FunctionType):
+        metric_descriptor+='  '+atr+': '+str(self.__getattribute__(atr))
         if hasattr(self._description, atr):
-          cString+=', the '+str(self._description.__getattribute__(atr))+''
+          metric_descriptor+=', the '+str(self._description.__getattribute__(atr))+''
         if hasattr(self._unit, atr) and self._unit.__getattribute__(atr):
-          cString+=' in '+str(self._unit.__getattribute__(atr))
-        cString += '\r\n'
-    return cString.rstrip()
+          metric_descriptor+=' in '+str(self._unit.__getattribute__(atr))
+        metric_descriptor += '\r\n'
+    return metric_descriptor.rstrip()
 
 if __name__ == '__main__':
-    import doctest
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+  import doctest
+  doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
 
-    # doctest.run_docstring_examples(_metric.add_setting_group, globals(), optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+  # doctest.run_docstring_examples(
+  #   _metric.add_setting_group,
+  #   globals(),
+  #   optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE
+  # )

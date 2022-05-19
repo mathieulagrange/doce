@@ -18,18 +18,18 @@ def set(args=None):
   )
 
 # set acces paths (here only storage is needed)
-  experiment.setPath('output', '/tmp/'+experiment.name+'/', force=True)
+  experiment.set_path('output', '/tmp/'+experiment.name+'/', force=True)
   # set some non varying parameters (here the number of cross validation folds)
   experiment.n_cross_validation_folds = 10
   # set the plan (factor : modalities)
-  experiment.addPlan('plan',
+  experiment.add_plan('plan',
     nn_type = ['cnn', 'lstm'],
     n_layers = np.arange(2, 10, 3),
     learning_rate = [0.001, 0.0001, 0.00001],
     dropout = [0, 1]
   )
   # set the metrics
-  experiment.setMetrics(
+  experiment.set_metrics(
     # the average and the standard deviation of the accuracy are expressed in percents (+ specifies a higher-the-better metric)
     accuracy = ['mean%+', 'std%'],
     # the duration is averaged over folds (* requests statistical analysis, - specifies a lower-the-better metric)
@@ -43,5 +43,5 @@ def step(setting, experiment):
   # duration is a function of cnn_type, and n_layers
   duration = len(setting.nn_type)+setting.n_layers+np.random.randn(experiment.n_cross_validation_folds)
   # storage of outputs (the string between _ and .npy must be the name of the metric defined in the set function)
-  np.save(experiment.path.output+setting.id()+'_accuracy.npy', accuracy)
-  np.save(experiment.path.output+setting.id()+'_duration.npy', duration)
+  np.save(experiment.path.output+setting.identifier()+'_accuracy.npy', accuracy)
+  np.save(experiment.path.output+setting.identifier()+'_duration.npy', duration)

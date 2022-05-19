@@ -44,7 +44,7 @@ def main():
 
   """
 
-  parser = argparse._argument_parser()
+  parser = argparse.ArgumentParser()
   parser.add_argument('-A', '--archive', type=str, help='archive the selected  settings from a given path. If the argument does not have / or \, the argument is interpreted as a member of the experiments path. The files are copied to the path experiment.path.archive if set.', nargs='?', const='')
   parser.add_argument('-c', '--compute', type=int, help='perform computation. Integer parameter sets the number of jobs computed in parallel (default to one core).', nargs='?', const=1)
   parser.add_argument('-C', '--copy', help='copy codebase to the host defined by the host (-H) argument.', action='store_true')
@@ -139,9 +139,9 @@ def main():
   #     print('Main')
   #     print(experiment._plan.as_panda_frame())
   if args.list:
-    experiment.do(experiment.selector, progress='', function= lambda s, e: print(s))
+    experiment.perform(experiment.selector, progress='', function= lambda s, e: print(s))
   if args.files:
-    experiment.do(experiment.selector, progress='', function= lambda s, e: print(s.identifier()))
+    experiment.perform(experiment.selector, progress='', function= lambda s, e: print(s.identifier()))
 
   if args.remove:
     experiment.clean_data_sink(args.remove, experiment.selector, archive_path=experiment.path.archive, verbose=experiment.status.verbose)
@@ -188,7 +188,7 @@ def main():
   if args.mail>-1:
     experiment.send_mail(args.select+' has started.', '<div> Selector = '+args.select+'</div>')
   if args.compute and hasattr(config, 'step'):
-    experiment.do(experiment.selector, config.step, nb_jobs=args.compute, log_file_name=log_file_name, progress=args.progress, mail_interval = float(args.mail))
+    experiment.perform(experiment.selector, config.step, nb_jobs=args.compute, log_file_name=log_file_name, progress=args.progress, mail_interval = float(args.mail))
 
 
   select_display = []
@@ -299,7 +299,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
 
   if modification_time_stamp:
     print('Displayed data generated from '+ time.ctime(min(modification_time_stamp))+' to '+ time.ctime(max(modification_time_stamp)))
-  df = pd._data_frame(table, columns=columns) #.fillna('-')
+  df = pd.DataFrame(table, columns=columns) #.fillna('-')
 
   if select_display and not select_factor and  len(columns)>=max(select_display)+nb_factor_columns:
     columns = [columns[i] for i in [*range(nb_factor_columns)]+[s+nb_factor_columns for s in select_display]]
@@ -309,7 +309,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
 
   # Construct a selector of which columns are numeric
   numeric_col_selector = df.dtypes.apply(lambda d: issubclass(np.dtype(d).type, np.number))
-  cPercent = []
+  c_percent = []
   c_no_percent = []
   cMinus = []
   c_no_minus = []
@@ -321,7 +321,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
       cMetric.append(c)
       if '%' in c:
         precision_format[c] = '{0:.'+str(experiment._display.metric_precision-2)+'f}'
-        cPercent.append(c)
+        c_percent.append(c)
       else:
         precision_format[c] = '{0:.'+str(experiment._display.metric_precision)+'f}'
         c_no_percent.append(c)
@@ -338,8 +338,8 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
     #     if is_integer:
     #       cInt[c] = 'int32'
 
-  dPercent = pd._series([experiment._display.metric_precision-2]*len(c_percent), index=cPercent, dtype = np.intc)
-  d_no_percent = pd.Series([experiment._display.metricPrecision]*len(c_no_percent), index=c_no_percent, dtype = np.intc)
+  dPercent = pd.Series([experiment._display.metric_precision-2]*len(c_percent), index=c_percent, dtype = np.intc)
+  d_no_percent = pd.Series([experiment._display.metric_precision]*len(c_no_percent), index=c_no_percent, dtype = np.intc)
   dInt = pd.Series([0]*len(cInt), index=cInt, dtype = np.intc)
   df=df.round(dPercent).round(d_no_percent)
 
@@ -384,7 +384,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
 
 def highlight_stat(s, significance):
   import pandas as pd
-  df = pd._data_frame('', index=s.index, columns=s.columns)
+  df = pd.DataFrame('', index=s.index, columns=s.columns)
   if len(significance):
     # print(df)
     # print(significance)
@@ -393,7 +393,7 @@ def highlight_stat(s, significance):
 
 def highlight_best(s, significance):
   import pandas as pd
-  df = pd._data_frame('', index=s.index, columns=s.columns)
+  df = pd.DataFrame('', index=s.index, columns=s.columns)
   if len(significance):
     df = df.where(significance>-1, 'font-weight: bold')
   return df
@@ -417,7 +417,7 @@ def export_data_frame(experiment, args, df, styler, header):
   export_file_name = experiment.path.export+'/'+export_file_name
   reload_header =  '<script> window.onblur= function() {window.onfocus= function () {location.reload(true)}}; </script>'
   with open(export_file_name+'.html', "w") as out_file:
-    outFile.write(reload_header)
+    out_file.write(reload_header)
     out_file.write('<br><u>'+header+'</u><br><br>')
     out_file.write(styler.render())
   if 'csv' in args.export or 'all' == args.export:
