@@ -66,10 +66,9 @@ class Metric():
     self,
     settings,
     path,
-    setting_encoding={},
+    setting_encoding=None,
     verbose = False,
-    reduction_directive_module = None,
-    metric_selector = None
+    reduction_directive_module = None
     ):
     """Handle reduction of the metrics when considering numpy storage.
 
@@ -91,6 +90,9 @@ class Metric():
     raw_data = []
     modification_time_stamp = []
     metric_has_data = [False] * len(self.name())
+
+    if not setting_encoding:
+      setting_encoding = {}
 
     (reduced_metrics, metric_direction, do_testing) = self.significance_status()
 
@@ -128,15 +130,15 @@ class Metric():
         table.append(row)
         raw_data.append(raw_data_row)
 
-    significance = self.significance(settings, table, raw_data, reduced_metrics, metric_direction, do_testing)
+    p_values = significance(settings, table, raw_data, reduced_metrics, metric_direction, do_testing)
 
-    return (table, metric_has_data, reduced_metrics, modification_time_stamp, significance)
+    return (table, metric_has_data, reduced_metrics, modification_time_stamp, p_values)
 
   def significance_status(self):
     nb_reduced_metrics = 0
     metric_direction = []
     do_testing = []
-    for metric_index, metric in enumerate(self.name()):
+    for metric in self.name():
       for reduction_type in self.__getattribute__(metric):
         nb_reduced_metrics += 1
         if isinstance(reduction_type, str) and '*' in reduction_type:
@@ -160,49 +162,11 @@ class Metric():
     reduced_metrics = [False] * nb_reduced_metrics
     return reduced_metrics, metric_direction, do_testing
 
-  def significance(
-    self,
-    settings,
-    table,
-    raw_data,
-    reduced_metrics,
-    metric_direction,
-    do_testing):
-
-    from scipy import stats
-
-    significance = np.zeros((len(table),len(reduced_metrics)))
-    metric_stat_index = 0
-    for direction_index, direction in enumerate(metric_direction):
-      mv = []
-      for table_row in table:
-        mv.append(table_row[len(settings.factors())+direction_index])
-      if not np.isnan(mv).all() and direction!=0:
-        if metric_direction[direction_index]<0:
-          best_index = np.argwhere(mv==np.nanmin(mv)).flatten()
-        else:
-          best_index = np.argwhere(mv==np.nanmax(mv)).flatten()
-        significance[best_index, direction_index] = -1
-        if do_testing[direction_index] != 0:
-          for raw_data_row_index, raw_data_row in enumerate(raw_data):
-            if (raw_data_row_index!=best_index[0] and
-                mv[metric_stat_index] != mv[raw_data_row_index]):
-              if not np.isnan(raw_data[raw_data_row_index][metric_stat_index]).all():
-                (statistic, p_value) = stats.ttest_rel(
-                  raw_data_row[metric_stat_index],
-                  raw_data[best_index[0]][metric_stat_index]
-                  )
-                significance[raw_data_row_index, direction_index] = p_value
-          metric_stat_index += 1
-    significance = np.delete(significance, np.invert(reduced_metrics), axis=1)
-
-    return significance
-
   def reduce_from_h5(
     self,
     settings,
     path,
-    setting_encoding={},
+    setting_encoding=None,
     verbose = False,
     reduction_directive_module = None,
     ):
@@ -226,6 +190,9 @@ class Metric():
     raw_data = []
     h5_fid = tb.open_file(path, mode='r')
     metric_has_data = [False] * len(self.name())
+
+    if not setting_encoding:
+      setting_encoding = {}
 
     (reduced_metrics, metric_direction, do_testing) = self.significance_status()
 
@@ -265,8 +232,8 @@ class Metric():
         table.append(row)
         raw_data.append(raw_data_row)
     h5_fid.close()
-    significance = self.significance(settings, table, raw_data, reduced_metrics, metric_direction, do_testing)
-    return (table, metric_has_data, reduced_metrics, significance)
+    p_values = significance(settings, table, raw_data, reduced_metrics, metric_direction, do_testing)
+    return (table, metric_has_data, reduced_metrics, p_values)
 
   def apply_reduction(
     self,
@@ -384,7 +351,7 @@ class Metric():
           print('Unrecognized pruning directive')
           raise ValueError
       else :
-          value = self.apply_reduction(reduction_directive_module,reduction_type_directive,data)
+        value = self.apply_reduction(reduction_directive_module,reduction_type_directive,data)
     else:
       if not isinstance(data, np.ndarray):
         data = np.array(data)
@@ -400,7 +367,7 @@ class Metric():
     self,
     settings,
     path,
-    setting_encoding= {},
+    setting_encoding= None,
     factor_display = 'long',
     factor_display_length = 2,
     metric_display = 'long',
@@ -501,7 +468,7 @@ class Metric():
     ... constant_setting_description,
     ... nb_column_factor,
     ... modification_time_stamp,
-    ... significance
+    ... p_values
     ... ) = experiment.metric.reduce(experiment._plan.select([1]), experiment.path.output)
 
     >>> df = pd.DataFrame(setting_description, columns=column_header)
@@ -566,7 +533,7 @@ class Metric():
     ... constant_setting_description,
     ... nb_column_factor,
     ... modification_time_stamp,
-    ... significance) = experiment.metric.reduce(experiment.plan.select([0]), experiment.path.output)
+    ... p_values) = experiment.metric.reduce(experiment.plan.select([0]), experiment.path.output)
 
     >>> df = pd.DataFrame(setting_description, columns=column_header)
     >>> df[column_header[nb_column_factor:]] = df[column_header[nb_column_factor:]].round(decimals=2)
@@ -586,7 +553,7 @@ class Metric():
         (setting_description,
         metric_has_data,
         reduced_metrics,
-        significance) = self.reduce_from_h5(
+        p_values) = self.reduce_from_h5(
           settings,
           path,
           setting_encoding,
@@ -597,7 +564,7 @@ class Metric():
         metric_has_data,
         reduced_metrics,
         modification_time_stamp,
-        significance) = self.reduce_from_npy(
+        p_values) = self.reduce_from_npy(
           settings,
           path,
           setting_encoding,
@@ -632,7 +599,7 @@ class Metric():
         constant_setting_description,
         nb_column_factor,
         modification_time_stamp,
-        significance)
+        p_values)
     return ([], [], '', 0, [], [])
 
   def add_setting_group(
@@ -898,6 +865,43 @@ class Metric():
           metric_descriptor+=' in '+str(self._unit.__getattribute__(atr))
         metric_descriptor += '\r\n'
     return metric_descriptor.rstrip()
+
+def significance(
+  settings,
+  table,
+  raw_data,
+  reduced_metrics,
+  metric_direction,
+  do_testing):
+
+  from scipy import stats
+
+  p_values = np.zeros((len(table),len(reduced_metrics)))
+  metric_stat_index = 0
+  for direction_index, direction in enumerate(metric_direction):
+    mean_values = []
+    for table_row in table:
+      mean_values.append(table_row[len(settings.factors())+direction_index])
+    if not np.isnan(mean_values).all() and direction!=0:
+      if metric_direction[direction_index]<0:
+        best_index = np.argwhere(mean_values==np.nanmin(mean_values)).flatten()
+      else:
+        best_index = np.argwhere(mean_values==np.nanmax(mean_values)).flatten()
+      p_values[best_index, direction_index] = -1
+      if do_testing[direction_index] != 0:
+        for raw_data_row_index, raw_data_row in enumerate(raw_data):
+          if (raw_data_row_index!=best_index[0] and
+              mean_values[metric_stat_index] != mean_values[raw_data_row_index]):
+            if not np.isnan(raw_data[raw_data_row_index][metric_stat_index]).all():
+              (_, p_value) = stats.ttest_rel(
+                raw_data_row[metric_stat_index],
+                raw_data[best_index[0]][metric_stat_index]
+                )
+              p_values[raw_data_row_index, direction_index] = p_value
+        metric_stat_index += 1
+  p_values = np.delete(p_values, np.invert(reduced_metrics), axis=1)
+
+  return p_values
 
 if __name__ == '__main__':
   import doctest
