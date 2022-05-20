@@ -647,7 +647,7 @@ class Plan():
     """convert dict based selector to list based selector
 
     """
-
+    integer_mask_array = []
     for dm in dict_selector:
       m = [-1]*len(self._factors)
       for dmk in dm.keys():
@@ -665,7 +665,9 @@ class Plan():
               m[self._factors.index(dmk)] = list(getattr(self, dmk)).index(dm[dmk])
         else:
           print('Error: '+dmk+' is not a factor.')
-    return m
+      integer_mask_array.append(m)
+
+    return integer_mask_array
 
   def _str2list(self, str_selector, factor_separator = '+', modality_identifier = '='):
     """convert string based selector to list based selector
@@ -901,7 +903,6 @@ class Plan():
   def __format__(self, selector):
     if selector and (isinstance(selector, str) or isinstance(selector, dict)):
       selector = [selector]
-
     if selector and any(isinstance(val, str) for val in selector):
       selector = self._str2list(selector)
     elif selector and any(isinstance(val, dict) for val in selector):
