@@ -12,7 +12,6 @@ import numpy as np
 import doce.util as eu
 import doce
 
-
 class Experiment():
   """Stores high level information about the experiment and tools
   to control the processing and storage of data.
@@ -113,6 +112,7 @@ class Experiment():
       int((time.time()-datetime.datetime(2020,1,1,0,0).timestamp())/60)
       )
     self.status.verbose = 0
+    self.selector = []
 
     self.parameter = types.SimpleNamespace()
     self.metric = doce.Metric()
@@ -293,8 +293,10 @@ class Experiment():
     """Send an email to the email address given in experiment.address.
 
     Send an email to the experiment.address email address using the smtp service from gmail.
-    For privacy, please consider using a dedicated gmail account by setting experiment._gmail_id and experiment._gmail_app_password. For this, you will need to create a gmail account,
-    set two-step validation and allow connection with app password.
+    For privacy, please consider using a dedicated gmail account
+    by setting experiment._gmail_id and experiment._gmail_app_password.
+    For this, you will need to create a gmail account, set two-step validation
+    and allow connection with app password.
 
     See https://support.google.com/accounts/answer/185833?hl=en for reference.
 
@@ -311,7 +313,7 @@ class Experiment():
     --------
     >>> import doce
     >>> e=doce.Experiment()
-    >>> e.address = 'mathieu.lagrange@cnrs.fr'
+    >>> e.address = 'mathieu.lagrange@ls2n.fr'
     >>> e.send_mail('hello', '<div> good day </div>')
     Sent message entitled: [doce]  id ... hello ...
 
@@ -319,15 +321,16 @@ class Experiment():
 
     import smtplib
 
-    header = 'From: doce mailer <'+self._gmail_id+'@gmail.com> \r\nTo: '+self.author+' '+self.address+'\r\nMIME-Version: 1.0 \r\nContent-type: text/html \r\nSubject: [doce] '+self.name+' id '+self.status.run_id+' '+title+'\r\n'
+    header = f'''From: doce mailer <{self._gmail_id}@gmail.com> \r\nTo: {self.author} {self.address}\r\nMIME-Version: 1.0 \r\nContent-type: text/html \r\nSubject: [doce] {self.name} id {self.status.run_id} {title}\r\n'''
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
-    server.login(self._gmail_id+'@gmail.com', self._gmail_app_password)
+    server.login(f'{self._gmail_id}@gmail.com', self._gmail_app_password)
     exp_desc = self.__str__(style = 'html')
     server.sendmail(self._gmail_id, self.address, f'{header}{body}<h3> {exp_desc}</h3>')
     server.quit()
-    print(f'Sent message entitled: [doce] {self.name} id {self.status.run_id} {title} at {time.ctime(time.time())}')
+    print(f'''Sent message entitled: [doce] {self.name} id {self.status.run_id} \
+     {title} at {time.ctime(time.time())}''')
 
   def perform(
     self,
@@ -472,7 +475,7 @@ class Experiment():
       else:
         if experiment_id.isnumeric():
           experiment_id = plans[int(experiment_id)]
-        print('Plan {experiment_id} is selected')
+        print(f'Plan {experiment_id} is selected')
         self._plan = getattr(self, experiment_id)
     self._plan.check()
     if show:
@@ -543,8 +546,8 @@ class Experiment():
     >>> e.set_path('output', '/tmp/test', force=True)
     >>> e.add_plan('plan', factor1=[1, 3], factor2=[2, 4])
     >>> def my_function(setting, experiment):
-    ...   np.save(f'{experiment.path.output}/{setting.identifier()}_sum.npy', setting.factor1+setting.factor2)
-    ...   np.save(f'{experiment.path.output}/{setting.identifier()}_mult.npy', setting.factor1*setting.factor2)
+    ...   np.save(f'{experiment.path.output}{setting.identifier()}_sum.npy', setting.factor1+setting.factor2)
+    ...   np.save(f'{experiment.path.output}{setting.identifier()}_mult.npy', setting.factor1*setting.factor2)
     >>> nb_failed = e.perform([], my_function, progress='')
     >>> os.listdir(e.path.output)
     ['factor1=1+factor2=4_mult.npy', 'factor1=1+factor2=4_sum.npy', 'factor1=3+factor2=4_sum.npy', 'factor1=1+factor2=2_mult.npy', 'factor1=1+factor2=2_sum.npy', 'factor1=3+factor2=2_mult.npy', 'factor1=3+factor2=4_mult.npy', 'factor1=3+factor2=2_sum.npy']
@@ -666,7 +669,7 @@ class Experiment():
           print('todo')
         else:
           if path not in self._doce_paths:
-            check = glob.glob(self.path.__getattribute__(path)+setting.identifier()+'_*.npy')
+            check = glob.glob(f'{self.path.__getattribute__(path)}{setting.identifier()}_*.npy')
             if check:
               return True
     return False
@@ -713,15 +716,15 @@ class Experiment():
 
     >>> experiment = doce.experiment.Experiment()
     >>> experiment.name = 'example'
-    >>> experiment.set_path('output', f'/tmp/{experiment.name}/', force=True)
+    >>> experiment.set_path('output', '/tmp/{experiment.name}/', force=True)
     >>> experiment.add_plan('plan', f1 = [1, 2], f2 = [1, 2, 3])
     >>> experiment.set_metrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
 
     >>> def process(setting, experiment):
     ...  metric1 = setting.f1+setting.f2+np.random.randn(100)
     ...  metric2 = setting.f1*setting.f2*np.random.randn(100)
-    ...  np.save(experiment.path.output+setting.identifier()+'_m1.npy', metric1)
-    ...  np.save(experiment.path.output+setting.identifier()+'_m2.npy', metric2)
+    ...  np.save(f'{experiment.path.output+setting.identifier()}_m1.npy', metric1)
+    ...  np.save(f'{experiment.path.output+setting.identifier()}_m2.npy', metric2)
     >>> nb_failed = experiment.perform([], process, progress='')
 
     >>> (setting_metric,
@@ -820,15 +823,15 @@ def get_from_path(
 
   >>> experiment = doce.experiment.Experiment()
   >>> experiment.name = 'example'
-  >>> experiment.set_path('output', '/tmp/'+experiment.name+'/', force=True)
+  >>> experiment.set_path('output', f'/tmp/{experiment.name}/', force=True)
   >>> experiment.add_plan('plan', f1 = [1, 2], f2 = [1, 2, 3])
   >>> experiment.set_metrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
 
   >>> def process(setting, experiment):
   ...  metric1 = setting.f1+setting.f2+np.random.randn(100)
   ...  metric2 = setting.f1*setting.f2*np.random.randn(100)
-  ...  np.save(experiment.path.output+setting.identifier()+'_m1.npy', metric1)
-  ...  np.save(experiment.path.output+setting.identifier()+'_m2.npy', metric2)
+  ...  np.save(f'{experiment.path.output}{setting.identifier()}_m1.npy', metric1)
+  ...  np.save(f'{experiment.path.output}{setting.identifier()}_m2.npy', metric2)
   >>> nb_failed = experiment.perform([], process, progress='')
 
   >>> (setting_metric,
@@ -847,8 +850,10 @@ def get_from_path(
   (100,)
   """
 
+  import tables as tb
+
   setting_metric = []
-  setting_description = []
+  setting_descriptions = []
   if not setting_encoding:
     setting_encoding = {}
   setting_description_format = copy.deepcopy(setting_encoding)
@@ -862,33 +867,33 @@ def get_from_path(
       for setting in settings:
         if h5_fid.root.__contains__(setting.identifier(**setting_encoding)):
           if verbose:
-            print('Found group '+setting.identifier(**setting_encoding))
+            print(f'Found group {setting.identifier(**setting_encoding)}')
           setting_group = h5_fid.root._f_get_child(setting.identifier(**setting_encoding))
           if setting_group.__contains__(metric):
             setting_metric.append(np.array(setting_group._f_get_child(metric)))
-            setting_description.append(setting.identifier(**setting_description_format))
+            setting_descriptions.append(setting.identifier(**setting_description_format))
         elif verbose:
-          print('** Unable to find group '+setting.identifier(**setting_encoding))
+          print(f'** Unable to find group {setting.identifier(**setting_encoding)}')
       h5_fid.close()
     else:
       for setting in settings:
-        file_name = path+setting.identifier(**setting_encoding)+'_'+metric+'.npy'
+        file_name = f'{path}{setting.identifier(**setting_encoding)}_{metric}.npy'
         if os.path.exists(file_name):
           if verbose:
-            print('Found '+file_name)
+            print(f'Found {file_name}')
           setting_metric.append(np.load(file_name))
-          setting_description.append(setting.identifier(**setting_description_format))
+          setting_descriptions.append(setting.identifier(**setting_description_format))
         elif verbose:
-          print('** Unable to find '+file_name)
+          print(f'** Unable to find {file_name}')
 
-  (setting_description, _,
+  (setting_descriptions, _,
   constant_setting_description,
-  _) = eu.prune_setting_description(setting_description, show_unique_setting = True)
+  _) = eu.prune_setting_description(setting_descriptions, show_unique_setting = True)
 
-  for ri, r in enumerate(setting_description):
-    setting_description[ri] = ', '.join(r)
+  for setting_description_index, setting_description in enumerate(setting_descriptions):
+    setting_descriptions[setting_description_index] = ', '.join(setting_description)
 
-  return (setting_metric, setting_description, constant_setting_description)
+  return (setting_metric, setting_descriptions, constant_setting_description)
 
 
 
@@ -899,7 +904,7 @@ class Path:
     name,
     value
     ):
-    object.__setattr__(self, name+'_raw', value)
+    object.__setattr__(self, f'{name}_raw', value)
     object.__setattr__(
       self,
       name,
@@ -910,4 +915,3 @@ class Path:
 if __name__ == '__main__':
   import doctest
   doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
-  # doctest.run_docstring_examples(doce.Experiment, globals(), optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.REPORT_ONLY_FIRST_FAILURE)
