@@ -45,6 +45,7 @@ def main():
    factor1_1_factor2_4
    factor1_3_factor2_2
    factor1_3_factor2_4
+   TRE
 
   Executing this file with the --help option gives:
 
@@ -53,66 +54,173 @@ def main():
   """
 
   parser = argparse.ArgumentParser()
-  parser.add_argument('-A', '--archive', type=str, help='archive the selected  \
-  settings from a given path. If the argument does not have / or \, the argument \
-  is interpreted as a member of the experiments path. The files are copied to \
-  the path experiment.path.archive if set.', nargs='?', const='')
-  parser.add_argument('-c', '--compute', type=int, help='perform computation. \
-  Integer parameter sets the number of jobs computed in parallel \
-  (default to one core).', nargs='?', const=1)
-  parser.add_argument('-C', '--copy', help='copy codebase to the host \
-  defined by the host (-H) argument.', action='store_true')
-  parser.add_argument('-d', '--display', type=str, help='display metrics. \
-  If no parameter is given, consider the default display and show all metrics. \
-  If the parameter contain a list of integers, use the default display \
-  and show only the selected metrics defined by the integer list. \
-  If the str parameter contain a name, run the display method with this name. \
-  If the parameter is of the type factor:metric_numeric_id, organizes the table \
-  with the modalities of the factor as columns \
-  and display the metric number metric_numeric_id.', nargs='?', default='-1')
-  parser.add_argument('-D', '--detached', help='Perform the computation in a detached mode, \
-  meaning that if one setting fails, doce continues to loop over \
-  the remaining settings to be computed.', action='store_true')
-  # parser.add_argument('-e', '--experiment', type=str, help='select experiment. List experiments if empty.', nargs='?', default='all')
-  parser.add_argument('-E', '--export', type=str, help='Export the display of reduced metrics \
-  for different file types (html, png, pdf). If parameter is empty, all exports are made. \
-  If parameter has a dot, interpreted as a filename which should be of support type. \
-  If parameter has nothing before the dot, interpreted as file type, and experiment.name is used. \
-  If parameter has no dot, interpreted as file name with no extension, \
-  and all exports are made.', nargs='?', default='none')
-  parser.add_argument('-f', '--files', help='list files.', action='store_true')
-  parser.add_argument('-H', '--host', type=int, help='running on specified HOST. \
-  Integer defines the index in the host array of the experiment. \
-  -2 (default) runs attached on the local host, -1 runs detached on the local host through a screen, \
-  -3 is a flag meaning that the experiment runs detached (no stop at failing settings).', default=-2)
-  parser.add_argument('-i', '--information', help='show information about the experiment.', action='store_true')
-  parser.add_argument('-K', '--keep', type=str, help='keep only the selected settings \
-  from a given path. If the argument does not have / or \, the argument is \
-  interpreted as a member of the experiments path. Unwanted files are moved to \
-  the path experiment.path.archive if set, deleted otherwise.', nargs='?', const='')
-  parser.add_argument('-l', '--list', help='list settings.', action='store_true')
-  parser.add_argument('-M', '--mail', help='send email at the beginning and \
-  end of the computation. If a positive integer value x is provided, \
-  additional emails are sent every x hours.', nargs='?', default='-1')
-  parser.add_argument('-p', '--plan', help='show the active plan of the experiment.',
-  action='store_true')
-  parser.add_argument('-P', '--progress', help='display progress bar. \
-  Argument controls the display of the current setting: d alphanumeric description, \
-  s numeric selector, ds combination of both (default d).', nargs='?', const='d')
-  parser.add_argument('-R', '--remove', type=str, help='remove the selected  \
-  settings from a given path. If the argument does not have / or \, the argument \
-  is interpreted as a member of the experiments path. Unwanted files are moved \
-  to the path experiment.path.archive if set, deleted otherwise.', nargs='?', const='')
-  parser.add_argument('-s', '--select', type=str, help='selection of settings', default='[]')
-  parser.add_argument('-S', '--skip', help='check availability of any metric \
-  of a given setting and skip computation if available.', action='store_true')
-  # parser.add_argument('-S', '--server_default', help='augment the command line with the content of the dict experiment._default_server_run_argument.', action='store_true')
-  parser.add_argument('-u', '--user_data', type=str, help='a dict specified as \
-  str (for example, \'{\"test\": 1}\') that will be available \
-  in experiment.user_data (user_data.test=1).', default='{}')
-  parser.add_argument('-v', '--version', help='print version', action='store_true')
-  parser.add_argument('-V', '--verbose', help='level of verbosity \
-  (default 0: silent).', action='store_true')
+  parser.add_argument(
+      '-A',
+      '--archive',
+      type=str,
+      help=r'archive the selected  settings from a given path. \
+      If the argument does not have / or \, the argument is interpreted as a member \
+      of the experiments path. The files are copied to the path experiment.path.archive if set.',
+      nargs='?',
+      const=''
+  )
+  parser.add_argument(
+      '-c',
+      '--compute',
+      type=int,
+      help=r'perform computation. Integer parameter sets the number of jobs computed in parallel \
+      (default to one core).',
+      nargs='?',
+      const=1
+  )
+  parser.add_argument(
+      '-C',
+      '--copy',
+      help=r'copy codebase to the host defined by the host (-H) argument.',
+      action='store_true'
+  )
+  parser.add_argument(
+      '-d',
+      '--display',
+      type=str,
+      help=r'display metrics. \
+      If no parameter is given, consider the default display and show all metrics. \
+      If the parameter contain a list of integers, use the default display \
+      and show only the selected metrics defined by the integer list. \
+      If the str parameter contain a name, run the display method with this name. \
+      If the parameter is of the type factor:metric_numeric_id, organizes the table \
+      with the modalities of the factor as columns \
+      and display the metric number metric_numeric_id.',
+      nargs='?',
+      default='-1'
+  )
+  parser.add_argument(
+      '-D',
+      '--detached',
+      help=r'Perform the computation in a detached mode, \
+      meaning that if one setting fails, doce continues to loop over \
+      the remaining settings to be computed.',
+      action='store_true'
+  )
+  parser.add_argument(
+      '-E',
+      '--export',
+      type=str,
+      help=r'Export the display of reduced metrics \
+      for different file types (html, png, pdf). If parameter is empty, all exports are made. \
+      If parameter has a dot, interpreted as a filename which should be of support type. \
+      If parameter has nothing before the dot, interpreted as file type, and experiment.name is used. \
+      If parameter has no dot, interpreted as file name with no extension, \
+      and all exports are made.',
+      nargs='?',
+      default='none'
+  )
+  parser.add_argument(
+      '-f',
+      '--files',
+      help=r'list files.',
+      action='store_true'
+  )
+  parser.add_argument(
+      '-H',
+      '--host',
+      type=int,
+      help=r'running on specified HOST. \
+      Integer defines the index in the host array of the experiment. \
+      -2 (default) runs attached on the local host, -1 runs detached on the local host through a screen, \
+      -3 is a flag meaning that the experiment runs detached (no stop at failing settings).',
+      default=-2)
+  parser.add_argument(
+      '-i',
+      '--information',
+      help=r'show information about the experiment.',
+      action='store_true'
+  )
+  parser.add_argument(
+      '-K',
+      '--keep',
+      type=str,
+      help=r'keep only the selected settings \
+      from a given path. If the argument does not have / or \, the argument is \
+      interpreted as a member of the experiments path. Unwanted files are moved \
+      to the path experiment.path.archive if set, deleted otherwise.',
+      nargs='?',
+      const=''
+  )
+  parser.add_argument(
+      '-l',
+      '--list',
+      help=r'list settings.',
+      action='store_true'
+  )
+  parser.add_argument(
+      '-M',
+      '--mail',
+      help=r'send email at the beginning and end of the computation. \
+      If a positive integer value x is provided, additional emails \
+      are sent every x hours.',
+      nargs='?',
+      default='-1'
+  )
+  parser.add_argument(
+      '-p',
+      '--plan',
+      help=r'show the active plan of the experiment.',
+      action='store_true'
+  )
+  parser.add_argument(
+      '-P',
+      '--progress',
+      help=r'display progress bar. Argument controls the display of the current \
+      setting: d alphanumeric description, s numeric selector, ds combination of \
+      both (default d).',
+      nargs='?',
+      const='d'
+  )
+  parser.add_argument(
+      '-R',
+      '--remove',
+      type=str,
+      help=r'remove the selected  settings from a given path. \
+      If the argument does \ not have / or \, the argument is interpreted \
+      as a member of the experiments \ path. Unwanted files are moved \
+      to the path experiment.path.archive if set, \ deleted otherwise.',
+      nargs='?',
+      const=''
+  )
+  parser.add_argument(
+      '-s',
+      '--select',
+      type=str,
+      help=r'selection of settings',
+      default='[]'
+  )
+  parser.add_argument(
+      '-S',
+      '--skip',
+      help=r'check availability of any metric of a given setting and skip \
+      computation if available.',
+      action='store_true')
+  parser.add_argument(
+      '-u',
+      '--user_data',
+      type=str,
+      help=r'a dict specified as str (for example, \'{\"test\": 1}\') \
+      that will be available in experiment.user_data (user_data.test=1).',
+      default='{}'
+  )
+  parser.add_argument(
+      '-v',
+      '--version',
+      help=r'print version',
+      action='store_true'
+  )
+  parser.add_argument(
+      '-V',
+      '--verbose',
+      help=r'level of verbosity (default 0: silent).',
+      action='store_true'
+  )
   args = parser.parse_args()
 
   if args.mail is None:
@@ -137,9 +245,8 @@ def main():
   try:
     config = importlib.import_module(module)
   except:
-   print(f'{sys.argv[0]} should implement a valid python module.')
-   raise value_error
-
+    print(f'{sys.argv[0]} should implement a valid python module.')
+    raise value_error
 
   # experiment = doce.experiment.Experiment()
   # if isinstance(user_data, dict):
@@ -150,7 +257,7 @@ def main():
     experiment = doce.Experiment()
 
   if args.version:
-    print("Experiment version "+experiment.version)
+    print("Experiment version " + experiment.version)
     exit(1)
 
   experiment.status.verbose = args.verbose
@@ -159,65 +266,66 @@ def main():
   experiment.select(selector, show=args.plan)
 
   if args.information:
-      print(experiment)
+    print(experiment)
 
   if args.list:
     experiment.perform(
-      experiment.selector,
-      progress='',
-      function= lambda s,
-      e: print(s)
-      )
+        experiment.selector,
+        progress='',
+        function=lambda s,
+        e: print(s)
+    )
   if args.files:
     experiment.perform(
-      experiment.selector,
-      progress='',
-      function= lambda s,
-      e: print(s.identifier())
-      )
+        experiment.selector,
+        progress='',
+        function=lambda s,
+        e: print(s.identifier())
+    )
 
   if args.remove:
     experiment.clean_data_sink(
-      args.remove,
-      experiment.selector,
-      archive_path=experiment.path.archive,
-      verbose=experiment.status.verbose
-      )
+        args.remove,
+        experiment.selector,
+        archive_path=experiment.path.archive,
+        verbose=experiment.status.verbose
+    )
   if args.keep:
     experiment.clean_data_sink(
-      args.keep,
-      experiment.selector,
-      reverse=True,
-      archive_path=experiment.path.archive,
-      verbose=experiment.status.verbose
-      )
+        args.keep,
+        experiment.selector,
+        reverse=True,
+        archive_path=experiment.path.archive,
+        verbose=experiment.status.verbose
+    )
   if args.archive:
     if experiment.path.archive:
       experiment.clean_data_sink(
-        args.archive,
-        experiment.selector,
-        keep=True,
-        setting_encoding=experiment._setting_encoding,
-        archive_path=experiment.path.archive,
-        verbose=experiment.status.verbose
-        )
+          args.archive,
+          experiment.selector,
+          keep=True,
+          setting_encoding=experiment._setting_encoding,
+          archive_path=experiment.path.archive,
+          verbose=experiment.status.verbose
+      )
     else:
       print('Please set the path.archive path before issuing an archive command.')
 
   log_file_name = ''
-  if args.host>-2:
+  if args.host > -2:
 
     import argunparse
 
     unparser = argunparse._argument_unparser()
     kwargs = copy.deepcopy(vars(args))
     kwargs['host'] = -3
-    command = unparser.unparse(**kwargs).replace('\'', '\"').replace('\"', '\\\"')
+    command = unparser.unparse(
+        **kwargs).replace('\'', '\"').replace('\"', '\\\"')
     if args.verbose:
       command += '; bash '
     command = 'screen -dm bash -c \'python3 {experiment.name}.py {command}\''
     message = 'experiment launched on local host'
-    if args.host>-1:
+    if args.host > -1:
       if args.copy:
         sync_command = f'rsync -r {experiment.path.code}* {experiment.host[args.host]}:{experiment.path.code_raw}'
         print(f'Sycing code repository to host: {experiment.host[args.host]}')
@@ -236,11 +344,12 @@ def main():
   print()
   if args.host == -3 or args.detached:
     log_file_name = '/tmp/doce_{experiment.name}_{experiment.status.run_id}.txt'
-  if args.mail>-1:
-    experiment.send_mail(f'{args.select} has started.', f'<div> Selector = {args.select}</div>')
+  if args.mail > -1:
+    experiment.send_mail(f'{args.select} has started.',
+                         f'<div> Selector = {args.select}</div>')
   if args.compute and hasattr(config, 'step'):
-    experiment.perform(experiment.selector, config.step, nb_jobs=args.compute, log_file_name=log_file_name, progress=args.progress, mail_interval = float(args.mail))
-
+    experiment.perform(experiment.selector, config.step, nb_jobs=args.compute,
+                       log_file_name=log_file_name, progress=args.progress, mail_interval=float(args.mail))
 
   select_display = []
   select_factor = ''
@@ -249,7 +358,7 @@ def main():
   if args.display == '-1':
     display = False
   elif args.display is not None:
-    if  '[' in args.display:
+    if '[' in args.display:
       select_display = ast.literal_eval(args.display)
     elif ':' in args.display:
       s = args.display.split(':')
@@ -258,20 +367,21 @@ def main():
     else:
       select_display = [int(args.display)]
 
-
   body = '<div> Selector = {args.select}</div>'
   if display:
     if hasattr(config, display_method):
-      getattr(config, display_method)(experiment, experiment._plan.select(experiment.selector))
+      getattr(config, display_method)(
+          experiment, experiment._plan.select(experiment.selector))
     else:
-      (df, header, styler) = data_frame_display(experiment, args, config, select_display, select_factor)
+      (df, header, styler) = data_frame_display(
+          experiment, args, config, select_display, select_factor)
       if df is not None:
         print(header)
         # pd.set_option('precision', 2)
         print(df)
       if args.export != 'none' and styler is not None:
         export_data_frame(experiment, args, df, styler, header)
-      if args.mail>-1:
+      if args.mail > -1:
         body += f'<div> {header} </div><br>{styler.render()}'
 
   if args.host == -3 or args.detached:
@@ -282,16 +392,17 @@ def main():
         log = file.read()
         if log:
           log_html = log.replace('\n', '<br>')
-          body+= f'<h2> Error log </h2>{log_html}'
-  if args.mail>-1:
-    experiment.send_mail(f'{args.select} is over.', body) #
+          body += f'<h2> Error log </h2>{log_html}'
+  if args.mail > -1:
+    experiment.send_mail(f'{args.select} is over.', body)
+
 
 def data_frame_display(experiment, args, config, select_display, select_factor):
 
   import pandas as pd
 
   selector = experiment.selector
-  ma=copy.deepcopy(selector)
+  ma = copy.deepcopy(selector)
   if select_factor:
     fi = experiment._plan.factors().index(select_factor)
 
@@ -309,13 +420,15 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
     # print(settings)
     # ma=copy.deepcopy(selector)
     # ma[fi]=0
-  (table, columns, header, nb_factor_columns, modification_time_stamp, significance) = experiment.metric.reduce(experiment._plan.select(selector), experiment.path.output, factor_display=experiment._display.factor_format_in_reduce, metric_display=experiment._display.metric_format_in_reduce, factor_display_length=experiment._display.factor_format_in_reduce_length, metric_display_length=experiment._display.metric_format_in_reduce_length, verbose=args.verbose, reduction_directive_module=config)
+  (table, columns, header, nb_factor_columns, modification_time_stamp, significance) = experiment.metric.reduce(experiment._plan.select(selector), experiment.path.output, factor_display=experiment._display.factor_format_in_reduce,
+                                                                                                                metric_display=experiment._display.metric_format_in_reduce, factor_display_length=experiment._display.factor_format_in_reduce_length, metric_display_length=experiment._display.metric_format_in_reduce_length, verbose=args.verbose, reduction_directive_module=config)
 
   if len(table) == 0:
-      return (None, '', None)
+    return (None, '', None)
   if select_factor:
     modalities = getattr(experiment._plan, select_factor)[ms]
-    header_short = header.replace(select_factor+': '+str(modalities[0])+' ', '')
+    header_short = header.replace(
+        select_factor + ': ' + str(modalities[0]) + ' ', '')
     header = f'metric: {columns[nbFactorColumns+select_display[0]]} for factor {header_short} {select_factor}'
 
     columns = columns[:nb_factor_columns]
@@ -327,18 +440,19 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
       table[s] = table[s][:nb_factor_columns]
     # print(settings)
     for sIndex, s in enumerate(settings):
-      (sd, ch, csd, nb, md, si)  = experiment.metric.reduce(experiment._plan.select(s), experiment.path.output, factor_display=experiment._display.factor_format_in_reduce, metric_display=experiment._display.metric_format_in_reduce, factor_display_length=experiment._display.factor_format_in_reduce_length, metric_display_length=experiment._display.metric_format_in_reduce_length, verbose=args.verbose, reduction_directive_module=config)
+      (sd, ch, csd, nb, md, si) = experiment.metric.reduce(experiment._plan.select(s), experiment.path.output, factor_display=experiment._display.factor_format_in_reduce, metric_display=experiment._display.metric_format_in_reduce,
+                                                           factor_display_length=experiment._display.factor_format_in_reduce_length, metric_display_length=experiment._display.metric_format_in_reduce_length, verbose=args.verbose, reduction_directive_module=config)
       modification_time_stamp += md
       # import pdb; pdb.set_trace()
       significance[sIndex, :] = si[:, select_display[0]]
       # print(s)
       # print(sd)
       for ssd in sd:
-        table[sIndex].append(ssd[1+select_display[0]])
+        table[sIndex].append(ssd[1 + select_display[0]])
 
   if len(significance):
     best = significance == -1
-    significance = significance>experiment._display.pValue
+    significance = significance > experiment._display.pValue
     significance = significance.astype(float)
     significance[best] = -1
     if select_display and not select_factor:
@@ -346,21 +460,24 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
 
   if experiment._display.pValue == 0:
     for ti, t in enumerate(table):
-      table[ti][-len(significance[ti]):]=significance[ti]
+      table[ti][-len(significance[ti]):] = significance[ti]
 
   if modification_time_stamp:
     print(f'Displayed data generated from {time.ctime(min(modification_time_stamp))} \
      to {time.ctime(max(modification_time_stamp))}')
-  df = pd.DataFrame(table, columns=columns) #.fillna('-')
+  df = pd.DataFrame(table, columns=columns)  # .fillna('-')
 
-  if select_display and not select_factor and  len(columns)>=max(select_display)+nb_factor_columns:
-    columns = [columns[i] for i in [*range(nb_factor_columns)]+[s+nb_factor_columns for s in select_display]]
+  if select_display and not select_factor and len(columns) >= max(select_display) + nb_factor_columns:
+    columns = [columns[i] for i in [
+        *range(nb_factor_columns)] + [s + nb_factor_columns for s in select_display]]
     df = df[columns]
 
-  d = dict(selector="th", props=[('text-align', 'center'), ('border-bottom', '.1rem solid')])
+  d = dict(selector="th", props=[
+           ('text-align', 'center'), ('border-bottom', '.1rem solid')])
 
   # Construct a selector of which columns are numeric
-  numeric_col_selector = df.dtypes.apply(lambda d: issubclass(np.dtype(d).type, np.number))
+  numeric_col_selector = df.dtypes.apply(
+      lambda d: issubclass(np.dtype(d).type, np.number))
   c_percent = []
   c_no_percent = []
   cMinus = []
@@ -377,7 +494,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
       else:
         precision_format[c] = f'0:.{str(experiment._display.metric_precision)}f}}'
         c_no_percent.append(c)
-      if c[-1] == '-' :
+      if c[-1] == '-':
         cMinus.append(c)
       else:
         c_no_minus.append(c)
@@ -390,10 +507,12 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
     #     if is_integer:
     #       cInt[c] = 'int32'
 
-  dPercent = pd.Series([experiment._display.metric_precision-2]*len(c_percent), index=c_percent, dtype = np.intc)
-  d_no_percent = pd.Series([experiment._display.metric_precision]*len(c_no_percent), index=c_no_percent, dtype = np.intc)
-  dInt = pd.Series([0]*len(cInt), index=cInt, dtype = np.intc)
-  df=df.round(dPercent).round(d_no_percent)
+  dPercent = pd.Series([experiment._display.metric_precision - 2]
+                       * len(c_percent), index=c_percent, dtype=np.intc)
+  d_no_percent = pd.Series([experiment._display.metric_precision]
+                           * len(c_no_percent), index=c_no_percent, dtype=np.intc)
+  dInt = pd.Series([0] * len(cInt), index=cInt, dtype=np.intc)
+  df = df.round(dPercent).round(d_no_percent)
 
   for ci, c in enumerate(columns):
     if isinstance(df[c][0], float):
@@ -404,7 +523,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
       if is_integer:
         cInt[c] = 'int32'
 
-  df=df.astype(cInt)
+  df = df.astype(cInt)
 
   # df['mean_offset'].map(lambda x: 0)
 
@@ -416,23 +535,27 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
   #                     if (x == x and x*10 % 10 == 0)
   #                     else form % x)
 
-  styler = df.style.set_properties(subset=df.columns[numeric_col_selector], # right-align the numeric columns and set their width
-        **{'width':'10em', 'text-align':'right'})\
-        .set_properties(subset=df.columns[~numeric_col_selector], # left-align the non-numeric columns and set their width
-        **{'width':'10em', 'text-align':'left'})\
-        .set_properties(subset=df.columns[nb_factor_columns], # left-align the non-numeric columns and set their width
-        **{'border-left':'.1rem solid'})\
-        .set_table_styles([d])\
-        .format(precision_format).applymap(lambda x: 'color: white' if pd.isnull(x) else '')
+  styler = df.style.set_properties(subset=df.columns[numeric_col_selector],  # right-align the numeric columns and set their width
+                                   **{'width': '10em', 'text-align': 'right'})\
+      .set_properties(subset=df.columns[~numeric_col_selector],  # left-align the non-numeric columns and set their width
+                      **{'width': '10em', 'text-align': 'left'})\
+      .set_properties(subset=df.columns[nb_factor_columns],  # left-align the non-numeric columns and set their width
+                      **{'border-left': '.1rem solid'})\
+      .set_table_styles([d])\
+      .format(precision_format).applymap(lambda x: 'color: white' if pd.isnull(x) else '')
   if not experiment._display.show_row_index:
     styler.hide_index()
   if experiment._display.bar:
-    styler.bar(subset=df.columns[nb_factor_columns:], align='mid', color=['#d65f5f', '#5fba7d'])
+    styler.bar(subset=df.columns[nb_factor_columns:],
+               align='mid', color=['#d65f5f', '#5fba7d'])
   if experiment._display.highlight:
-    styler.apply(highlight_stat, subset=cMetric, axis=None, **{'significance':significance})
-    styler.apply(highlight_best, subset=cMetric, axis=None, **{'significance':significance})
+    styler.apply(highlight_stat, subset=cMetric, axis=None,
+                 **{'significance': significance})
+    styler.apply(highlight_best, subset=cMetric, axis=None,
+                 **{'significance': significance})
 
   return (df.fillna('-'), header, styler)
+
 
 def highlight_stat(s, significance):
   import pandas as pd
@@ -440,15 +563,17 @@ def highlight_stat(s, significance):
   if len(significance):
     # print(df)
     # print(significance)
-    df = df.where(significance<=0, 'color: blue')
+    df = df.where(significance <= 0, 'color: blue')
   return df
+
 
 def highlight_best(s, significance):
   import pandas as pd
   df = pd.DataFrame('', index=s.index, columns=s.columns)
   if len(significance):
-    df = df.where(significance>-1, 'font-weight: bold')
+    df = df.where(significance > -1, 'font-weight: bold')
   return df
+
 
 def export_data_frame(experiment, args, df, styler, header):
   if not os.path.exists(experiment.path.export):
@@ -462,49 +587,52 @@ def export_data_frame(experiment, args, df, styler, header):
       export_file_name = a[0]
     else:
       export_file_name = experiment.name
-    if len(a)>1:
+    if len(a) > 1:
       args.export = str(a[1])
     else:
       args.export = 'all'
   export_file_name = f'{experiment.path.export}/{export_file_name}'
-  reload_header =  '<script> window.onblur= function() {window.onfocus= function () {location.reload(true)}}; </script>'
+  reload_header = '<script> window.onblur= function() {window.onfocus= function () {location.reload(true)}}; </script>'
   with open(f'{export_file_name}.html', "w") as out_file:
     out_file.write(reload_header)
     out_file.write('<br><u>{header}</u><br><br>')
     out_file.write(styler.render())
   if 'csv' in args.export or args.export == 'all':
-    df.to_csv(path_or_buf=f'{export_file_name}.csv', index=experiment._display.show_row_index)
+    df.to_csv(path_or_buf=f'{export_file_name}.csv',
+              index=experiment._display.show_row_index)
     print('csv export: {export_file_name}.csv')
   if 'xls' in args.export or args.export == 'all':
-    df.to_excel(excel_writer=f'{export_file_name}.xls', index=experiment._display.show_row_index)
+    df.to_excel(excel_writer=f'{export_file_name}.xls',
+                index=experiment._display.show_row_index)
     print('excel export: {export_file_name}.xls')
 
   if 'tex' in args.export or args.export == 'all':
-    df.to_latex(buf=f'{export_file_name}.tex', index=experiment._display.show_row_index, bold_rows=True)
+    df.to_latex(buf=f'{export_file_name}.tex',
+                index=experiment._display.show_row_index, bold_rows=True)
     print('tex export: {export_file_name}.tex')
     print('please add to the preamble: \\usepackage{booktabs}')
 
   if 'png' in args.export or args.export == 'all':
-      print('Creating image...')
-      if shutil.which('wkhtmltoimage') is not None:
-        subprocess.call(
-        f'wkhtmltoimage -f png --width 0 {export_file_name}.html {export_file_name}.png', shell=True)
-        print(f'png export: {export_file_name}.png')
-      else:
-        print('''generation of png is handled by converting the html generated \
+    print('Creating image...')
+    if shutil.which('wkhtmltoimage') is not None:
+      subprocess.call(
+          f'wkhtmltoimage -f png --width 0 {export_file_name}.html {export_file_name}.png', shell=True)
+      print(f'png export: {export_file_name}.png')
+    else:
+      print('''generation of png is handled by converting the html generated \
           from the result dataframe using the wkhtmltoimage tool. This tool must be installed and reachable from you path.''')
   if 'pdf' in args.export or args.export == 'all':
     print('Creating pdf...')
     if shutil.which('wkhtmltopdf'):
       subprocess.call(
-      f'wkhtmltopdf {export_file_name}.html {export_file_name}.pdf', shell=True)
+          f'wkhtmltopdf {export_file_name}.html {export_file_name}.pdf', shell=True)
     else:
       print('Generation of pdf is handled by converting the html generated from the result dataframe using the wkhtmltoimage tool which must be installed and reachable from you path.')
 
     print('Cropping {export_file_name}.pdf')
     if shutil.which('pdfcrop') is not None:
       subprocess.call(
-      f'pdfcrop {export_file_name}.pdf {export_file_name}.pdf', shell=True)
+          f'pdfcrop {export_file_name}.pdf {export_file_name}.pdf', shell=True)
       print('pdf export: {export_file_name}.pdf')
     else:
       print('''Crop of pdf is handled using the pdfcrop tool. \
@@ -515,6 +643,7 @@ def export_data_frame(experiment, args, df, styler, header):
   else:
     print(f'html export: {export_file_name}.html')
 
+
 if __name__ == '__main__':
-    import doctest
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+  import doctest
+  doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
