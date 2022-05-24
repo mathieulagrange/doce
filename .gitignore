@@ -19,16 +19,9 @@ develop-eggs
 # Installer logs
 pip-log.txt
 
-# Unit test / coverage reports
-.coverage
-.tox
-tests/result_images/
+examples/export/
 
-#Translations
-*.mo
 
-#Mr Developer
-.mr.developer.cfg
 
 # Data files
 */data/*
