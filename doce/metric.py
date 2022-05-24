@@ -130,7 +130,14 @@ class Metric():
         table.append(row)
         raw_data.append(raw_data_row)
 
-    p_values = significance(settings, table, raw_data, reduced_metrics, metric_direction, do_testing)
+    p_values = significance(
+      settings,
+      table,
+      raw_data,
+      reduced_metrics,
+      metric_direction,
+      do_testing
+      )
 
     return (table, metric_has_data, reduced_metrics, modification_time_stamp, p_values)
 
@@ -232,7 +239,14 @@ class Metric():
         table.append(row)
         raw_data.append(raw_data_row)
     h5_fid.close()
-    p_values = significance(settings, table, raw_data, reduced_metrics, metric_direction, do_testing)
+    p_values = significance(
+      settings,
+      table,
+      raw_data,
+      reduced_metrics,
+      metric_direction,
+      do_testing
+      )
     return (table, metric_has_data, reduced_metrics, p_values)
 
   def apply_reduction(
@@ -899,7 +913,7 @@ def significance(
                 )
               p_values[raw_data_row_index, direction_index] = p_value
         metric_stat_index += 1
-  p_values = np.delete(p_values, np.invert(reduced_metrics), axis=1)
+  # p_values = np.delete(p_values, np.invert(reduced_metrics), axis=1)
 
   return p_values
 

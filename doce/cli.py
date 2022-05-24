@@ -1,3 +1,5 @@
+"""handle interaction with the doce module using the command line"""
+
 import sys
 import argparse
 import ast
@@ -9,6 +11,7 @@ import shutil
 import time
 import re
 import numpy as np
+from torch import sign
 import doce
 
 def main():
@@ -45,7 +48,6 @@ def main():
    factor1_1_factor2_4
    factor1_3_factor2_2
    factor1_3_factor2_4
-   TRE
 
   Executing this file with the --help option gives:
 
@@ -239,22 +241,20 @@ def main():
   except:
     pass
 
-  user_data = ast.literal_eval(args.user_data)
-
   module = sys.argv[0][:-3]
   try:
     config = importlib.import_module(module)
   except:
     print(f'{sys.argv[0]} should implement a valid python module.')
-    raise value_error
+    raise ValueError
 
-  # experiment = doce.experiment.Experiment()
-  # if isinstance(user_data, dict):
-  #   experiment.user_data = user_data
   if hasattr(config, 'set'):
     experiment = config.set(args)
   else:
     experiment = doce.Experiment()
+
+  if isinstance(args.user_data, dict):
+    experiment.user_data = args.user_data
 
   if args.version:
     print("Experiment version " + experiment.version)
@@ -316,7 +316,7 @@ def main():
 
     import argunparse
 
-    unparser = argunparse._argument_unparser()
+    unparser = argunparse.ArgumentUnparser()
     kwargs = copy.deepcopy(vars(args))
     kwargs['host'] = -3
     command = unparser.unparse(
@@ -345,11 +345,19 @@ def main():
   if args.host == -3 or args.detached:
     log_file_name = '/tmp/doce_{experiment.name}_{experiment.status.run_id}.txt'
   if args.mail > -1:
-    experiment.send_mail(f'{args.select} has started.',
-                         f'<div> Selector = {args.select}</div>')
+    experiment.send_mail(
+      f'{args.select} has started.',
+      f'<div> Selector = {args.select}</div>'
+      )
   if args.compute and hasattr(config, 'step'):
-    experiment.perform(experiment.selector, config.step, nb_jobs=args.compute,
-                       log_file_name=log_file_name, progress=args.progress, mail_interval=float(args.mail))
+    experiment.perform(
+      experiment.selector, 
+      config.step, 
+      nb_jobs=args.compute,
+      log_file_name=log_file_name, 
+      progress=args.progress, 
+      mail_interval=float(args.mail)
+      )
 
   select_display = []
   select_factor = ''
@@ -373,14 +381,14 @@ def main():
       getattr(config, display_method)(
           experiment, experiment._plan.select(experiment.selector))
     else:
-      (df, header, styler) = data_frame_display(
+      (data_frame, header, styler) = data_frame_display(
           experiment, args, config, select_display, select_factor)
-      if df is not None:
+      if data_frame is not None:
         print(header)
         # pd.set_option('precision', 2)
-        print(df)
+        print(data_frame)
       if args.export != 'none' and styler is not None:
-        export_data_frame(experiment, args, df, styler, header)
+        export_data_frame(experiment, args, data_frame, styler, header)
       if args.mail > -1:
         body += f'<div> {header} </div><br>{styler.render()}'
 
@@ -402,26 +410,32 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
   import pandas as pd
 
   selector = experiment.selector
-  ma = copy.deepcopy(selector)
   if select_factor:
     fi = experiment._plan.factors().index(select_factor)
 
     selector = experiment._plan.expand_selector(selector, select_factor)
 
     ms = selector[fi]
-    # print(ms)
+
     selector[fi] = [0]
     experiment._plan.select(selector).__set_settings__()
     settings = experiment._plan._settings
-    # print(settings)
-    # print(fi)
+
     for s in settings:
       s[fi] = ms
     # print(settings)
     # ma=copy.deepcopy(selector)
     # ma[fi]=0
-  (table, columns, header, nb_factor_columns, modification_time_stamp, significance) = experiment.metric.reduce(experiment._plan.select(selector), experiment.path.output, factor_display=experiment._display.factor_format_in_reduce,
-                                                                                                                metric_display=experiment._display.metric_format_in_reduce, factor_display_length=experiment._display.factor_format_in_reduce_length, metric_display_length=experiment._display.metric_format_in_reduce_length, verbose=args.verbose, reduction_directive_module=config)
+  (table, columns, header, nb_factor_columns, modification_time_stamp, significance) = experiment.metric.reduce(
+    experiment._plan.select(selector), 
+    experiment.path.output, 
+    factor_display=experiment._display.factor_format_in_reduce,
+    metric_display=experiment._display.metric_format_in_reduce, 
+    factor_display_length=experiment._display.factor_format_in_reduce_length, 
+    metric_display_length=experiment._display.metric_format_in_reduce_length, 
+    verbose=args.verbose, 
+    reduction_directive_module=config
+    )
 
   if len(table) == 0:
     return (None, '', None)
@@ -429,7 +443,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
     modalities = getattr(experiment._plan, select_factor)[ms]
     header_short = header.replace(
         select_factor + ': ' + str(modalities[0]) + ' ', '')
-    header = f'metric: {columns[nbFactorColumns+select_display[0]]} for factor {header_short} {select_factor}'
+    header = f'metric: {columns[nb_factor_columns+select_display[0]]} for factor {header_short} {select_factor}'
 
     columns = columns[:nb_factor_columns]
     for m in modalities:
@@ -440,17 +454,14 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
       table[s] = table[s][:nb_factor_columns]
     # print(settings)
     for sIndex, s in enumerate(settings):
-      (sd, ch, csd, nb, md, si) = experiment.metric.reduce(experiment._plan.select(s), experiment.path.output, factor_display=experiment._display.factor_format_in_reduce, metric_display=experiment._display.metric_format_in_reduce,
+      (sd, _, _, _, md, si) = experiment.metric.reduce(experiment._plan.select(s), experiment.path.output, factor_display=experiment._display.factor_format_in_reduce, metric_display=experiment._display.metric_format_in_reduce,
                                                            factor_display_length=experiment._display.factor_format_in_reduce_length, metric_display_length=experiment._display.metric_format_in_reduce_length, verbose=args.verbose, reduction_directive_module=config)
       modification_time_stamp += md
-      # import pdb; pdb.set_trace()
       significance[sIndex, :] = si[:, select_display[0]]
-      # print(s)
-      # print(sd)
       for ssd in sd:
         table[sIndex].append(ssd[1 + select_display[0]])
 
-  if len(significance):
+  if significance is not None:
     best = significance == -1
     significance = significance > experiment._display.pValue
     significance = significance.astype(float)
@@ -459,156 +470,138 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
       significance = significance[:, select_display]
 
   if experiment._display.pValue == 0:
-    for ti, t in enumerate(table):
-      table[ti][-len(significance[ti]):] = significance[ti]
+    for table_row_index, in enumerate(table):
+      table[table_row_index][-len(significance[table_row_index]):] = significance[table_row_index]
 
   if modification_time_stamp:
     print(f'Displayed data generated from {time.ctime(min(modification_time_stamp))} \
      to {time.ctime(max(modification_time_stamp))}')
-  df = pd.DataFrame(table, columns=columns)  # .fillna('-')
+  data_frame = pd.DataFrame(table, columns=columns)  # .fillna('-')
 
   if select_display and not select_factor and len(columns) >= max(select_display) + nb_factor_columns:
     columns = [columns[i] for i in [
         *range(nb_factor_columns)] + [s + nb_factor_columns for s in select_display]]
-    df = df[columns]
+    data_frame = data_frame[columns]
 
   d = dict(selector="th", props=[
            ('text-align', 'center'), ('border-bottom', '.1rem solid')])
 
   # Construct a selector of which columns are numeric
-  numeric_col_selector = df.dtypes.apply(
+  numeric_col_selector = data_frame.dtypes.apply(
       lambda d: issubclass(np.dtype(d).type, np.number))
   c_percent = []
   c_no_percent = []
-  cMinus = []
+  c_minus = []
   c_no_minus = []
-  cMetric = []
-  cInt = {}
+  c_metric = []
+  c_int = {}
   precision_format = {}
-  for ci, c in enumerate(columns):
-    if ci >= nb_factor_columns:
-      cMetric.append(c)
-      if '%' in c:
-        precision_format[c] = f'0:.{str(experiment._display.metric_precision-2)}f}}'
-        c_percent.append(c)
+  for column_index, column in enumerate(columns):
+    if column_index >= nb_factor_columns:
+      c_metric.append(column)
+      if '%' in column:
+        precision_format[column] = f'{{:0.{str(experiment._display.metric_precision-2)}f}}'
+        c_percent.append(column)
       else:
-        precision_format[c] = f'0:.{str(experiment._display.metric_precision)}f}}'
-        c_no_percent.append(c)
-      if c[-1] == '-':
-        cMinus.append(c)
+        precision_format[column] = f'{{:0.{str(experiment._display.metric_precision)}f}}'
+        c_no_percent.append(column)
+      if column[-1] == '-':
+        c_minus.append(column)
       else:
-        c_no_minus.append(c)
-    # else:
-    #   if isinstance(df[c][0], float):
-    #     is_integer = True
-    #     for x in df[c]:
-    #       if not x.is_integer():
-    #         is_integer = False
-    #     if is_integer:
-    #       cInt[c] = 'int32'
-
-  dPercent = pd.Series([experiment._display.metric_precision - 2]
+        c_no_minus.append(column)
+        
+  d_percent = pd.Series([experiment._display.metric_precision - 2]
                        * len(c_percent), index=c_percent, dtype=np.intc)
   d_no_percent = pd.Series([experiment._display.metric_precision]
                            * len(c_no_percent), index=c_no_percent, dtype=np.intc)
-  dInt = pd.Series([0] * len(cInt), index=cInt, dtype=np.intc)
-  df = df.round(dPercent).round(d_no_percent)
+  data_frame = data_frame.round(d_percent).round(d_no_percent)
 
-  for ci, c in enumerate(columns):
-    if isinstance(df[c][0], float):
+  for column in columns:
+    if isinstance(data_frame[column][0], float):
       is_integer = True
-      for x in df[c]:
+      for x in data_frame[column]:
         if not x.is_integer():
           is_integer = False
       if is_integer:
-        cInt[c] = 'int32'
+        c_int[column] = 'int32'
+  data_frame = data_frame.astype(c_int)
 
-  df = df.astype(cInt)
-
-  # df['mean_offset'].map(lambda x: 0)
-
-  # if c_no_percent:
-  #   form = '%.{str(experiment._display.metric_precision)}f'
-  # else:
-  #   form = '%.{str(experiment._display.metric_precision-2)}f'
-  # pd.set_option('display.float_format', lambda x: '%.0f' % x
-  #                     if (x == x and x*10 % 10 == 0)
-  #                     else form % x)
-
-  styler = df.style.set_properties(subset=df.columns[numeric_col_selector],  # right-align the numeric columns and set their width
+  styler = data_frame.style.set_properties(subset=data_frame.columns[numeric_col_selector], 
                                    **{'width': '10em', 'text-align': 'right'})\
-      .set_properties(subset=df.columns[~numeric_col_selector],  # left-align the non-numeric columns and set their width
+      .set_properties(subset=data_frame.columns[~numeric_col_selector],
                       **{'width': '10em', 'text-align': 'left'})\
-      .set_properties(subset=df.columns[nb_factor_columns],  # left-align the non-numeric columns and set their width
+      .set_properties(subset=data_frame.columns[nb_factor_columns],
                       **{'border-left': '.1rem solid'})\
       .set_table_styles([d])\
       .format(precision_format).applymap(lambda x: 'color: white' if pd.isnull(x) else '')
   if not experiment._display.show_row_index:
     styler.hide_index()
   if experiment._display.bar:
-    styler.bar(subset=df.columns[nb_factor_columns:],
+    styler.bar(subset=data_frame.columns[nb_factor_columns:],
                align='mid', color=['#d65f5f', '#5fba7d'])
   if experiment._display.highlight:
-    styler.apply(highlight_stat, subset=cMetric, axis=None,
+    styler.apply(highlight_stat, subset=c_metric, axis=None,
                  **{'significance': significance})
-    styler.apply(highlight_best, subset=cMetric, axis=None,
+    styler.apply(highlight_best, subset=c_metric, axis=None,
                  **{'significance': significance})
 
-  return (df.fillna('-'), header, styler)
+  return (data_frame.fillna('-'), header, styler)
 
 
-def highlight_stat(s, significance):
+def highlight_stat(data_frame, significance):
   import pandas as pd
-  df = pd.DataFrame('', index=s.index, columns=s.columns)
-  if len(significance):
-    # print(df)
-    # print(significance)
-    df = df.where(significance <= 0, 'color: blue')
-  return df
+  data_frame = pd.DataFrame('', index=data_frame.index, columns=data_frame.columns)
+  if significance is not None:
+    data_frame = data_frame.where(significance <= 0, 'color: blue')
+  return data_frame
 
 
-def highlight_best(s, significance):
+def highlight_best(data_frame, significance):
   import pandas as pd
-  df = pd.DataFrame('', index=s.index, columns=s.columns)
-  if len(significance):
-    df = df.where(significance > -1, 'font-weight: bold')
-  return df
+  data_frame = pd.DataFrame('', index=data_frame.index, columns=data_frame.columns)
+  if significance is not None:
+    data_frame = data_frame.where(significance > -1, 'font-weight: bold')
+  return data_frame
 
 
-def export_data_frame(experiment, args, df, styler, header):
+def export_data_frame(experiment, args, data_frame, styler, header):
   if not os.path.exists(experiment.path.export):
     os.makedirs(experiment.path.export)
   if args.export == 'all':
     export_file_name = experiment.name
   else:
-    a = args.export.split('.')
+    args_split = args.export.split('.')
     # print(a)
-    if a[0]:
-      export_file_name = a[0]
+    if args_split[0]:
+      export_file_name = args_split[0]
     else:
       export_file_name = experiment.name
-    if len(a) > 1:
-      args.export = str(a[1])
+    if len(args_split) > 1:
+      args.export = str(args_split[1])
     else:
       args.export = 'all'
   export_file_name = f'{experiment.path.export}/{export_file_name}'
-  reload_header = '<script> window.onblur= function() {window.onfocus= function () {location.reload(true)}}; </script>'
+  reload_header = '<script> window.onblur= function()\
+    {window.onfocus= function () {location.reload(true)}}; </script>'
   with open(f'{export_file_name}.html', "w") as out_file:
     out_file.write(reload_header)
     out_file.write('<br><u>{header}</u><br><br>')
     out_file.write(styler.render())
   if 'csv' in args.export or args.export == 'all':
-    df.to_csv(path_or_buf=f'{export_file_name}.csv',
+    data_frame.to_csv(path_or_buf=f'{export_file_name}.csv',
               index=experiment._display.show_row_index)
     print('csv export: {export_file_name}.csv')
   if 'xls' in args.export or args.export == 'all':
-    df.to_excel(excel_writer=f'{export_file_name}.xls',
-                index=experiment._display.show_row_index)
+    data_frame.to_excel(excel_writer=f'{export_file_name}.xls',
+                index=experiment._display.show_row_index
+                )
     print('excel export: {export_file_name}.xls')
 
   if 'tex' in args.export or args.export == 'all':
-    df.to_latex(buf=f'{export_file_name}.tex',
-                index=experiment._display.show_row_index, bold_rows=True)
+    data_frame.to_latex(buf=f'{export_file_name}.tex',
+                index=experiment._display.show_row_index,
+                bold_rows=True
+                )
     print('tex export: {export_file_name}.tex')
     print('please add to the preamble: \\usepackage{booktabs}')
 
@@ -616,18 +609,24 @@ def export_data_frame(experiment, args, df, styler, header):
     print('Creating image...')
     if shutil.which('wkhtmltoimage') is not None:
       subprocess.call(
-          f'wkhtmltoimage -f png --width 0 {export_file_name}.html {export_file_name}.png', shell=True)
+          f'wkhtmltoimage -f png --width 0 {export_file_name}.html {export_file_name}.png',
+          shell=True
+          )
       print(f'png export: {export_file_name}.png')
     else:
       print('''generation of png is handled by converting the html generated \
-          from the result dataframe using the wkhtmltoimage tool. This tool must be installed and reachable from you path.''')
+          from the result dataframe using the wkhtmltoimage tool. \
+          This tool must be installed and reachable from you path.''')
   if 'pdf' in args.export or args.export == 'all':
     print('Creating pdf...')
     if shutil.which('wkhtmltopdf'):
       subprocess.call(
           f'wkhtmltopdf {export_file_name}.html {export_file_name}.pdf', shell=True)
     else:
-      print('Generation of pdf is handled by converting the html generated from the result dataframe using the wkhtmltoimage tool which must be installed and reachable from you path.')
+      print('Generation of pdf is handled by converting the html generated from the result \
+        dataframe using the wkhtmltoimage tool which must be installed \
+        and reachable from you path.'
+        )
 
     print('Cropping {export_file_name}.pdf')
     if shutil.which('pdfcrop') is not None:
