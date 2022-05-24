@@ -11,7 +11,6 @@ import shutil
 import time
 import re
 import numpy as np
-from torch import sign
 import doce
 
 def main():
@@ -351,11 +350,11 @@ def main():
       )
   if args.compute and hasattr(config, 'step'):
     experiment.perform(
-      experiment.selector, 
-      config.step, 
+      experiment.selector,
+      config.step,
       nb_jobs=args.compute,
-      log_file_name=log_file_name, 
-      progress=args.progress, 
+      log_file_name=log_file_name,
+      progress=args.progress,
       mail_interval=float(args.mail)
       )
 
@@ -423,9 +422,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
 
     for s in settings:
       s[fi] = ms
-    # print(settings)
-    # ma=copy.deepcopy(selector)
-    # ma[fi]=0
+
   (table, columns, header, nb_factor_columns, modification_time_stamp, significance) = experiment.metric.reduce(
     experiment._plan.select(selector), 
     experiment.path.output, 
@@ -454,8 +451,16 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
       table[s] = table[s][:nb_factor_columns]
     # print(settings)
     for sIndex, s in enumerate(settings):
-      (sd, _, _, _, md, si) = experiment.metric.reduce(experiment._plan.select(s), experiment.path.output, factor_display=experiment._display.factor_format_in_reduce, metric_display=experiment._display.metric_format_in_reduce,
-                                                           factor_display_length=experiment._display.factor_format_in_reduce_length, metric_display_length=experiment._display.metric_format_in_reduce_length, verbose=args.verbose, reduction_directive_module=config)
+      (sd, _, _, _, md, si) = experiment.metric.reduce(
+        experiment._plan.select(s),
+        experiment.path.output,
+        factor_display=experiment._display.factor_format_in_reduce,
+        metric_display=experiment._display.metric_format_in_reduce,
+        factor_display_length=experiment._display.factor_format_in_reduce_length,
+        metric_display_length=experiment._display.metric_format_in_reduce_length,
+        verbose=args.verbose, 
+        reduction_directive_module=config
+        )
       modification_time_stamp += md
       significance[sIndex, :] = si[:, select_display[0]]
       for ssd in sd:
@@ -509,7 +514,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
         c_minus.append(column)
       else:
         c_no_minus.append(column)
-        
+
   d_percent = pd.Series([experiment._display.metric_precision - 2]
                        * len(c_percent), index=c_percent, dtype=np.intc)
   d_no_percent = pd.Series([experiment._display.metric_precision]
@@ -600,10 +605,11 @@ def export_data_frame(experiment, args, data_frame, styler, header):
   if 'tex' in args.export or args.export == 'all':
     data_frame.to_latex(buf=f'{export_file_name}.tex',
                 index=experiment._display.show_row_index,
-                bold_rows=True
+                bold_rows=True,
+                caption=header
                 )
-    print('tex export: {export_file_name}.tex')
-    print('please add to the preamble: \\usepackage{booktabs}')
+    print(f'tex export: {export_file_name}.tex')
+    print('please add \\usepackage{booktabs} to the preamble of your main .tex file')
 
   if 'png' in args.export or args.export == 'all':
     print('Creating image...')
