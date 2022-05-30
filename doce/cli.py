@@ -368,9 +368,9 @@ def main():
     if '[' in args.display:
       select_display = ast.literal_eval(args.display)
     elif ':' in args.display:
-      s = args.display.split(':')
-      select_display = [int(s[0])]
-      select_factor = s[1]
+      display_split = args.display.split(':')
+      select_display = [int(display_split[0])]
+      select_factor = display_split[1]
     else:
       select_display = [int(args.display)]
 
@@ -488,7 +488,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
         *range(nb_factor_columns)] + [s + nb_factor_columns for s in select_display]]
     data_frame = data_frame[columns]
 
-  d = dict(selector="th", props=[
+  table_style = dict(selector="th", props=[
            ('text-align', 'center'), ('border-bottom', '.1rem solid')])
 
   # Construct a selector of which columns are numeric
@@ -524,20 +524,20 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
   for column in columns:
     if isinstance(data_frame[column][0], float):
       is_integer = True
-      for x in data_frame[column]:
-        if not x.is_integer():
+      for data_column in data_frame[column]:
+        if not data_column.is_integer():
           is_integer = False
       if is_integer:
         c_int[column] = 'int32'
   data_frame = data_frame.astype(c_int)
 
-  styler = data_frame.style.set_properties(subset=data_frame.columns[numeric_col_selector], 
+  styler = data_frame.style.set_properties(subset=data_frame.columns[numeric_col_selector],
                                    **{'width': '10em', 'text-align': 'right'})\
       .set_properties(subset=data_frame.columns[~numeric_col_selector],
                       **{'width': '10em', 'text-align': 'left'})\
       .set_properties(subset=data_frame.columns[nb_factor_columns],
                       **{'border-left': '.1rem solid'})\
-      .set_table_styles([d])\
+      .set_table_styles([table_style])\
       .format(precision_format).applymap(lambda x: 'color: white' if pd.isnull(x) else '')
   if not experiment._display.show_row_index:
     styler.hide_index()
