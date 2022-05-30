@@ -14,9 +14,9 @@ from itertools import groupby
 from subprocess import call
 
 if eu.in_notebook():
-    from tqdm.notebook import tqdm as tqdm
+  from tqdm.notebook import tqdm as tqdm
 else:
-    from tqdm import tqdm as tqdm
+  from tqdm import tqdm as tqdm
 
 class Plan():
   """stores the different factors of the doce experiment.
@@ -46,20 +46,20 @@ class Plan():
   factor1=3+factor2=4
   """
   def __init__(self, **factors):
-      self._setting = None
-      self._changed = False
-      self._current_setting = 0
-      self._settings = []
-      self._selector = None
-      self._expanded_selector = None
-      self._non_singleton = []
-      self._factors = []
-      self._default = types.SimpleNamespace()
-      self._selector_volatile = True
-      self._prune_selector = True
+    self._setting = None
+    self._changed = False
+    self._current_setting = 0
+    self._settings = []
+    self._selector = None
+    self._expanded_selector = None
+    self._non_singleton = []
+    self._factors = []
+    self._default = types.SimpleNamespace()
+    self._selector_volatile = True
+    self._prune_selector = True
 
-      for factor, modalities in factors.items():
-        self.__setattr__(factor, modalities)
+    for factor, modalities in factors.items():
+      self.__setattr__(factor, modalities)
 
 
   def copy(self):
