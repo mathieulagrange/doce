@@ -34,18 +34,19 @@ class Experiment():
   >>> import doce
   >>> e=doce.Experiment()
   >>> e.name='my_experiment'
-  >>> e.author='Mathieu Lagrange'
-  >>> e.address='mathieu.lagrange@ls2n.fr'
+  >>> e.author='John Doe'
+  >>> e.address='john.doe@no-log.org'
   >>> e.path.processing='/tmp'
   >>> print(e)
-      name: my_experiment
+    name: my_experiment
     description
-    author: Mathieu Lagrange
-    address: mathieu.lagrange@ls2n.fr
+    author: John Doe
+    address: john.doe@no-log.org
     version: 0.1
     status:
       run_id: ...
       verbose: 0
+    selector: []
     parameter
     metric
     path:
@@ -70,12 +71,13 @@ class Experiment():
   >>> print(e)
     name: my_experiment
     description
-    author: Mathieu Lagrange
-    address: mathieu.lagrange@ls2n.fr
+    author: John Doe
+    address: john.doe@no-log.org
     version: 0.1
     status:
       run_id: ...
       verbose: 0
+    selector: []
     parameter
     metric
     path:
@@ -246,6 +248,7 @@ class Experiment():
     status:
       run_id: ...
       verbose: 0
+    selector: []
     parameter
     metric
     path:
@@ -259,7 +262,7 @@ class Experiment():
 
     >>> import doce
     >>> doce.Experiment().__str__(style='html')
-        '<div>name</div><div>description</div><div>author: no name</div><div>address: noname@noorg.org</div><div>version: 0.1</div><div>status:</div><div>  run_id: ...</div><div>  verbose: 0</div><div>parameter</div><div>metric</div><div>path:</div><div>  code_raw: ...</div><div>  code: ...</div><div>  archive_raw: </div><div>  archive: </div><div>  export_raw: export</div><div>  export: export</div><div>host: []</div><div></div>'
+        '<div>name</div><div>description</div><div>author: no name</div><div>address: noname@noorg.org</div><div>version: 0.1</div><div>status:</div><div>  run_id: ...</div><div>  verbose: 0</div><div>selector: []</div><div>parameter</div><div>metric</div><div>path:</div><div>  code_raw: ...</div><div>  code: ...</div><div>  archive_raw: </div><div>  archive: </div><div>  export_raw: export</div><div>  export: export</div><div>host: []</div><div></div>'
     """
     description = ''
     for atr in self._atrs:
@@ -313,7 +316,7 @@ class Experiment():
     --------
     >>> import doce
     >>> e=doce.Experiment()
-    >>> e.address = 'mathieu.lagrange@ls2n.fr'
+    >>> e.address = 'john.doe@no-log.org'
     >>> e.send_mail('hello', '<div> good day </div>')
     Sent message entitled: [doce]  id ... hello ...
 
