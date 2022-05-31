@@ -21,7 +21,8 @@ else:
 class Plan():
   """stores the different factors of the doce experiment.
 
-  This class stores the different factors of the doce experiments. For each factor, the set of different modalities can be expressed as a list or a numpy array.
+  This class stores the different factors of the doce experiments.
+  For each factor, the set of different modalities can be expressed as a list or a numpy array.
 
   To browse the setting set defined by the Plan object, one must iterate over the Plan object.
 
@@ -121,11 +122,13 @@ class Plan():
       # if generic_default_modality_warning and len([item for item in getattr(self, factor) if item in [0, 'none']]):
       #   print('Setting an explicit default modality to factor '+factor+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <hide_none_and_zero> set to False when using method identifier() if (O or none). You can remove this warning by setting the flag <force> to True.')
       if modality not in getattr(self, factor):
-        print('The default modality of factor '+factor+' should be available in the set of modalities.')
+        print(f'''The default modality of factor {factor}\
+           should be available in the set of modalities.''')
         raise ValueError
       self._default.__setattr__(factor, modality)
     else:
-      print('Please set the factor '+factor+' before choosing its default modality.')
+      print(f'''Please set the factor {factor}\
+         before choosing its default modality.''')
       raise ValueError
 
   def perform(
@@ -137,9 +140,10 @@ class Plan():
     progress='d',
     log_file_name='',
     mail_interval=0):
-    """iterate over the setting set and run the function given as parameter.
+    r"""iterate over the setting set and run the function given as parameter.
 
-    This function is wrapped by :meth:`doce.experiment.Experiment.do`, which should be more convenient to use. Please refer to this method for usage.
+    This function is wrapped by :meth:`doce.experiment.Experiment.do`,
+    which should be more convenient to use. Please refer to this method for usage.
 
     Parameters
     ----------
@@ -156,9 +160,11 @@ class Plan():
     nb_jobs : int > 0 (optional)
       number of jobs.
 
-      If nb_jobs = 1, the setting set is browsed sequentially in a depth first traversal of the settings tree (default).
+      If nb_jobs = 1, the setting set is browsed sequentially
+      in a depth first traversal of the settings tree (default).
 
-      If nb_jobs > 1, the settings set is browsed randomly, and settings are distributed over the different processes.
+      If nb_jobs > 1, the settings set is browsed randomly,
+      and settings are distributed over the different processes.
 
     progress : str (optional)
       display progress of scheduling the setting set.
@@ -171,7 +177,8 @@ class Plan():
 
       If empty, the execution is stopped on the first faulty setting (default).
 
-      If not empty, the execution is not stopped on a faulty setting, and the error is logged in the log_file_name file.
+      If not empty, the execution is not stopped on a faulty setting,
+      and the error is logged in the log_file_name file.
 
     See Also
     --------
@@ -190,42 +197,39 @@ class Plan():
 
     if nb_jobs>1 or nb_jobs<0:
       from joblib import Parallel, delayed
-      result = Parallel(n_jobs=nb_jobs, require='sharedmem')(delayed(setting.perform)(function, experiment, log_file_name, *parameters) for setting in self)
+      Parallel(n_jobs=nb_jobs, require='sharedmem')(delayed(setting.perform)(function, experiment, log_file_name, *parameters) for setting in self)
     else:
       start_time = time.time()
       step_time = start_time
-      with tqdm(total=len(self), disable = progress == '') as t:
-        for iSetting, setting in enumerate(self):
-            description = ''
-            if nb_failed:
-                description = '[failed: '+str(nb_failed)+']'
-            if 'm' in progress:
-              description += str(self._settings[iSetting])+' '
-            if 'd' in progress:
-              description += setting.identifier()
-            t.set_description(description)
-            if function:
-              nb_failed += setting.perform(function, experiment, log_file_name, *parameters)
-            else:
-                print(setting)
-            delay = (time.time()-step_time)
-            if mail_interval>0 and iSetting<len(self)-1  and delay/(60**2) > mail_interval :
-              step_time = time.time()
-              percentage = int((iSetting+1)/len(self)*100)
-              message = '{}% of settings done: {} over {} <br>Time elapsed: {}'.format(percentage, iSetting+1, len(self), time.strftime('%dd %Hh %Mm %Ss', time.gmtime(step_time-start_time)))
-              experiment.send_mail('progress {}% '.format(percentage), message)
-            t.update(1)
+      with tqdm(total=len(self), disable = progress == '') as progress_bar:
+        for setting_index, setting in enumerate(self):
+          description = ''
+          if nb_failed:
+            description = f'[failed: {str(nb_failed)}]'
+          if 'm' in progress:
+            description += str(self._settings[setting_index])+' '
+          if 'd' in progress:
+            description += setting.identifier()
+          progress_bar.set_description(description)
+          if function:
+            nb_failed += setting.perform(function, experiment, log_file_name, *parameters)
+          else:
+            print(setting)
+          delay = (time.time()-step_time)
+          if mail_interval>0 and setting_index<len(self)-1  and delay/(60**2) > mail_interval :
+            step_time = time.time()
+            percentage = int((setting_index+1)/len(self)*100)
+            duration = time.strftime('%dd %Hh %Mm %Ss', time.gmtime(step_time-start_time))
+            message = f'{percentage}% of settings done: {setting_index+1} over {len(self)} <br>Time elapsed: {duration}'
+            experiment.send_mail(f'progress {percentage}% ', message)
+          progress_bar.update(1)
     return nb_failed
 
   def check(self):
-   for factor in self._factors:
-     if '=' in factor or '+' in factor:
-       print('Error: = and + are not allowed for naming factors')
-       raise ValueError
-     # modalities = str(getattr(self, factor))
-     # if '=' in factor or '+' in modalities:
-     #   print('Error: = and + are not allowed for naming modalities')
-     #   raise ValueError
+    for factor in self._factors:
+      if '=' in factor or '+' in factor:
+        print('Error: = and + are not allowed for naming factors')
+        raise ValueError
 
   def select(
     self,
@@ -235,7 +239,9 @@ class Plan():
     ):
     """set the selector.
 
-  	This method sets the internal selector to the selector given as parameter. Once set, iteration over the setting set is limited to the settings that can be reached according to the definition of the selector.
+  	This method sets the internal selector to the selector given as parameter.
+    Once set, iteration over the setting set is limited to the settings
+    that can be reached according to the definition of the selector.
 
   	Parameters
   	----------
@@ -264,11 +270,13 @@ class Plan():
     f1=b+f2=2
     f1=c+f2=3
 
-    >>> # The second one is list based. In this example, we select the settings with the second modality of the first factor, and with the first modality of the second factor
+    >>> # The second one is list based. In this example, we select the settings with 
+    >>> # the second modality of the first factor, and with the first modality of the second factor
     >>> for setting in p.select([1, 0]):
     ...  print(setting)
     f1=b+f2=1
-    >>> # select the settings with all the modalities of the first factor, and the second modality of the second factor
+    >>> # select the settings with all the modalities of the first factor, 
+    >>> # and the second modality of the second factor
     >>> for setting in p.select([-1, 1]):
     ...  print(setting)
     f1=a+f2=2
@@ -280,25 +288,33 @@ class Plan():
     f1=b+f2=1
     f1=b+f2=2
     f1=b+f2=3
-    >>> # select the settings using 2 selector, where the first selects the settings with the first modality of the first factor and with the second modality of the second factor, and the second selector selects the settings with the second modality of the first factor, and with the third modality of the second factor
+    >>> # select the settings using 2 selector, where the first selects the settings with the first modality 
+    >>> # of the first factor and with the second modality of the second factor, 
+    >>> # and the second selector selects the settings with the second modality of the first factor, 
+    >>> # and with the third modality of the second factor
     >>> for setting in p.select([[0, 1], [1, 2]]):
     ...  print(setting)
     f1=a+f2=2
     f1=b+f2=3
-    >>> # the latter expression may be interpreted as the selection of the settings with the first and second modalities of the first factor and with second and third modalities of the second factor. In that case, one needs to add a -1 at the end the selector (even if by doing so the length of the selector is larger than the number of factors)
+    >>> # the latter expression may be interpreted as the selection of the settings with 
+    >>> # the first and second modalities of the first factor and with second and 
+    >>> # third modality of the second factor. In that case, one needs to add a -1 
+    >>> # at the end of the selector (even if by doing so the length of the selector is larger than the number of factors)
     >>> for setting in p.select([[0, 1], [1, 2], -1]):
     ...  print(setting)
     f1=a+f2=2
     f1=a+f2=3
     f1=b+f2=2
     f1=b+f2=3
-    >>> # if volatile is set to False (default) when the selector is set and the setting set iterated, the setting set stays ready for another iteration.
+    >>> # if volatile is set to False (default) when the selector is set and the setting set iterated, 
+    >>> # the setting set stays ready for another iteration.
     >>> for setting in p.select([0, 1]):
     ...  pass
     >>> for setting in p:
     ...  print(setting)
     f1=a+f2=2
-    >>> # if volatile is set to True when the selector is set and the setting set iterated, the setting set is reinitialized at the second iteration.
+    >>> # if volatile is set to True when the selector is set and the setting set iterated, 
+    >>> # the setting set is reinitialized at the second iteration.
     >>> for setting in p.select([0, 1], volatile=True):
     ...  pass
     >>> for setting in p:
@@ -312,7 +328,8 @@ class Plan():
     f1=c+f2=1
     f1=c+f2=2
     f1=c+f2=3
-    >>> # if volatile was set to False (default) when the selector was first set and the setting set iterated, the complete set of settings can be reached by calling selector with no parameters.
+    >>> # if volatile was set to False (default) when the selector was first set and the setting set iterated, 
+    >>> # the complete set of settings can be reached by calling selector with no parameters.
     >>> for setting in p.select([0, 1]):
     ...  pass
     >>> for setting in p.select():
@@ -396,14 +413,19 @@ class Plan():
     reverse=False,
     force=False,
     keep=False,
-    setting_encoding={'factor_separator':'_', 'modality_separator':'_'},
+    setting_encoding=None,
     archive_path='',
     verbose=0):
     """clean a h5 data sink by considering the settings set.
 
-  	This method is more conveniently used by considering the method :meth:`doce.experiment._experiment.clean_data_sink, please see its documentation for usage.
+  	This method is more conveniently used by considering
+    the method :meth:`doce.experiment._experiment.clean_data_sink,
+    please see its documentation for usage.
     """
     import tables as tb
+
+    if not setting_encoding:
+      setting_encoding = {'factor_separator':'_', 'modality_separator':'_'}
 
     if archive_path:
       print(path)
@@ -421,9 +443,9 @@ class Plan():
       h5 = tb.open_file(path, mode='a')
       if reverse:
         ids = [setting.identifier(**setting_encoding) for setting in self]
-        for g in h5.iter_nodes('/'):
-          if g._v_name not in ids:
-            h5.remove_node(h5.root, g._v_name, recursive=True)
+        for group in h5.iter_nodes('/'):
+          if group._v_name not in ids:
+            h5.remove_node(h5.root, group._v_name, recursive=True)
       else:
         for setting in self:
           group_name = setting.identifier(**setting_encoding)
@@ -458,7 +480,9 @@ class Plan():
     ):
     """clean a data sink by considering the settings set.
 
-  	This method is more conveniently used by considering the method :meth:`doce.experiment._experiment.clean_data_sink, please see its documentation for usage.
+  	This method is more conveniently used by
+    considering the method :meth:`doce.experiment._experiment.clean_data_sink,
+    please see its documentation for usage.
     """
     if not setting_encoding:
       setting_encoding = {}
@@ -471,12 +495,12 @@ class Plan():
       for setting in self:
         if verbose:
           print('search path: '+path+'/'+setting.identifier(**setting_encoding)+wildcard)
-        for f in glob.glob(path+'/'+setting.identifier(**setting_encoding)+wildcard):
-            file_names.append(f)
+        for output_file in glob.glob(path+'/'+setting.identifier(**setting_encoding)+wildcard):
+          file_names.append(output_file)
       if reverse:
         complete = []
-        for f in glob.glob(path+'/'+wildcard):
-          complete.append(f)
+        for output_file in glob.glob(path+'/'+wildcard):
+          complete.append(output_file)
         # print(file_names)
         file_names = [i for i in complete if i not in file_names]
       #   print(complete)
@@ -492,10 +516,11 @@ class Plan():
           action = 'move '
         destination = ' to '+archive_path+' '
       elif not force:
-        print('INFORMATION: setting path.archive allows you to move the unwanted files to the archive path and not delete them.')
+        print('''INFORMATION: setting path.archive allows you to move 
+          the unwanted files to the archive path and not delete them.''')
         destination = ''
         action = 'remove '
-      if len(file_names):
+      if file_names:
         if not force and eu.query_yes_no('List the '+str(len(file_names))+' files ?'):
           print("\n".join(file_names))
         if force or eu.query_yes_no('About to '+action+str(len(file_names))+' files from '+path+destination+' \n Proceed ?'):
@@ -519,7 +544,8 @@ class Plan():
         if hasattr(x._default, f):
           if hasattr(tmp._default, f) and getattr(x._default, f) != getattr(tmp._default, f):
             print(getattr(tmp._default, f))
-            print('While merging factors of the different experiment, a conflict of default modalities for the factor '+f+' is detected. This may lead to an inconsistent behavior.')
+            print(f'''While merging factors of the different experiment, a conflict of default modalities 
+              for the factor {f} is detected. This may lead to an inconsistent behavior.''')
             raise ValueError
           setattr(tmp._default, f, getattr(x._default, f))
             # print(tmp._default)
@@ -557,7 +583,9 @@ class Plan():
   def as_panda_frame(self):
     """returns a panda frame that describes the Plan object.
 
-  	Returns a panda frame describing the Plan object. For ease of definition of a selector to select some settings, the columns and the rows of the panda frame are numbered.
+  	Returns a panda frame describing the Plan object. 
+    For ease of definition of a selector to select some settings, 
+    the columns and the rows of the panda frame are numbered.
 
   	Examples
   	--------
@@ -578,32 +606,35 @@ class Plan():
     """
     import pandas as pd
 
-    l = 1
-    for ai, f in enumerate(self._factors):
-      if isinstance(getattr(self, f), list):
-        l = max(l, len(getattr(self, f)))
-      elif isinstance(getattr(self, f), np.ndarray):
-        l = max(l, len(getattr(self, f)))
+    max_modalities = 1
+    for factor in self._factors:
+      if isinstance(getattr(self, factor), list):
+        max_modalities = max(max_modalities, len(getattr(self, factor)))
+      elif isinstance(getattr(self, factor), np.ndarray):
+        max_modalities = max(max_modalities, len(getattr(self, factor)))
 
     table = []
-    for f in self._factors:
+    for factor in self._factors:
       line = []
-      line.append(f)
-      for il in range(l):
-        if ((isinstance(getattr(self, f), list)) or isinstance(getattr(self, f), np.ndarray)) and len(getattr(self, f)) > il :
-          m = str(getattr(self, f)[il])
-          if hasattr(self._default, f) and getattr(self._default, f) == getattr(self, f)[il]:
+      line.append(factor)
+      for modality_index in range(max_modalities):
+        if ((isinstance(getattr(self, factor), list) or 
+            isinstance(getattr(self, factor), np.ndarray)) and 
+            len(getattr(self, factor)) > modality_index
+            ) :
+          m = str(getattr(self, factor)[modality_index])
+          if hasattr(self._default, factor) and getattr(self._default, factor) == getattr(self, factor)[modality_index]:
             m = '*'+m+'*'
           line.append(m)
-        elif il<1:
-          line.append(getattr(self, f))
+        elif modality_index<1:
+          line.append(getattr(self, factor))
         else:
           line.append('')
       table.append(line)
     columns = []
     columns.append('Factors')
-    for il in range(l):
-      columns.append(il)
+    for modality_index in range(max_modalities):
+      columns.append(modality_index)
     return pd.DataFrame(table, columns = columns)
 
   def constant_factors(self, selector):
@@ -611,14 +642,14 @@ class Plan():
     message = str(len(self))+' settings'
     cf = [ [] for _ in range(len(self._factors)) ]
     for m in self._expanded_selector:
-      for fi, f in enumerate(self._factors):
-        if m[fi]:
-          cf[fi] = list(set(cf[fi]) | set(m[fi]))
+      for factor_index, _ in enumerate(self._factors):
+        if m[factor_index]:
+          cf[factor_index] = list(set(cf[factor_index]) | set(m[factor_index]))
 
     cst = ''
-    for fi, f in enumerate(self._factors):
-      if len(cf[fi]) == 1:
-        cst+=f+', '
+    for factor_index, factor in enumerate(self._factors):
+      if len(cf[factor_index]) == 1:
+        cst+=factor+', '
     if cst:
       message += ' with constant factors : '
       message += cst[:-2]
@@ -627,10 +658,10 @@ class Plan():
   def expand_selector(self, selector, factor):
 
     selector = self.__format__(selector)
-    fi = self.factors().index(factor)
+    factor_index = self.factors().index(factor)
 
-    if len(selector)<=fi:
-      for m in range(1+fi-len(selector)):
+    if len(selector)<=factor_index:
+      for m in range(1+factor_index-len(selector)):
         selector.append(-1)
 
     nm = []
@@ -656,7 +687,7 @@ class Plan():
             mm = []
             for dmkl in dm[dmk]:
               if dmkl in getattr(self, dmk):
-                 mm.append(list(getattr(self, dmk)).index(dmkl))
+                mm.append(list(getattr(self, dmk)).index(dmkl))
               else:
                 print('Error: '+str(dmkl)+' is not a modality of factor '+dmk+'.')
             m[self._factors.index(dmk)] = mm
@@ -669,7 +700,12 @@ class Plan():
 
     return integer_selector_array
 
-  def _str2list(self, str_selector, factor_separator = '+', modality_identifier = '='):
+  def _str2list(
+    self,
+    str_selector,
+    factor_separator = '+',
+    modality_identifier = '='
+    ):
     """convert string based selector to list based selector
 
     """
@@ -690,15 +726,14 @@ class Plan():
           dmk = dmks[0]
           modality = dmks[1]
           if dmk in self._factors:
-              # mod = modalities[dmki]
-              ref_mod = []
-              for am in list(getattr(self, dmk)):
-                ref_mod.append(str(am))
-              if modality in ref_mod:
-                m[self._factors.index(dmk)] = ref_mod.index(modality)
-              else:
-                print('Error: '+modality+' is not a modality of factor '+dmk+'.')
-                return [0]
+            ref_mod = []
+            for am in list(getattr(self, dmk)):
+              ref_mod.append(str(am))
+            if modality in ref_mod:
+              m[self._factors.index(dmk)] = ref_mod.index(modality)
+            else:
+              print('Error: '+modality+' is not a modality of factor '+dmk+'.')
+              return [0]
           else:
             print('Error: '+dmk+' is not a factor.')
             return [0]
@@ -708,17 +743,21 @@ class Plan():
   def _check_selector(self, selector):
     check=True
     for s in selector:
-      for fi, f in enumerate(s):
-        if fi<len(self._factors):
-          # print(type(getattr(self, self._factors[fi])))
-          nm = len(np.atleast_1d(getattr(self, self._factors[fi])))
+      for factor_index, f in enumerate(s):
+        if factor_index<len(self._factors):
+          # print(type(getattr(self, self._factors[factor_index])))
+          nm = len(np.atleast_1d(getattr(self, self._factors[factor_index])))
           if f != -1:
             for fm in f:
               if fm+1 > nm:
-                print('Error: factor '+str(self._factors[fi])+' only has '+str(nm)+' modalities. Requested modality '+str(fm))
+                print(f'Error: factor {str(self._factors[factor_index])} only has {str(nm)} modalities.')
+                print(f'Requested modality is {str(fm)}')
                 check = False
         elif f != -1:
-          print('Warning: the selector is longer than the number of factors. Doce takes this last element into account only if it is equal to -1 (see the documentation of the Plan.select() method).')
+          print('''Warning: the selector is longer than the number of factors.
+            Doce takes this last element into account only if it is equal to -1 
+            (see the documentation of the Plan.select() method).'''
+          )
 
     return check
 
@@ -737,16 +776,20 @@ class Plan():
     if not hasattr(self, name) and name[0] != '_':
       self._factors.append(name)
     if hasattr(self, name) and type(inspect.getattr_static(self, name)) == types.FunctionType:
-      raise Exception('the attribute '+name+' is shadowing a builtin function')
+      raise Exception(f'the attribute {name} is shadowing a builtin function')
     if name == '_selector' or name[0] != '_':
       self._changed = True
-    if name[0] != '_' and type(value) in {list, np.ndarray} and len(value)>1 and name not in self._non_singleton:
+    if (name[0] != '_' and
+        type(value) in {list, np.ndarray} and
+        len(value)>1 and
+        name not in self._non_singleton
+        ):
       self._non_singleton.append(name)
     if name[0] != '_' and type(value) not in {list, np.ndarray} :
       value = [value]
     if name[0] != '_' and type(value) not in {np.ndarray, Plan}:
       if len(value) and not all(isinstance(x, type(value[0])) for x in value):
-        raise Exception('All the modalities of the factor '+name+' must be of the same type (str, int, or float)')
+        raise Exception(f'All the modalities of the factor {name} must be of the same type (str, int, or float)')
       if len(value) and all(isinstance(x, str) for x in value):
         value = np.array(value)
       elif len(value) and all(isinstance(x, int) for x in value):
@@ -765,26 +808,6 @@ class Plan():
       if name in self._non_singleton:
         self._non_singleton.remove(name)
     return object.__delattr__(self, name)
-
-  # def __getattribute__(
-  #   self,
-  #   name
-  #   ):
-  #
-  #   value = object.__getattribute__(self, name)
-  #   if name[0] != '_' and self._setting and type(inspect.getattr_static(self, name)) != types._function_type:
-  #     idx = self.factors().index(name)
-  #     if self._setting[idx] == -2:
-  #       value = None
-  #     else:
-  #       if  type(inspect.getattr_static(self, name)) in {list, np.ndarray} :
-  #         try:
-  #           value = value[self._setting[idx]]
-  #         except index_error:
-  #           value = 'null'
-  #           print('Error: factor '+name+' have modalities 0 to '+str(len(value)-1)+'. Requested '+str(self._setting[idx]))
-  #           raise
-  #   return value
 
   def __iter__(
     self
@@ -829,16 +852,16 @@ class Plan():
       selector = copy.deepcopy(selector)
       nb_plans = len(self.factors())
       if selector is None or len(selector)==0 or (len(selector)==1 and len(selector)==0) :
-         selector = [[-1]*nb_plans]
+        selector = [[-1]*nb_plans]
       if isinstance(selector, list) and not all(isinstance(x, list) for x in selector):
-          selector = [selector]
+        selector = [selector]
 
       for im, m in enumerate(selector):
         if len(m) < nb_plans:
           selector[im] = m+[-1]*(nb_plans-len(m))
         for il, l in enumerate(m):
-            if not isinstance(l, list) and l > -1:
-                selector[im][il] = [l]
+          if not isinstance(l, list) and l > -1:
+            selector[im][il] = [l]
       # prune repeated entries
       for im, m in enumerate(selector):
         if isinstance(m, list):
@@ -848,18 +871,21 @@ class Plan():
       self._expanded_selector = selector
 
       if self._check_selector(selector):
-        for m in selector:
+        for select in selector:
           # handle -1 in selector
-          for mfi, mf in enumerate(m):
-            if isinstance(mf, int) and mf == -1 and mfi<len(self.factors()):
+          for select_factor_index, select_factor in enumerate(select):
+            if (isinstance(select_factor, int) and 
+                select_factor == -1 and 
+                select_factor_index<len(self.factors())
+                ):
               attr = self.__getattribute__(self.factors()
-              [mfi])
+              [select_factor_index])
               if isinstance(attr, list) or isinstance(attr, np.ndarray):
-                m[mfi] = list(range(len(np.atleast_1d(attr))))
+                select[select_factor_index] = list(range(len(np.atleast_1d(attr))))
               else:
-                m[mfi] = [0]
+                select[select_factor_index] = [0]
 
-          s = self.__set_settings_selector__(m, 0)
+          s = self.__set_settings_selector__(select, 0)
           if all(isinstance(ss, list) for ss in s):
             for ss in s:
               settings.append(ss)
@@ -882,9 +908,9 @@ class Plan():
         if len(s) > 0:
           for ss in s:
             if isinstance(ss, list):
-                mList = list(ss)
+              mList = list(ss)
             else:
-                mList = [ss]
+              mList = [ss]
             mList.insert(0, mod)
             settings.append(mList)
         else:
@@ -910,5 +936,5 @@ class Plan():
     return selector
 
 if __name__ == '__main__':
-    import doctest
-    doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+  import doctest
+  doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
