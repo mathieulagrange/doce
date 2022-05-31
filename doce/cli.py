@@ -410,61 +410,61 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
 
   selector = experiment.selector
   if select_factor:
-    fi = experiment._plan.factors().index(select_factor)
+    factor_index = experiment._plan.factors().index(select_factor)
 
     selector = experiment._plan.expand_selector(selector, select_factor)
 
-    ms = selector[fi]
+    masked_selector_factor = selector[factor_index]
 
-    selector[fi] = [0]
+    selector[factor_index] = [0]
     experiment._plan.select(selector).__set_settings__()
     settings = experiment._plan._settings
 
-    for s in settings:
-      s[fi] = ms
+    for setting in settings:
+      setting[factor_index] = masked_selector_factor
 
   (table, columns, header, nb_factor_columns, modification_time_stamp, significance) = experiment.metric.reduce(
-    experiment._plan.select(selector), 
-    experiment.path.output, 
+    experiment._plan.select(selector),
+    experiment.path.output,
     factor_display=experiment._display.factor_format_in_reduce,
-    metric_display=experiment._display.metric_format_in_reduce, 
-    factor_display_length=experiment._display.factor_format_in_reduce_length, 
-    metric_display_length=experiment._display.metric_format_in_reduce_length, 
-    verbose=args.verbose, 
+    metric_display=experiment._display.metric_format_in_reduce,
+    factor_display_length=experiment._display.factor_format_in_reduce_length,
+    metric_display_length=experiment._display.metric_format_in_reduce_length,
+    verbose=args.verbose,
     reduction_directive_module=config
     )
 
   if len(table) == 0:
     return (None, '', None)
   if select_factor:
-    modalities = getattr(experiment._plan, select_factor)[ms]
+    modalities = getattr(experiment._plan, select_factor)[masked_selector_factor]
     header_short = header.replace(
         select_factor + ': ' + str(modalities[0]) + ' ', '')
     header = f'metric: {columns[nb_factor_columns+select_display[0]]} for factor {header_short} {select_factor}'
 
     columns = columns[:nb_factor_columns]
-    for m in modalities:
-      columns.append(str(m))
+    for modality in modalities:
+      columns.append(str(modality))
 
     significance = np.zeros((len(settings), len(modalities)))
-    for s in range(len(table)):
-      table[s] = table[s][:nb_factor_columns]
+    for row_index, _ in enumerate(table):
+      table[row_index] = table[row_index][:nb_factor_columns]
     # print(settings)
-    for sIndex, s in enumerate(settings):
-      (sd, _, _, _, md, si) = experiment.metric.reduce(
-        experiment._plan.select(s),
+    for setting_index, setting in enumerate(settings):
+      (setting_descriptions, _, _, _, setting_modification_time_stamp, setting_p_values) = experiment.metric.reduce(
+        experiment._plan.select(setting),
         experiment.path.output,
         factor_display=experiment._display.factor_format_in_reduce,
         metric_display=experiment._display.metric_format_in_reduce,
         factor_display_length=experiment._display.factor_format_in_reduce_length,
         metric_display_length=experiment._display.metric_format_in_reduce_length,
-        verbose=args.verbose, 
+        verbose=args.verbose,
         reduction_directive_module=config
         )
-      modification_time_stamp += md
-      significance[sIndex, :] = si[:, select_display[0]]
-      for ssd in sd:
-        table[sIndex].append(ssd[1 + select_display[0]])
+      modification_time_stamp += setting_modification_time_stamp # ???
+      significance[setting_index, :] = setting_p_values[:, select_display[0]]
+      for setting_description in setting_descriptions:
+        table[setting_index].append(setting_description[1 + select_display[0]])
 
   if significance is not None:
     best = significance == -1
@@ -483,7 +483,10 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
      to {time.ctime(max(modification_time_stamp))}')
   data_frame = pd.DataFrame(table, columns=columns)  # .fillna('-')
 
-  if select_display and not select_factor and len(columns) >= max(select_display) + nb_factor_columns:
+  if (select_display and 
+      not select_factor and 
+      len(columns) >= max(select_display) + nb_factor_columns
+      ):
     columns = [columns[i] for i in [
         *range(nb_factor_columns)] + [s + nb_factor_columns for s in select_display]]
     data_frame = data_frame[columns]
@@ -552,7 +555,6 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
 
   return (data_frame.fillna('-'), header, styler)
 
-
 def highlight_stat(data_frame, significance):
   import pandas as pd
   data_frame = pd.DataFrame('', index=data_frame.index, columns=data_frame.columns)
@@ -560,14 +562,12 @@ def highlight_stat(data_frame, significance):
     data_frame = data_frame.where(significance <= 0, 'color: blue')
   return data_frame
 
-
 def highlight_best(data_frame, significance):
   import pandas as pd
   data_frame = pd.DataFrame('', index=data_frame.index, columns=data_frame.columns)
   if significance is not None:
     data_frame = data_frame.where(significance > -1, 'font-weight: bold')
   return data_frame
-
 
 def export_data_frame(experiment, args, data_frame, styler, header):
   if not os.path.exists(experiment.path.export):
@@ -590,7 +590,7 @@ def export_data_frame(experiment, args, data_frame, styler, header):
     {window.onfocus= function () {location.reload(true)}}; </script>'
   with open(f'{export_file_name}.html', "w") as out_file:
     out_file.write(reload_header)
-    out_file.write('<br><u>{header}</u><br><br>')
+    out_file.write(f'<br><u>{header}</u><br><br>')
     out_file.write(styler.render())
   if 'csv' in args.export or args.export == 'all':
     data_frame.to_csv(path_or_buf=f'{export_file_name}.csv',
@@ -647,7 +647,6 @@ def export_data_frame(experiment, args, data_frame, styler, header):
     os.remove(f'{export_file_name}.html')
   else:
     print(f'html export: {export_file_name}.html')
-
 
 if __name__ == '__main__':
   import doctest
