@@ -152,7 +152,7 @@ class Metric():
           do_testing.append(1)
         else:
           do_testing.append(0)
-        if isinstance(reduction_type, str) and len(reduction_type):
+        if isinstance(reduction_type, str) and reduction_type:
           if '-' in reduction_type:
             metric_direction.append(-1)
           elif '+' in reduction_type:
@@ -232,7 +232,11 @@ class Metric():
                 raw_data_row.append(np.nan)
               nb_reduced_metrics+=1
             else:
-              row.append(self.reduce_metric(np.array(data), reduction_type, reduction_directive_module))
+              row.append(
+                self.reduce_metric(np.array(data), 
+                reduction_type, 
+                reduction_directive_module)
+                )
         if row and not all(np.isnan(c) for c in row):
           for factor_name in reversed(settings.factors()):
             row.insert(0, setting.__getattribute__(factor_name))
@@ -511,7 +515,11 @@ class Metric():
     >>> experiment.set_metrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
     >>> def process(setting, experiment):
     ...   h5 = tb.open_file(experiment.path.output, mode='a')
-    ...   setting_group = experiment.metric.add_setting_group(h5, setting, metric_dimension = {'m1':100, 'm2':100})
+    ...   setting_group = experiment.metric.add_setting_group(
+    ...     h5, 
+    ...     setting, 
+    ...     metric_dimension = {'m1':100, 'm2':100}
+    ...   )
     ...   setting_group.m1[:] = setting.f1+setting.f2+np.random.randn(100)
     ...   setting_group.m2[:] = setting.f1*setting.f2*np.random.randn(100)
     ...   h5.close()
@@ -631,7 +639,8 @@ class Metric():
     The encoding of the setting is used to set the name of the group.
     For each metric, a Floating point Pytable Array is created.
     For any metric, if no dimension is provided in the metric_dimension dict,
-    an expandable array is instantiated. If a dimension is available, a static size array is instantiated.
+    an expandable array is instantiated. If a dimension is available, 
+    a static size array is instantiated.
 
     Parameters
     ----------
@@ -788,7 +797,11 @@ class Metric():
 
     column_header = []
     for factor_name in plan.factors():
-      column_header.append(eu.compress_description(factor_name, factor_display, factor_display_length))
+      column_header.append(eu.compress_description(
+        factor_name, 
+        factor_display, 
+        factor_display_length
+        ))
     for metric_index, metric in enumerate(self.name()):
       if metric_has_data[metric_index]:
         for reduction_type in self.__getattribute__(metric):
