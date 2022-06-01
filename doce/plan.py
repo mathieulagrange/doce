@@ -901,27 +901,27 @@ class Plan():
     if done == len(selector):
       return []
 
-    s = self.__set_settings_selector__(selector, done+1)
+    last_settings = self.__set_settings_selector__(selector, done+1)
     if isinstance(selector[done], list):
       settings = []
-      for mod in selector[done]:
-        if len(s) > 0:
-          for ss in s:
-            if isinstance(ss, list):
-              mList = list(ss)
+      for modalities in selector[done]:
+        if len(last_settings) > 0:
+          for last_setting in last_settings:
+            if isinstance(last_setting, list):
+              last_setting = list(last_setting)
             else:
-              mList = [ss]
-            mList.insert(0, mod)
-            settings.append(mList)
+              last_setting = [last_setting]
+            last_setting.insert(0, modalities)
+            settings.append(last_setting)
         else:
-          mList = list(s)
-          mList.insert(0, mod)
-          settings.append(mList)
+          setting = list(last_settings)
+          setting.insert(0, modalities)
+          settings.append(setting)
     else:
-      settings = s
-      if len(settings) > 0 and all(isinstance(ss, list) for ss in settings):
-        for ss in settings:
-          ss.insert(0, selector[done])
+      settings = last_settings
+      if len(settings) > 0 and all(isinstance(setting, list) for setting in settings):
+        for setting in settings:
+          setting.insert(0, selector[done])
       else:
         settings.insert(0, selector[done])
     return settings
