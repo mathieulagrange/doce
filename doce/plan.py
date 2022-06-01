@@ -885,12 +885,12 @@ class Plan():
               else:
                 selector[factor_selector_index] = [0]
 
-          s = self.__set_settings_selector__(selector, 0)
-          if all(isinstance(ss, list) for ss in s):
-            for ss in s:
-              settings.append(ss)
+          settings_from_selector = self.__set_settings_selector__(selector, 0)
+          if all(isinstance(setting_from_selector, list) for setting_from_selector in settings_from_selector):
+            for setting_from_selector in settings_from_selector:
+              settings.append(setting_from_selector)
           else:
-            settings.append(s)
+            settings.append(settings_from_selector)
         pruned_settings = [k for k,v in groupby(sorted(settings))]
         if self._prune_selector and len(pruned_settings) < len(settings):
           settings = pruned_settings
