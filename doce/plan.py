@@ -115,12 +115,15 @@ class Plan():
 
     for setting in p:
       print(setting.identifier())
-
-
     """
     if hasattr(self, factor):
-      # if generic_default_modality_warning and len([item for item in getattr(self, factor) if item in [0, 'none']]):
-      #   print('Setting an explicit default modality to factor '+factor+' should be handled with care as the factor already as an implicit default modality (O or none). This may lead to loss of data. Ensure that you have the flag <hide_none_and_zero> set to False when using method identifier() if (O or none). You can remove this warning by setting the flag <force> to True.')
+      # if (generic_default_modality_warning and
+      #     len([item for item in getattr(self, factor) if item in [0, 'none']]):
+      #   print(f'''Setting an explicit default modality to factor {factor} should be handled
+      #     with care as the factor already as an implicit default modality (O or none).
+      #     This may lead to loss of data. Ensure that you have the flag <hide_none_and_zero>
+      #     set to False when using method identifier() if (O or none). You can remove this warning
+      #     by setting the flag <force> to True.''')
       if modality not in getattr(self, factor):
         print(f'''The default modality of factor {factor}\
            should be available in the set of modalities.''')
@@ -270,12 +273,12 @@ class Plan():
     f1=b+f2=2
     f1=c+f2=3
 
-    >>> # The second one is list based. In this example, we select the settings with 
+    >>> # The second one is list based. In this example, we select the settings with
     >>> # the second modality of the first factor, and with the first modality of the second factor
     >>> for setting in p.select([1, 0]):
     ...  print(setting)
     f1=b+f2=1
-    >>> # select the settings with all the modalities of the first factor, 
+    >>> # select the settings with all the modalities of the first factor,
     >>> # and the second modality of the second factor
     >>> for setting in p.select([-1, 1]):
     ...  print(setting)
@@ -288,32 +291,34 @@ class Plan():
     f1=b+f2=1
     f1=b+f2=2
     f1=b+f2=3
-    >>> # select the settings using 2 selector, where the first selects the settings with the first modality 
-    >>> # of the first factor and with the second modality of the second factor, 
-    >>> # and the second selector selects the settings with the second modality of the first factor, 
+    >>> # select the settings using 2 selector, where the first selects the settings
+    >>> # with the first modalityof the first factor and with the second modality
+    >>> # of the second factor, and the second selector selects the settings
+    >>> # with the second modality of the first factor,
     >>> # and with the third modality of the second factor
     >>> for setting in p.select([[0, 1], [1, 2]]):
     ...  print(setting)
     f1=a+f2=2
     f1=b+f2=3
-    >>> # the latter expression may be interpreted as the selection of the settings with 
-    >>> # the first and second modalities of the first factor and with second and 
-    >>> # third modality of the second factor. In that case, one needs to add a -1 
-    >>> # at the end of the selector (even if by doing so the length of the selector is larger than the number of factors)
+    >>> # the latter expression may be interpreted as the selection of the settings with
+    >>> # the first and second modalities of the first factor and with second and
+    >>> # third modality of the second factor. In that case, one needs to add a -1
+    >>> # at the end of the selector (even if by doing so the length of the selector
+    >>> # is larger than the number of factors)
     >>> for setting in p.select([[0, 1], [1, 2], -1]):
     ...  print(setting)
     f1=a+f2=2
     f1=a+f2=3
     f1=b+f2=2
     f1=b+f2=3
-    >>> # if volatile is set to False (default) when the selector is set and the setting set iterated, 
-    >>> # the setting set stays ready for another iteration.
+    >>> # if volatile is set to False (default) when the selector is set
+    >>> # and the setting set iterated, the setting set stays ready for another iteration.
     >>> for setting in p.select([0, 1]):
     ...  pass
     >>> for setting in p:
     ...  print(setting)
     f1=a+f2=2
-    >>> # if volatile is set to True when the selector is set and the setting set iterated, 
+    >>> # if volatile is set to True when the selector is set and the setting set iterated,
     >>> # the setting set is reinitialized at the second iteration.
     >>> for setting in p.select([0, 1], volatile=True):
     ...  pass
@@ -328,8 +333,9 @@ class Plan():
     f1=c+f2=1
     f1=c+f2=2
     f1=c+f2=3
-    >>> # if volatile was set to False (default) when the selector was first set and the setting set iterated, 
-    >>> # the complete set of settings can be reached by calling selector with no parameters.
+    >>> # if volatile was set to False (default) when the selector was first set
+    >>> # and the setting set iterated, the complete set of settings can be reached 
+    >>> # by calling selector with no parameters.
     >>> for setting in p.select([0, 1]):
     ...  pass
     >>> for setting in p.select():
@@ -681,28 +687,28 @@ class Plan():
     integer_selector_array = []
     for dm in dict_selector:
       m = [-1]*len(self._factors)
-      for dmk in dm.keys():
-        if dmk in self._factors:
-          if isinstance(dm[dmk], list):
+      for factor in dm.keys():
+        if factor in self._factors:
+          if isinstance(dm[factor], list):
             mm = []
-            for dmkl in dm[dmk]:
-              if dmkl in getattr(self, dmk):
-                mm.append(list(getattr(self, dmk)).index(dmkl))
+            for factorl in dm[factor]:
+              if factorl in getattr(self, factor):
+                mm.append(list(getattr(self, factor)).index(factorl))
               else:
-                print('Error: '+str(dmkl)+' is not a modality of factor '+dmk+'.')
-            m[self._factors.index(dmk)] = mm
+                print('Error: '+str(factorl)+' is not a modality of factor '+factor+'.')
+            m[self._factors.index(factor)] = mm
           else:
-            if dm[dmk] in getattr(self, dmk):
-              m[self._factors.index(dmk)] = list(getattr(self, dmk)).index(dm[dmk])
+            if dm[factor] in getattr(self, factor):
+              m[self._factors.index(factor)] = list(getattr(self, factor)).index(dm[factor])
         else:
-          print('Error: '+dmk+' is not a factor.')
+          print('Error: '+factor+' is not a factor.')
       integer_selector_array.append(m)
 
     return integer_selector_array
 
   def _str2list(
     self,
-    str_selector,
+    selector_str,
     factor_separator = '+',
     modality_identifier = '='
     ):
@@ -710,50 +716,47 @@ class Plan():
 
     """
     selector = []
-    # print(str_selector)
-    if ',' in str_selector[0]:
-      for ss in str_selector[0].split(','):
-        s = self._str2list([ss])
-        selector.append(s[0])
+    # print(selectors)
+    if ',' in selector_str[0]:
+      for selector in selector_str[0].split(','):
+        selector_int = self._str2list(selector)
+        selector.append(selector_int[0])
     else:
-      for dm in str_selector:
-        m = [-1]*len(self._factors)
-        factors = dm.split(factor_separator)
-        # factors = sp[0::2]
-        # modalities = sp[1::2]
-        for dmki, dmk in enumerate(factors):
-          dmks = dmk.split(modality_identifier)
-          dmk = dmks[0]
-          modality = dmks[1]
-          if dmk in self._factors:
-            ref_mod = []
-            for am in list(getattr(self, dmk)):
-              ref_mod.append(str(am))
-            if modality in ref_mod:
-              m[self._factors.index(dmk)] = ref_mod.index(modality)
-            else:
-              print('Error: '+modality+' is not a modality of factor '+dmk+'.')
-              return [0]
+      # for factor_selector in selectors:
+      selector = [-1]*len(self._factors)
+      factor_modality_pairs = selector_str.split(factor_separator)
+      for factor_modality_pair in factor_modality_pairs:
+        factor_modality_pairs = factor_modality_pair.split(modality_identifier)
+        factor_modality_pair = factor_modality_pairs[0]
+        modality = factor_modality_pairs[1]
+        if factor_modality_pair in self._factors:
+          ref_mod = []
+          for am in list(getattr(self, factor_modality_pair)):
+            ref_mod.append(str(am))
+          if modality in ref_mod:
+            selector[self._factors.index(factor_modality_pair)] = ref_mod.index(modality)
           else:
-            print('Error: '+dmk+' is not a factor.')
-            return [0]
-        selector = m
+            raise Exception(f'Error: {modality} is not a modality of factor {factor_modality_pair}.')
+        else:
+          raise Exception(f'Error: {factor_modality_pair} is not a factor.')
+          
+      selector = [selector]
     return selector
 
-  def _check_selector(self, selector):
+  def _check_selector(self, selectors):
     check=True
-    for s in selector:
-      for factor_index, f in enumerate(s):
+    for selector in selectors:
+      for factor_index, factor_selector in enumerate(selector):
         if factor_index<len(self._factors):
           # print(type(getattr(self, self._factors[factor_index])))
           nm = len(np.atleast_1d(getattr(self, self._factors[factor_index])))
-          if f != -1:
-            for fm in f:
-              if fm+1 > nm:
+          if factor_selector != -1:
+            for factor_selector_modality in factor_selector:
+              if factor_selector_modality+1 > nm:
                 print(f'Error: factor {str(self._factors[factor_index])} only has {str(nm)} modalities.')
-                print(f'Requested modality is {str(fm)}')
+                print(f'Requested modality is {str(factor_selector_modality)}')
                 check = False
-        elif f != -1:
+        elif factor_selector != -1:
           print('''Warning: the selector is longer than the number of factors.
             Doce takes this last element into account only if it is equal to -1 
             (see the documentation of the Plan.select() method).'''
@@ -762,11 +765,10 @@ class Plan():
     return check
 
   def __str__(self):
-    cString = ''
-    l = 1
-    for ai, f in enumerate(self._factors):
-      cString+='  '+str(ai)+'  '+f+': '+str(self.__getattribute__(f))+'\n'
-    return cString[:-1]
+    plan_description = ''
+    for factor_index, factor in enumerate(self._factors):
+      plan_description+='  '+str(factor_index)+'  '+factor+': '+str(self.__getattribute__(factor))+'\n'
+    return plan_description[:-1]
 
   def __setattr__(
     self,
@@ -846,46 +848,44 @@ class Plan():
     ):
     if self._changed:
       settings = []
-      selector = copy.deepcopy(self._selector)
+      selectors = copy.deepcopy(self._selector)
       self._setting = None
+      # selector = copy.deepcopy(selector)
+      nb_factors = len(self.factors())
+      if selectors is None or len(selectors)==0 or (len(selectors)==1 and len(selectors)==0) :
+        selectors = [[-1]*nb_factors]
+      if isinstance(selectors, list) and not all(isinstance(x, list) for x in selectors):
+        selectors = [selectors]
 
-      selector = copy.deepcopy(selector)
-      nb_plans = len(self.factors())
-      if selector is None or len(selector)==0 or (len(selector)==1 and len(selector)==0) :
-        selector = [[-1]*nb_plans]
-      if isinstance(selector, list) and not all(isinstance(x, list) for x in selector):
-        selector = [selector]
-
-      for im, m in enumerate(selector):
-        if len(m) < nb_plans:
-          selector[im] = m+[-1]*(nb_plans-len(m))
-        for il, l in enumerate(m):
-          if not isinstance(l, list) and l > -1:
-            selector[im][il] = [l]
+      for selector_index, selector in enumerate(selectors):
+        if len(selector) < nb_factors:
+          selectors[selector_index] = selector+[-1]*(nb_factors-len(selector))
+        for factor_selector_index, factor_selector in enumerate(selector):
+          if not isinstance(factor_selector, list) and factor_selector > -1:
+            selectors[selector_index][factor_selector_index] = [factor_selector]
       # prune repeated entries
-      for im, m in enumerate(selector):
-        if isinstance(m, list):
-          for il, l in enumerate(m):
-            if isinstance(l, list):
-              m[il] = list(dict.fromkeys(l))
-      self._expanded_selector = selector
+      for selector_index, selector in enumerate(selectors):
+        if isinstance(selector, list):
+          for factor_selector_index, factor_selector in enumerate(selector):
+            if isinstance(factor_selector, list):
+              selector[factor_selector_index] = list(dict.fromkeys(factor_selector))
+      self._expanded_selector = selectors
 
-      if self._check_selector(selector):
-        for select in selector:
-          # handle -1 in selector
-          for select_factor_index, select_factor in enumerate(select):
-            if (isinstance(select_factor, int) and 
-                select_factor == -1 and 
-                select_factor_index<len(self.factors())
+      if self._check_selector(selectors):
+        for selector in selectors:
+          # handle -1 in selectors
+          for factor_selector_index, factor_selector in enumerate(selector):
+            if (isinstance(factor_selector, int) and
+                factor_selector == -1 and
+                factor_selector_index<len(self.factors())
                 ):
-              attr = self.__getattribute__(self.factors()
-              [select_factor_index])
-              if isinstance(attr, list) or isinstance(attr, np.ndarray):
-                select[select_factor_index] = list(range(len(np.atleast_1d(attr))))
+              modalities = self.__getattribute__(self.factors()[factor_selector_index])
+              if isinstance(modalities, list) or isinstance(modalities, np.ndarray):
+                selector[factor_selector_index] = list(range(len(np.atleast_1d(modalities))))
               else:
-                select[select_factor_index] = [0]
+                selector[factor_selector_index] = [0]
 
-          s = self.__set_settings_selector__(select, 0)
+          s = self.__set_settings_selector__(selector, 0)
           if all(isinstance(ss, list) for ss in s):
             for ss in s:
               settings.append(ss)
