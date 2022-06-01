@@ -2,16 +2,15 @@ import os
 import shutil as sh
 import inspect
 import types
-import numpy as np
-
 import copy
 import glob
-import doce.util as eu
-import doce.setting as es
 import logging
 import time
 from itertools import groupby
 from subprocess import call
+import numpy as np
+import doce.util as eu
+import doce.setting as es
 
 if eu.in_notebook():
   from tqdm.notebook import tqdm as tqdm
@@ -200,7 +199,12 @@ class Plan():
 
     if nb_jobs>1 or nb_jobs<0:
       from joblib import Parallel, delayed
-      Parallel(n_jobs=nb_jobs, require='sharedmem')(delayed(setting.perform)(function, experiment, log_file_name, *parameters) for setting in self)
+      Parallel(n_jobs=nb_jobs, require='sharedmem')(delayed(setting.perform)(
+        function,
+        experiment,
+        log_file_name,
+        *parameters
+        ) for setting in self)
     else:
       start_time = time.time()
       step_time = start_time
@@ -334,7 +338,7 @@ class Plan():
     f1=c+f2=2
     f1=c+f2=3
     >>> # if volatile was set to False (default) when the selector was first set
-    >>> # and the setting set iterated, the complete set of settings can be reached 
+    >>> # and the setting set iterated, the complete set of settings can be reached
     >>> # by calling selector with no parameters.
     >>> for setting in p.select([0, 1]):
     ...  pass
@@ -385,13 +389,15 @@ class Plan():
     ):
     """returns the number of :term:`modalities<modality>` for a given :term:`factor`.
 
-  	Returns the number of :term:`modalities<modality>` for a given :term:`factor` as an integer value.
+  	Returns the number of :term:`modalities<modality>`
+    for a given :term:`factor` as an integer value.
 
   	Parameters
   	----------
 
     factor: int or str
-      if int, considered as the index inside an array of the factors sorted by order of definition.
+      if int, considered as the index inside an array of the factors
+      sorted by order of definition.
 
       If str, the name of the factor.
 
@@ -446,18 +452,18 @@ class Plan():
         archive_path='',
         verbose=verbose)
     if not keep:
-      h5 = tb.open_file(path, mode='a')
+      h_5 = tb.open_file(path, mode='a')
       if reverse:
         ids = [setting.identifier(**setting_encoding) for setting in self]
-        for group in h5.iter_nodes('/'):
+        for group in h_5.iter_nodes('/'):
           if group._v_name not in ids:
-            h5.remove_node(h5.root, group._v_name, recursive=True)
+            h_5.remove_node(h_5.root, group._v_name, recursive=True)
       else:
         for setting in self:
           group_name = setting.identifier(**setting_encoding)
-          if h5.root.__contains__(group_name):
-            h5.remove_node(h5.root, group_name, recursive=True)
-      h5.close()
+          if h_5.root.__contains__(group_name):
+            h_5.remove_node(h_5.root, group_name, recursive=True)
+      h_5.close()
       if verbose:
         print('repacking')
       # repack
@@ -522,75 +528,82 @@ class Plan():
           action = 'move '
         destination = ' to '+archive_path+' '
       elif not force:
-        print('''INFORMATION: setting path.archive allows you to move 
+        print('''INFORMATION: setting path.archive allows you to move
           the unwanted files to the archive path and not delete them.''')
         destination = ''
         action = 'remove '
       if file_names:
-        if not force and eu.query_yes_no('List the '+str(len(file_names))+' files ?'):
+        if not force and eu.query_yes_no(f'List the {str(len(file_names))} files ?'):
           print("\n".join(file_names))
-        if force or eu.query_yes_no('About to '+action+str(len(file_names))+' files from '+path+destination+' \n Proceed ?'):
-          for f in file_names:
+        if force or eu.query_yes_no(
+          f'About to {action}{str(len(file_names))} files from {path}{destination} \n Proceed?'
+          ):
+          for file_name in file_names:
             if archive_path:
               if keep:
-                sh.copyfile(f, archive_path+'/'+os.path.basename(f))
+                sh.copyfile(file_name, archive_path+'/'+os.path.basename(file_name))
               else:
-                os.rename(f, archive_path+'/'+os.path.basename(f))
+                os.rename(file_name, archive_path+'/'+os.path.basename(file_name))
             else:
-              os.remove(f)
+              os.remove(file_name)
       else:
         print('no files found.')
 
   def merge(self, plans):
     # build temporary plan
     tmp = Plan()
-    for x in plans:
-      for f in x.factors():
-        setattr(tmp, f, np.empty([0]))
-        if hasattr(x._default, f):
-          if hasattr(tmp._default, f) and getattr(x._default, f) != getattr(tmp._default, f):
-            print(getattr(tmp._default, f))
-            print(f'''While merging factors of the different experiment, a conflict of default modalities 
-              for the factor {f} is detected. This may lead to an inconsistent behavior.''')
+    for plan in plans:
+      for factor in plan.factors():
+        setattr(tmp, factor, np.empty([0]))
+        if hasattr(plan._default, factor):
+          if (hasattr(tmp._default, factor) and
+            getattr(plan._default, factor) != getattr(tmp._default, factor)
+            ):
+            print(getattr(tmp._default, factor))
+            print(f'''While merging factors of the different experiment,
+              a conflict of default modalities for the factor {factor} is detected.
+              This may lead to an inconsistent behavior.''')
             raise ValueError
-          setattr(tmp._default, f, getattr(x._default, f))
+          setattr(tmp._default, factor, getattr(plan._default, factor))
             # print(tmp._default)
-    for x in plans:
-      for f in x.factors():
-        for m in getattr(x, f):
-          if len(getattr(tmp, f))==0 or m not in getattr(tmp, f):
-            setattr(tmp, f, np.append(getattr(tmp, f), m))
+    for plan in plans:
+      for factor in plan.factors():
+        for modalities in getattr(plan, factor):
+          if len(getattr(tmp, factor))==0 or modalities not in getattr(tmp, factor):
+            setattr(tmp, factor, np.append(getattr(tmp, factor), modalities))
     # check if factors are available in every experiment
     have = [True]*len(tmp.factors())
-    for fi, f in enumerate(tmp.factors()):
-      for x in plans:
-        if not f in x.factors():
-          have[fi] = False
+    for factor_index, factor in enumerate(tmp.factors()):
+      for plan in plans:
+        if not factor in plan.factors():
+          have[factor_index] = False
     plan = Plan()
     plan._default = tmp._default
-    for fi, f in enumerate(tmp.factors()):
-      m = getattr(tmp, f)
-      if not isinstance(m[0], str) and all(np.array([val.is_integer() for val in m])):
-        m = np.array(m, dtype=np.intc)
-      setattr(plan, f, m)
-      if not have[fi] and not hasattr(tmp._default, f):
-        if isinstance(m[0], str):
-          if 'none' not in m:
-            m = np.insert(m, 0, 'none')
-            setattr(plan, f, m)
-          plan.default(f, 'none')
-        if not isinstance(m[0], str):
-          if 0 not in m:
-            m = np.insert(m, 0, 0)
-            setattr(plan, f, m)
-          plan.default(f, 0)
+    for factor_index, factor in enumerate(tmp.factors()):
+      modalities = getattr(tmp, factor)
+      if (not isinstance(modalities[0], str) and
+          all(np.array([val.is_integer() for val in modalities]))
+          ):
+        modalities = np.array(modalities, dtype=np.intc)
+      setattr(plan, factor, modalities)
+      if not have[factor_index] and not hasattr(tmp._default, factor):
+        if isinstance(modalities[0], str):
+          if 'none' not in modalities:
+            modalities = np.insert(modalities, 0, 'none')
+            setattr(plan, factor, modalities)
+          plan.default(factor, 'none')
+        if not isinstance(modalities[0], str):
+          if 0 not in modalities:
+            modalities = np.insert(modalities, 0, 0)
+            setattr(plan, factor, modalities)
+          plan.default(factor, 0)
     return plan
 
   def as_panda_frame(self):
     """returns a panda frame that describes the Plan object.
 
-  	Returns a panda frame describing the Plan object. 
-    For ease of definition of a selector to select some settings, 
+  	Returns a panda frame describing the Plan object.
+    For ease of definition of a selector to select some settings,
     the columns and the rows of the panda frame are numbered.
 
   	Examples
@@ -624,14 +637,16 @@ class Plan():
       line = []
       line.append(factor)
       for modality_index in range(max_modalities):
-        if ((isinstance(getattr(self, factor), list) or 
-            isinstance(getattr(self, factor), np.ndarray)) and 
+        if ((isinstance(getattr(self, factor), list) or
+            isinstance(getattr(self, factor), np.ndarray)) and
             len(getattr(self, factor)) > modality_index
             ) :
-          m = str(getattr(self, factor)[modality_index])
-          if hasattr(self._default, factor) and getattr(self._default, factor) == getattr(self, factor)[modality_index]:
-            m = '*'+m+'*'
-          line.append(m)
+          modality = str(getattr(self, factor)[modality_index])
+          if (hasattr(self._default, factor) and
+            getattr(self._default, factor) == getattr(self, factor)[modality_index]
+            ):
+            modality = '*'+modality+'*'
+          line.append(modality)
         elif modality_index<1:
           line.append(getattr(self, factor))
         else:
@@ -646,19 +661,22 @@ class Plan():
   def constant_factors(self, selector):
     self.select(selector)
     message = str(len(self))+' settings'
-    cf = [ [] for _ in range(len(self._factors)) ]
-    for m in self._expanded_selector:
+    constant_factor = [ [] for _ in range(len(self._factors)) ]
+    for factor_selector in self._expanded_selector:
       for factor_index, _ in enumerate(self._factors):
-        if m[factor_index]:
-          cf[factor_index] = list(set(cf[factor_index]) | set(m[factor_index]))
+        if factor_selector[factor_index]:
+          constant_factor[factor_index] = list(
+              set(constant_factor[factor_index])|
+              set(factor_selector[factor_index])
+              )
 
-    cst = ''
+    constant_factors = ''
     for factor_index, factor in enumerate(self._factors):
-      if len(cf[factor_index]) == 1:
-        cst+=factor+', '
-    if cst:
+      if len(constant_factor[factor_index]) == 1:
+        constant_factors+=factor+', '
+    if constant_factors:
       message += ' with constant factors : '
-      message += cst[:-2]
+      message += constant_factors[:-2]
     return message
 
   def expand_selector(self, selector, factor):
@@ -667,44 +685,44 @@ class Plan():
     factor_index = self.factors().index(factor)
 
     if len(selector)<=factor_index:
-      for m in range(1+factor_index-len(selector)):
+      for _ in range(1+factor_index-len(selector)):
         selector.append(-1)
 
-    nm = []
-    for mi, m in enumerate(selector):
-      if m==-1:
-        nm.append(list(range(len(getattr(self, self.factors()[mi])))))
+    expanded_selector = []
+    for factor_index, factor_selector in enumerate(selector):
+      if factor_selector==-1:
+        expanded_selector.append(list(range(len(getattr(self, self.factors()[factor_index])))))
       else:
-        nm.append(m)
-    nm.append(-1)
+        expanded_selector.append(factor_selector)
+    expanded_selector.append(-1)
 
-    return nm
+    return expanded_selector
 
   def _dict2list(self, dict_selector):
     """convert dict based selector to list based selector
 
     """
-    integer_selector_array = []
-    for dm in dict_selector:
-      m = [-1]*len(self._factors)
-      for factor in dm.keys():
+    integer_selectors = []
+    for selector in dict_selector:
+      integer_selector = [-1]*len(self._factors)
+      for factor in selector.keys():
         if factor in self._factors:
-          if isinstance(dm[factor], list):
-            mm = []
-            for factorl in dm[factor]:
-              if factorl in getattr(self, factor):
-                mm.append(list(getattr(self, factor)).index(factorl))
+          if isinstance(selector[factor], list):
+            factor_selector_integer = []
+            for factor_selector in selector[factor]:
+              if factor_selector in getattr(self, factor):
+                factor_selector_integer.append(list(getattr(self, factor)).index(factor_selector))
               else:
-                print('Error: '+str(factorl)+' is not a modality of factor '+factor+'.')
-            m[self._factors.index(factor)] = mm
+                print('Error: '+str(factor_selector)+' is not a modality of factor '+factor+'.')
+            integer_selector[self._factors.index(factor)] = factor_selector_integer
           else:
-            if dm[factor] in getattr(self, factor):
-              m[self._factors.index(factor)] = list(getattr(self, factor)).index(dm[factor])
+            if selector[factor] in getattr(self, factor):
+              integer_selector[self._factors.index(factor)] = list(getattr(self, factor)).index(selector[factor])
         else:
           print('Error: '+factor+' is not a factor.')
-      integer_selector_array.append(m)
+      integer_selectors.append(integer_selector)
 
-    return integer_selector_array
+    return integer_selectors
 
   def _str2list(
     self,
@@ -726,20 +744,19 @@ class Plan():
       selector = [-1]*len(self._factors)
       factor_modality_pairs = selector_str.split(factor_separator)
       for factor_modality_pair in factor_modality_pairs:
-        factor_modality_pairs = factor_modality_pair.split(modality_identifier)
-        factor_modality_pair = factor_modality_pairs[0]
-        modality = factor_modality_pairs[1]
-        if factor_modality_pair in self._factors:
+        factor_modality_pair_split = factor_modality_pair.split(modality_identifier)
+        factor = factor_modality_pair_split[0]
+        modality = factor_modality_pair_split[1]
+        if factor in self._factors:
           ref_mod = []
-          for am in list(getattr(self, factor_modality_pair)):
-            ref_mod.append(str(am))
+          for modality in list(getattr(self, factor)):
+            ref_mod.append(str(modality))
           if modality in ref_mod:
-            selector[self._factors.index(factor_modality_pair)] = ref_mod.index(modality)
+            selector[self._factors.index(factor)] = ref_mod.index(modality)
           else:
-            raise Exception(f'Error: {modality} is not a modality of factor {factor_modality_pair}.')
+            raise Exception(f'Error: {modality} is not a modality of factor {factor}.')
         else:
-          raise Exception(f'Error: {factor_modality_pair} is not a factor.')
-          
+          raise Exception(f'Error: {factor} is not a factor.')
       selector = [selector]
     return selector
 
@@ -749,11 +766,11 @@ class Plan():
       for factor_index, factor_selector in enumerate(selector):
         if factor_index<len(self._factors):
           # print(type(getattr(self, self._factors[factor_index])))
-          nm = len(np.atleast_1d(getattr(self, self._factors[factor_index])))
+          nb_modalities = len(np.atleast_1d(getattr(self, self._factors[factor_index])))
           if factor_selector != -1:
             for factor_selector_modality in factor_selector:
-              if factor_selector_modality+1 > nm:
-                print(f'Error: factor {str(self._factors[factor_index])} only has {str(nm)} modalities.')
+              if factor_selector_modality+1 > nb_modalities:
+                print(f'Error: factor {str(self._factors[factor_index])} only has {str(nb_modalities)} modalities.')
                 print(f'Requested modality is {str(factor_selector_modality)}')
                 check = False
         elif factor_selector != -1:
@@ -767,7 +784,7 @@ class Plan():
   def __str__(self):
     plan_description = ''
     for factor_index, factor in enumerate(self._factors):
-      plan_description+='  '+str(factor_index)+'  '+factor+': '+str(self.__getattribute__(factor))+'\n'
+      plan_description+= f'  {str(factor_index)}  {factor}: {str(self.__getattribute__(factor))}\n'
     return plan_description[:-1]
 
   def __setattr__(
@@ -777,26 +794,27 @@ class Plan():
     ):
     if not hasattr(self, name) and name[0] != '_':
       self._factors.append(name)
-    if hasattr(self, name) and type(inspect.getattr_static(self, name)) == types.FunctionType:
+    if hasattr(self, name) and isinstance(inspect.getattr_static(self, name), types.FunctionType):
       raise Exception(f'the attribute {name} is shadowing a builtin function')
     if name == '_selector' or name[0] != '_':
       self._changed = True
     if (name[0] != '_' and
         type(value) in {list, np.ndarray} and
-        len(value)>1 and
+        value>1 and
         name not in self._non_singleton
         ):
       self._non_singleton.append(name)
     if name[0] != '_' and type(value) not in {list, np.ndarray} :
       value = [value]
     if name[0] != '_' and type(value) not in {np.ndarray, Plan}:
-      if len(value) and not all(isinstance(x, type(value[0])) for x in value):
-        raise Exception(f'All the modalities of the factor {name} must be of the same type (str, int, or float)')
-      if len(value) and all(isinstance(x, str) for x in value):
+      if value and not all(isinstance(x, type(value[0])) for x in value):
+        raise Exception(
+          f'All the modalities of the factor {name} must be of the same type (str, int, or float)')
+      if value and all(isinstance(x, str) for x in value):
         value = np.array(value)
-      elif len(value) and all(isinstance(x, int) for x in value):
+      elif value and all(isinstance(x, int) for x in value):
         value = np.array(value, dtype=np.intc)
-      elif len(value) and all(isinstance(x, float) for x in value):
+      elif value and all(isinstance(x, float) for x in value):
         value = np.array(value, dtype=np.float)
     return object.__setattr__(self, name, value)
 

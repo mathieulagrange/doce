@@ -483,8 +483,8 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
      to {time.ctime(max(modification_time_stamp))}')
   data_frame = pd.DataFrame(table, columns=columns)  # .fillna('-')
 
-  if (select_display and 
-      not select_factor and 
+  if (select_display and
+      not select_factor and
       len(columns) >= max(select_display) + nb_factor_columns
       ):
     columns = [columns[i] for i in [
