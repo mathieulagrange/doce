@@ -129,6 +129,7 @@ class Experiment():
     self._gmail_app_password = 'tagsqtlirkznoxro'
     self._default_server_run_argument =  {}
     self._resume = False
+    self._check_setting_length = True
 
     self._display = types.SimpleNamespace()
     self._display.factor_format_in_reduce = 'long'
@@ -483,6 +484,8 @@ class Experiment():
     self._plan.check()
     if show:
       print(self._plan.as_panda_frame())
+    if self._check_setting_length:
+      self._plan.check_length()
     return self._plan.select(selector)
 
   def clean_data_sink(

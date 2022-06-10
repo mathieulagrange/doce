@@ -785,9 +785,23 @@ class Plan():
   def __str__(self):
     plan_description = ''
     for factor_index, factor in enumerate(self._factors):
-      print(self.__getattribute__(factor).type)
       plan_description+= f'  {str(factor_index)}  {factor}: {str(self.__getattribute__(factor))}\n'
     return plan_description[:-1]
+
+  def check_length(self):
+    max_length = 0
+    for factor in self._factors:
+      max_length_factor = 0
+      for modality in self.__getattribute__(factor):
+        if len(str(modality)) > max_length:
+          max_length_factor = len(str(modality))
+      max_length += max_length_factor + 2
+    if max_length > 220:
+      print('Considering this plan, the setting description of maximal length is above 220 caracters.')
+      print('This may reach the file anming ')
+      print('Set _check_setting_length to False of your experiment to discard this warning.')
+    
+
 
   def __setattr__(
     self,
