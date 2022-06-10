@@ -16,7 +16,6 @@ def set(args=None):
     author = 'john doe',
     address = 'john.doe@no-log.org',
   )
-
 # set acces paths (here only storage is needed)
   experiment.set_path('output', '/tmp/'+experiment.name+'/', force=True)
   # set some non varying parameters (here the number of cross validation folds)

@@ -12,6 +12,7 @@ import time
 import re
 import numpy as np
 import doce
+from doce.metric import significance
 
 def main():
   """This method shall be called from the main script of the experiment
@@ -380,14 +381,14 @@ def main():
       getattr(config, display_method)(
           experiment, experiment._plan.select(experiment.selector))
     else:
-      (data_frame, header, styler) = data_frame_display(
+      (data_frame, header, styler, significance, c_metric) = data_frame_display(
           experiment, args, config, select_display, select_factor)
       if data_frame is not None:
         print(header)
         # pd.set_option('precision', 2)
         print(data_frame)
       if args.export != 'none' and styler is not None:
-        export_data_frame(experiment, args, data_frame, styler, header)
+        export_data_frame(experiment, args, data_frame, styler, header, significance, c_metric)
       if args.mail > -1:
         body += f'<div> {header} </div><br>{styler.render()}'
 
@@ -558,7 +559,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
     styler.apply(highlight_best, subset=c_metric, axis=None,
                  **{'significance': significance})
 
-  return (data_frame.fillna('-').applymap(int_bool), header, styler)
+  return (data_frame.fillna('-').applymap(int_bool), header, styler, significance, c_metric)
 
 def pretty_bool(val):
   if isinstance(val, bool):
@@ -567,6 +568,12 @@ def pretty_bool(val):
     else:
       return ''
   return val
+
+def escape_tex(val):
+  if isinstance(val, str):
+    val = val.replace('_', '\_').replace('%', '\%').replace('$', '\$').replace('{', '\{').replace('}', '\}')
+  return val
+
 
 def int_bool(val):
   if isinstance(val, bool):
@@ -580,6 +587,17 @@ def highlight_stat(data_frame, significance):
     data_frame = data_frame.where(significance <= 0, 'color: blue')
   return data_frame
 
+def tex(data_col, significance, metric_names):
+  if data_col.name in metric_names:
+    metric_index = metric_names.index(data_col.name)
+    for data_index, data in enumerate(data_col):
+      if significance[data_index, metric_index] == -1:
+        data_col[data_index] = f'\textbf{{{data_col[data_index]}}}'
+      if significance[data_index, metric_index] == 1:
+        data_col[data_index] = f'\textcolor{{blue}}{{{data_col[data_index]}}}'
+  return data_col
+
+
 def highlight_best(data_frame, significance):
   import pandas as pd
   data_frame = pd.DataFrame('', index=data_frame.index, columns=data_frame.columns)
@@ -587,7 +605,7 @@ def highlight_best(data_frame, significance):
     data_frame = data_frame.where(significance > -1, 'font-weight: bold')
   return data_frame
 
-def export_data_frame(experiment, args, data_frame, styler, header):
+def export_data_frame(experiment, args, data_frame, styler, header, significance, c_metric):
   if not os.path.exists(experiment.path.export):
     os.makedirs(experiment.path.export)
   if args.export == 'all':
@@ -620,13 +638,15 @@ def export_data_frame(experiment, args, data_frame, styler, header):
   #               )
   #   print(f'excel export: {export_file_name}.xls')
   if 'tex' in args.export or args.export == 'all':
-    data_frame.to_latex(buf=f'{export_file_name}.tex',
+    data_frame.columns = data_frame.columns.to_series().apply(escape_tex)
+    data_frame.applymap(escape_tex).apply(tex, **{'significance': significance, 'metric_names': c_metric}).to_latex(buf=f'{export_file_name}.tex',
                 index=experiment._display.show_row_index,
                 bold_rows=True,
+                escape = False,
                 caption=header
                 )
     print(f'tex export: {export_file_name}.tex')
-    print('please add \\usepackage{booktabs} to the preamble of your main .tex file')
+    print('please add \\usepackage{booktabs, textcolor} to the preamble of your main .tex file')
 
   if 'png' in args.export or args.export == 'all':
     print('Creating image...')
