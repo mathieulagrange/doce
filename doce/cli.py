@@ -502,9 +502,12 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
   c_minus = []
   c_no_minus = []
   c_metric = []
+  bool_selector = []
   c_int = {}
   precision_format = {}
   for column_index, column in enumerate(columns):
+    if data_frame[column].dtypes == 'bool':
+      bool_selector.append(column)
     if column_index >= nb_factor_columns:
       c_metric.append(column)
       if '%' in column:
@@ -532,12 +535,14 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
           is_integer = False
       if is_integer:
         c_int[column] = 'int32'
-  data_frame = data_frame.astype(c_int)
 
-  styler = data_frame.style.set_properties(subset=data_frame.columns[numeric_col_selector],
+  data_frame = data_frame.astype(c_int)
+  styler = data_frame.applymap(pretty_bool).style.set_properties(subset=data_frame.columns[numeric_col_selector],
                                    **{'width': '10em', 'text-align': 'right'})\
       .set_properties(subset=data_frame.columns[~numeric_col_selector],
                       **{'width': '10em', 'text-align': 'left'})\
+      .set_properties(subset=bool_selector,
+                      **{'width': '10em', 'text-align': 'center'})\
       .set_properties(subset=data_frame.columns[nb_factor_columns],
                       **{'border-left': '.1rem solid'})\
       .set_table_styles([table_style])\
@@ -553,7 +558,20 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
     styler.apply(highlight_best, subset=c_metric, axis=None,
                  **{'significance': significance})
 
-  return (data_frame.fillna('-'), header, styler)
+  return (data_frame.fillna('-').applymap(int_bool), header, styler)
+
+def pretty_bool(val):
+  if isinstance(val, bool):
+    if val:
+      return '&#11044'
+    else:
+      return ''
+  return val
+
+def int_bool(val):
+  if isinstance(val, bool):
+    return int(val)
+  return val
 
 def highlight_stat(data_frame, significance):
   import pandas as pd
@@ -595,13 +613,12 @@ def export_data_frame(experiment, args, data_frame, styler, header):
   if 'csv' in args.export or args.export == 'all':
     data_frame.to_csv(path_or_buf=f'{export_file_name}.csv',
               index=experiment._display.show_row_index)
-    print('csv export: {export_file_name}.csv')
-  if 'xls' in args.export or args.export == 'all':
-    data_frame.to_excel(excel_writer=f'{export_file_name}.xls',
-                index=experiment._display.show_row_index
-                )
-    print('excel export: {export_file_name}.xls')
-
+    print(f'csv export: {export_file_name}.csv')
+  # if 'xls' in args.export or args.export == 'all':
+  #   data_frame.to_excel(excel_writer=f'{export_file_name}.xls',
+  #               index=experiment._display.show_row_index
+  #               )
+  #   print(f'excel export: {export_file_name}.xls')
   if 'tex' in args.export or args.export == 'all':
     data_frame.to_latex(buf=f'{export_file_name}.tex',
                 index=experiment._display.show_row_index,
@@ -620,19 +637,18 @@ def export_data_frame(experiment, args, data_frame, styler, header):
           )
       print(f'png export: {export_file_name}.png')
     else:
-      print('''generation of png is handled by converting the html generated \
-          from the result dataframe using the wkhtmltoimage tool. \
-          This tool must be installed and reachable from you path.''')
+      print('Generation of png is handled by converting the html output.')
+      print('It uses the wkhtmltoimage tool to do so.')
+      print('This tool must be installed and reachable from you path.')
   if 'pdf' in args.export or args.export == 'all':
     print('Creating pdf...')
     if shutil.which('wkhtmltopdf'):
       subprocess.call(
           f'wkhtmltopdf {export_file_name}.html {export_file_name}.pdf', shell=True)
     else:
-      print('Generation of pdf is handled by converting the html generated from the result \
-        dataframe using the wkhtmltoimage tool which must be installed \
-        and reachable from you path.'
-        )
+      print('Generation of pdf is handled by converting the html output.')
+      print('It uses the wkhtmltoimage tool to do so.')
+      print('This tool must be installed and reachable from you path.')
 
     print('Cropping {export_file_name}.pdf')
     if shutil.which('pdfcrop') is not None:

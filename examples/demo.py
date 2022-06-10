@@ -1,7 +1,7 @@
-import doce
 import time
 import numpy as np
 from pathlib import Path
+import doce
 
 # invoke the command line management of the doce package
 if __name__ == "__main__":

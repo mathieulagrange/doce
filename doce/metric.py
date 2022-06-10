@@ -128,6 +128,7 @@ class Metric():
         for factor_name in reversed(settings.factors()):
           row.insert(0, setting.__getattribute__(factor_name))
         table.append(row)
+        
         raw_data.append(raw_data_row)
 
     p_values = significance(

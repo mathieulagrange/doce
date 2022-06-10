@@ -734,6 +734,7 @@ class Plan():
 
     """
     selector = []
+    print(selector_str)
     # print(selectors)
     if ',' in selector_str[0]:
       for selector in selector_str[0].split(','):
@@ -742,17 +743,17 @@ class Plan():
     else:
       # for factor_selector in selectors:
       selector = [-1]*len(self._factors)
-      factor_modality_pairs = selector_str.split(factor_separator)
+      factor_modality_pairs = selector_str[0].split(factor_separator)
       for factor_modality_pair in factor_modality_pairs:
         factor_modality_pair_split = factor_modality_pair.split(modality_identifier)
         factor = factor_modality_pair_split[0]
         modality = factor_modality_pair_split[1]
         if factor in self._factors:
-          ref_mod = []
-          for modality in list(getattr(self, factor)):
-            ref_mod.append(str(modality))
-          if modality in ref_mod:
-            selector[self._factors.index(factor)] = ref_mod.index(modality)
+          reference_modality_string = []
+          for reference_modality in list(getattr(self, factor)):
+            reference_modality_string.append(str(reference_modality))
+          if modality in reference_modality_string:
+            selector[self._factors.index(factor)] = reference_modality_string.index(modality)
           else:
             raise Exception(f'Error: {modality} is not a modality of factor {factor}.')
         else:
@@ -784,6 +785,7 @@ class Plan():
   def __str__(self):
     plan_description = ''
     for factor_index, factor in enumerate(self._factors):
+      print(self.__getattribute__(factor).type)
       plan_description+= f'  {str(factor_index)}  {factor}: {str(self.__getattribute__(factor))}\n'
     return plan_description[:-1]
 
@@ -799,8 +801,8 @@ class Plan():
     if name == '_selector' or name[0] != '_':
       self._changed = True
     if (name[0] != '_' and
-        type(value) in {list, np.ndarray} and
-        value and
+        ((isinstance(value, list) and value) or
+        isinstance(value, np.ndarray) and value.size) and
         name not in self._non_singleton
         ):
       self._non_singleton.append(name)
@@ -809,12 +811,14 @@ class Plan():
     if name[0] != '_' and type(value) not in {np.ndarray, Plan}:
       if value and not all(isinstance(x, type(value[0])) for x in value):
         raise Exception(
-          f'All the modalities of the factor {name} must be of the same type (str, int, or float)')
-      if value and all(isinstance(x, str) for x in value):
+          f'All the modalities of the factor {name} must be of the same type (str, int, bool, or float)')
+      if value and isinstance(value[0], str):
         value = np.array(value)
-      elif value and all(isinstance(x, int) for x in value):
+      elif value and isinstance(value[0], bool):
+        value = np.array(value, dtype=bool)
+      elif value and isinstance(value[0], int) and not isinstance(value[0], bool):
         value = np.array(value, dtype=np.intc)
-      elif value and all(isinstance(x, float) for x in value):
+      elif value and isinstance(value[0], float):
         value = np.array(value, dtype=np.float)
     return object.__setattr__(self, name, value)
 
