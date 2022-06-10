@@ -1,4 +1,4 @@
-"""handle interaction with the doce module using the command line"""
+"""Handle interaction with the doce module using the command line interface."""
 
 import sys
 import argparse

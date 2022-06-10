@@ -1,4 +1,4 @@
-"""handle information of an experiment of the doce module"""
+"""Handle information of an experiment of the doce module."""
 
 import types
 import inspect

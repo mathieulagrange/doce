@@ -1,3 +1,5 @@
+"""Handle storage and processing of the plan of the doce module."""
+
 import os
 import shutil as sh
 import inspect
@@ -798,7 +800,9 @@ class Plan():
       max_length += max_length_factor + 2
     if max_length > 220:
       print('Considering this plan, the setting description of maximal length is above 220 caracters.')
-      print('This may reach the file anming ')
+      print('This may reach the file naming size limit of your file system.')
+      print('This will be an issue if you consider npy storage.')
+      print('')
       print('Set _check_setting_length to False of your experiment to discard this warning.')
     
 

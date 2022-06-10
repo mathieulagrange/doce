@@ -1,3 +1,5 @@
+"""Handle processing of the stored outputs to produce the metrics of the doce module."""
+
 import os
 import inspect
 import types

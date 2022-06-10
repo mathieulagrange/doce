@@ -1,4 +1,5 @@
-"""handle the manipulation of settings: the unique description of a parametrization of the system probed by the experiment."""
+"""Handle the display of settings: the unique description of a parametrization 
+   of the system probed by the experiment of the dcode module."""
 
 import hashlib
 import copy
