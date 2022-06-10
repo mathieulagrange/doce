@@ -800,7 +800,7 @@ class Plan():
       self._changed = True
     if (name[0] != '_' and
         type(value) in {list, np.ndarray} and
-        value>1 and
+        value and
         name not in self._non_singleton
         ):
       self._non_singleton.append(name)
