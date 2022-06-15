@@ -1,6 +1,7 @@
 
+#!/bin/bash
 for f in *.py
 do
-  echo "Running $f file..."
-  python $f -r -d
+  echo "Running ${f%???} ..."
+  python $f -c -d
 done

@@ -17,20 +17,20 @@ def set(args=None):
     address = 'mathieu.lagrange@ls2n.fr',
   )
   # set acces paths (here only storage is needed)
-  experiment.setPath('output', '/tmp/'+experiment.name+'/', force=True)
+  experiment.set_path('output', '/tmp/'+experiment.name+'/', force=True)
   # set the "svm" plan
-  experiment.addPlan('svm',
+  experiment.add_plan('svm',
     classifier = ['svm'],
     c = [1., 0.1, 0.01]
   )
   # set the "deep" plan
-  experiment.addPlan('deep',
+  experiment.add_plan('deep',
     classifier = ['cnn', 'lstm'],
     n_layers = [2, 4, 8],
     dropout = [0, 1]
   )
   # set the metrics
-  experiment.setMetrics(
+  experiment.set_metrics(
     accuracy = ['mean%']
   )
   return experiment
@@ -42,4 +42,4 @@ def step(setting, experiment):
   else:
     accuracy = (len(setting.classifier)+setting.dropout+np.random.random_sample(10))/6
 
-  np.save(experiment.path.output+setting.id()+'_accuracy.npy', accuracy)
+  np.save(experiment.path.output+setting.identifier()+'_accuracy.npy', accuracy)

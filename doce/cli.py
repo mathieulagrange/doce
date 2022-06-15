@@ -436,7 +436,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
     )
 
   if len(table) == 0:
-    return (None, '', None)
+    return (None, '', None, None, None)
   if select_factor:
     modalities = getattr(experiment._plan, select_factor)[masked_selector_factor]
     header_short = header.replace(
@@ -537,7 +537,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
       if is_integer:
         c_int[column] = 'int32'
 
-  data_frame = data_frame.astype(c_int)
+  data_frame = data_frame.astype(c_int).applymap(remove_special)
   styler = data_frame.applymap(pretty_bool).style.set_properties(subset=data_frame.columns[numeric_col_selector],
                                    **{'width': '10em', 'text-align': 'right'})\
       .set_properties(subset=data_frame.columns[~numeric_col_selector],
@@ -578,6 +578,11 @@ def escape_tex(val):
 def int_bool(val):
   if isinstance(val, bool):
     return int(val)
+  return val
+
+def remove_special(val):
+  if val == -99999 or val == '-99999':
+    return ''
   return val
 
 def highlight_stat(data_frame, significance):

@@ -1,4 +1,4 @@
-"""Handle the display of settings: the unique description of a parametrization 
+"""Handle the display of settings, the unique description of a parametrization 
    of the system probed by the experiment of the dcode module."""
 
 import hashlib

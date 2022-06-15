@@ -97,7 +97,7 @@ class Metric():
       setting_encoding = {}
 
     (reduced_metrics, metric_direction, do_testing) = self.significance_status()
-
+    
     for setting in settings:
       row = []
       raw_data_row = []

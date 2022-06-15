@@ -590,15 +590,15 @@ class Plan():
       setattr(plan, factor, modalities)
       if not have[factor_index] and not hasattr(tmp._default, factor):
         if isinstance(modalities[0], str):
-          if 'none' not in modalities:
-            modalities = np.insert(modalities, 0, 'none')
+          if '-99999' not in modalities:
+            modalities = np.append(modalities, '-99999')
             setattr(plan, factor, modalities)
-          plan.default(factor, 'none')
+          plan.default(factor, '-99999')
         if not isinstance(modalities[0], str):
-          if 0 not in modalities:
-            modalities = np.insert(modalities, 0, 0)
+          if -99999 not in modalities:
+            modalities = np.append(modalities, -99999)
             setattr(plan, factor, modalities)
-          plan.default(factor, 0)
+          plan.default(factor, -99999)
     return plan
 
   def as_panda_frame(self):
@@ -647,7 +647,10 @@ class Plan():
           if (hasattr(self._default, factor) and
             getattr(self._default, factor) == getattr(self, factor)[modality_index]
             ):
-            modality = '*'+modality+'*'
+            if modality == str(-99999) or modality == str(-99999.0):
+              modality = '*'
+            else: 
+              modality = '*'+modality+'*'
           line.append(modality)
         elif modality_index<1:
           line.append(getattr(self, factor))
