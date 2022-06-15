@@ -9,7 +9,7 @@ if __name__ == "__main__":
   doce.cli.main()
 
 # define the doce environnment
-def set(args=None):
+def set():
   # define the experiment
   experiment = doce.Experiment(
     name = 'compose_metrics',

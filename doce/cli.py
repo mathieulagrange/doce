@@ -249,7 +249,7 @@ def main():
     raise ValueError
 
   if hasattr(config, 'set'):
-    experiment = config.set(args)
+    experiment = config.set()
   else:
     experiment = doce.Experiment()
 
@@ -431,8 +431,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
     metric_display=experiment._display.metric_format_in_reduce,
     factor_display_length=experiment._display.factor_format_in_reduce_length,
     metric_display_length=experiment._display.metric_format_in_reduce_length,
-    verbose=args.verbose,
-    reduction_directive_module=config
+    verbose=args.verbose
     )
 
   if len(table) == 0:
@@ -544,8 +543,8 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
                       **{'width': '10em', 'text-align': 'left'})\
       .set_properties(subset=bool_selector,
                       **{'width': '10em', 'text-align': 'center'})\
-      .set_properties(subset=data_frame.columns[nb_factor_columns],
-                      **{'border-left': '.1rem solid'})\
+      .set_properties(subset=data_frame.columns[nb_factor_columns-1],
+                      **{'border-right': '.1rem solid'})\
       .set_table_styles([table_style])\
       .format(precision_format).applymap(lambda x: 'color: white' if pd.isnull(x) else '')
   if not experiment._display.show_row_index:

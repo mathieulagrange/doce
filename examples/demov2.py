@@ -18,7 +18,7 @@ plan = {
   }
 
 metrics = {
-  'accuracy': [np.mean, '%+', np.std],
+  'accuracy': {'output' : 'accuracy', 'percent': True, 'higher_the_better': True}},
   'duration': [np.mean, '*-']
 }
 

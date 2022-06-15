@@ -46,13 +46,13 @@ class Metric():
   will select the first value of the metric vector, expressed in percents by multiplying it by 100.
 
   """
-  def __init__(self, **metrics):
+  def __init__(self):
     self._unit = types.SimpleNamespace()
     self._description = types.SimpleNamespace()
     self._metrics = []
 
-    for metric, reduction in metrics.items():
-      self.__setattr__(metric, reduction)
+    # for metric, reduction in metrics.items():
+    #   self.__setattr__(metric, reduction)
 
 
   def __setattr__(
@@ -70,7 +70,6 @@ class Metric():
     path,
     setting_encoding=None,
     verbose = False,
-    reduction_directive_module = None
     ):
     """Handle reduction of the metrics when considering numpy storage.
 
@@ -103,7 +102,8 @@ class Metric():
       raw_data_row = []
       nb_reduced_metrics = 0
       for metric_index, metric in enumerate(self.name()):
-        file_name = path+setting.identifier(**setting_encoding)+'_'+metric+'.npy'
+        output = getattr(self, metric)['output']
+        file_name = path+setting.identifier(**setting_encoding)+'_'+output+'.npy'
         if os.path.exists(file_name):
           mod = os.path.getmtime(file_name)
           modification_time_stamp.append(mod)
@@ -111,20 +111,20 @@ class Metric():
             print('Found '+file_name+', last modified '+time.ctime(mod))
           metric_has_data[metric_index] = True
           data = np.load(file_name)
-          for reduction_type in self.__getattribute__(metric):
-            reduced_metrics[nb_reduced_metrics] = True
-            nb_reduced_metrics+=1
-            row.append(self.reduce_metric(data, reduction_type, reduction_directive_module))
-            if isinstance(reduction_type, str) and '*' in reduction_type:
-              raw_data_row.append(data)
+          reduction_type=self.__getattribute__(metric)
+          reduced_metrics[nb_reduced_metrics] = True
+          nb_reduced_metrics+=1
+          row.append(self.reduce_metric(data, getattr(self, metric)))
+          if reduction_type['significance']:
+            raw_data_row.append(data)
         else:
           if verbose:
             print('** Unable to find '+file_name)
-          for reduction_type in self.__getattribute__(metric):
-            row.append(np.nan)
-            if isinstance(reduction_type, str) and '*' in reduction_type:
-              raw_data_row.append(np.nan)
-            nb_reduced_metrics+=1
+          reduction_type=self.__getattribute__(metric)
+          row.append(np.nan)
+          if reduction_type['significance']:
+            raw_data_row.append(np.nan)
+          nb_reduced_metrics+=1
 
       if row and not all(np.isnan(c) for c in row):
         for factor_name in reversed(settings.factors()):
@@ -149,25 +149,17 @@ class Metric():
     metric_direction = []
     do_testing = []
     for metric in self.name():
-      for reduction_type in self.__getattribute__(metric):
-        nb_reduced_metrics += 1
-        if isinstance(reduction_type, str) and '*' in reduction_type:
-          do_testing.append(1)
-        else:
-          do_testing.append(0)
-        if isinstance(reduction_type, str) and reduction_type:
-          if '-' in reduction_type:
-            metric_direction.append(-1)
-          elif '+' in reduction_type:
-            metric_direction.append(1)
-          elif '*' in reduction_type:
-            metric_direction.append(1)
-            print('Statistical testing will assume a higher the better metric. \
-            You can remove this warning by adding a + to the metric reduction directive.')
-          else:
-            metric_direction.append(0)
-        else:
-          metric_direction.append(0)
+      reduction_type=self.__getattribute__(metric)
+      nb_reduced_metrics += 1
+      if reduction_type['significance']:
+        do_testing.append(1)
+      else:
+        do_testing.append(0)
+    
+      if reduction_type['higher_the_better']:
+        metric_direction.append(-1)
+      else:
+        metric_direction.append(1)
 
     reduced_metrics = [False] * nb_reduced_metrics
     return reduced_metrics, metric_direction, do_testing
@@ -178,7 +170,6 @@ class Metric():
     path,
     setting_encoding=None,
     verbose = False,
-    reduction_directive_module = None,
     ):
     """Handle reduction of the metrics when considering numpy storage.
 
@@ -217,29 +208,28 @@ class Metric():
         # print(setting_group._v_name)
         # print(setting.identifier(**setting_encoding))
         for metric_index, metric in enumerate(self.name()):
-          for reduction_type in self.__getattribute__(metric):
-            # value = np.nan
-            no_data = True
-            if setting_group.__contains__(metric):
-              data = setting_group._f_get_child(metric)
-              if data.shape[0] > 0:
-                metric_has_data[metric_index] = True
-                reduced_metrics[nb_reduced_metrics] = True
-                nb_reduced_metrics+=1
-                no_data = False
-              if isinstance(reduction_type, str) and '*' in reduction_type:
-                raw_data_row.append(np.array(data))
-            if no_data:
-              row.append(np.nan)
-              if isinstance(reduction_type, str) and '*' in reduction_type:
-                raw_data_row.append(np.nan)
+          reduction_type=self.__getattribute__(metric)
+          # value = np.nan
+          no_data = True
+          if setting_group.__contains__(metric):
+            data = setting_group._f_get_child(metric)
+            if data.shape[0] > 0:
+              metric_has_data[metric_index] = True
+              reduced_metrics[nb_reduced_metrics] = True
               nb_reduced_metrics+=1
-            else:
-              row.append(
-                self.reduce_metric(np.array(data), 
-                reduction_type, 
-                reduction_directive_module)
-                )
+              no_data = False
+            if isinstance(reduction_type, str) and '*' in reduction_type:
+              raw_data_row.append(np.array(data))
+          if no_data:
+            row.append(np.nan)
+            if isinstance(reduction_type, str) and '*' in reduction_type:
+              raw_data_row.append(np.nan)
+            nb_reduced_metrics+=1
+          else:
+            row.append(
+              self.reduce_metric(np.array(data), 
+              reduction_type)
+              )
         if row and not all(np.isnan(c) for c in row):
           for factor_name in reversed(settings.factors()):
             row.insert(0, setting.__getattribute__(factor_name))
@@ -256,131 +246,25 @@ class Metric():
       )
     return (table, metric_has_data, reduced_metrics, p_values)
 
-  def apply_reduction(
-    self,
-    reduction_directive_module,
-    reduction_type_directive,
-    data):
-
-    if '|' in reduction_type_directive:
-      for reduction_directive in reversed(reduction_type_directive.split('|')):
-        data = self.apply_reduction(reduction_directive_module,
-        reduction_directive,
-        data)
-      return data
-    if (
-      reduction_type_directive and
-      not hasattr(reduction_directive_module, reduction_type_directive)
-      ):
-      return np.nan
-    # print(reduction_type_directive)
-    return getattr(reduction_directive_module, reduction_type_directive)(data)
-
   def reduce_metric(
     self,
     data,
-    reduction_type,
-    reduction_directive_module=None
+    metric
     ):
-    """Apply reduction directive to a metric vector after potentially remove
-    non wanted items from the vector.
-
-    The data vector is reduced by considering the reduction directive
-    after potentially remove non wanted items from the vector.
+    """Apply reduction directive to an output data after potentially pruning
+    non wanted items.
 
     Parameters
     ----------
 
     data : numpy array
-      1-D vector to be reduced.
+      Array to be reduced.
 
-    reduction_type : str
-      type of reduction to be applied to the data vector. Can be any method
-      supplied by the reduction_directive_module. If unavailable, a numpy method
-      with this name that can applied to a vector and returns a value is searched for.
-      Selectors and layout can also be specified.
-
-    reduction_directive_module : str (optional)
-      Python module to perform the reduction. If None, numpy is considered.
-
-    Examples
-    --------
-
-    >>> import doce
-    >>> import numpy as np
-    >>> data = np.linspace(1, 10, num=10)
-    >>> print(data)
-    [ 1.  2.  3.  4.  5.  6.  7.  8.  9. 10.]
-    >>> m  =doce.metric.Metric()
-    >>> m.reduce_metric(data, 0)
-    1.0
-    >>> m.reduce_metric(data, 8)
-    9.0
-    >>> m.reduce_metric(data, 'sum%')
-    5500.0
-    >>> m.reduce_metric(data, 'sum-0')
-    54.0
-    >>> m.reduce_metric(data, 'sum-1')
-    25.0
-    >>> m.reduce_metric(data, 'sum-2')
-    30.0
-
+    reduction_type : function
+      reduction to be applied to the data vector. 
     """
-
-    if reduction_directive_module == 'None':
-      reduction_directive_module = np
-    reduction_type_directive = reduction_type
-    index_percent = -1
-    if isinstance(reduction_type, str):
-      split = reduction_type.replace('%', '').replace('*', '').replace('+', '').split('-')
-      reduction_type_directive = split[0]
-      ignore = ''
-      if len(split)>1:
-        ignore = split[1]
-      index_percent = reduction_type.find('%')
-
-    if (isinstance(reduction_type_directive, int) or
-      not reduction_directive_module or
-      not hasattr(reduction_directive_module, reduction_type_directive)):
-      reduction_directive_module = np
-      data = data.flatten()
-
-    # index_percent=-1
-    if reduction_type_directive:
-      if isinstance(reduction_type_directive, int):
-        if data.size>1:
-          value = float(data[reduction_type_directive])
-        else:
-          value = float(data)
-      elif ignore:
-        if ignore == '0':
-          value = self.apply_reduction(
-            reduction_directive_module,
-            reduction_type_directive,
-            data[1:])
-        elif ignore == '1':
-          value = self.apply_reduction(
-            reduction_directive_module,
-            reduction_type_directive,
-            data[::2])
-        elif ignore == '2':
-          value = self.apply_reduction(
-            reduction_directive_module,
-            reduction_type_directive,
-            data[1::2])
-        else:
-          print('Unrecognized pruning directive')
-          raise ValueError
-      else :
-        value = self.apply_reduction(reduction_directive_module,reduction_type_directive,data)
-    else:
-      if not isinstance(data, np.ndarray):
-        data = np.array(data)
-      if data.size>1:
-        value = float(data[0])
-      else:
-        value = float(data)
-    if index_percent>-1:
+    value = metric['func'](data)
+    if metric['percent']:
       value *= 100
     return value
 
@@ -394,8 +278,7 @@ class Metric():
     metric_display = 'long',
     metric_display_length = 2,
     reduced_metric_display = 'capitalize',
-    verbose = False,
-    reduction_directive_module = None
+    verbose = False
     ):
     """Apply the reduction directives described in each members of doce.metric.
     Metric objects for the settings given as parameters.
@@ -582,8 +465,7 @@ class Metric():
           settings,
           path,
           setting_encoding,
-          verbose,
-          reduction_directive_module)
+          verbose)
       else:
         (setting_description,
         metric_has_data,
@@ -593,8 +475,7 @@ class Metric():
           settings,
           path,
           setting_encoding,
-          verbose,
-          reduction_directive_module)
+          verbose)
 
       nb_factors = len(settings.factors())
       for row_index, row in enumerate(setting_description):
@@ -801,22 +682,14 @@ class Metric():
     column_header = []
     for factor_name in plan.factors():
       column_header.append(eu.compress_description(
-        factor_name, 
-        factor_display, 
+        factor_name,
+        factor_display,
         factor_display_length
         ))
     for metric_index, metric in enumerate(self.name()):
-      if metric_has_data[metric_index]:
-        for reduction_type in self.__getattribute__(metric):
-          if reduced_metric_display == 'capitalize':
-            name = metric+str(reduction_type).capitalize()
-          elif reduced_metric_display == 'underscore':
-            name = metric+'_'+reduction_type
-          else:
-            print(f'''Unrecognized reduced_metric_display value. \
-            Should be \'capitalize\' or \'underscore\'. Got:{reduced_metric_display}''')
-            raise ValueError
-          column_header.append(eu.compress_description(name, metric_display, metric_display_length))
+      if self.__getattribute__(metric)['percent']:
+        metric+=(' %')
+      column_header.append(eu.compress_description(metric, metric_display, metric_display_length))
     return column_header
 
   def name(

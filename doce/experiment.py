@@ -145,8 +145,7 @@ class Experiment():
     for field, value in description.items():
       self.__setattr__(field, value)
 
-
-
+    self.__setattr__('metric', doce.Metric())
 
   def __setattr__(
     self,
@@ -662,9 +661,32 @@ class Experiment():
     self._plan = getattr(self, name)
     self._plans.append(name)
 
-  def set_metrics(self, **kwargs):
-    self.__setattr__('metric', doce.Metric(**kwargs))
+  def set_metric(self, 
+    name = None,
+    output = None,
+    func = np.mean,
+    percent=False,
+    higher_the_better=False,
+    significance=False
+    ):
 
+    if name is None:
+      raise 'A metric must of a name.'
+    if not isinstance(name, str):
+      raise 'A metric name must be a string.'
+
+    if output is None:
+      output = name
+
+    self.metric.__setattr__(name, {
+      'output':output,
+      'func':func,
+      'percent':percent,
+      'higher_the_better':higher_the_better,
+      'significance': significance
+      })
+
+  
   def default(self, plan='', factor='', modality=''):
     getattr(self, plan).default(factor, modality)
 

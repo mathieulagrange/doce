@@ -43,7 +43,7 @@ In a .py file, ideally named after the name of your experiment, you have to impl
     :linenos:
 
     # define the doce environnment
-    def set(args):
+    def set():
       # define the experiment
       experiment = doce.Experiment(
         name = 'demo',
@@ -66,7 +66,7 @@ In *doce*, the parametrization of the processing code is called a *setting*. Eac
 .. code-block:: python
     :linenos:
 
-    def set(args):
+    def set():
       ...
       # set the plan (factor : modalities)
       experiment.addPlan('plan',
@@ -238,7 +238,7 @@ To do so, we have to add some lines to the set function:
 .. code-block:: python
     :linenos:
 
-    def set(args):
+    def set():
       ...
       # set the metrics
       experiment.setMetrics(

@@ -8,7 +8,7 @@ if __name__ == "__main__":
   doce.cli.main()
 
 # define the doce environnment
-def set(args=None):
+def set():
   # define the experiment
   experiment = doce.Experiment(
     name = 'demo',
@@ -28,12 +28,25 @@ def set(args=None):
     dropout = [0, 1]
   )
   # set the metrics
-  experiment.set_metrics(
-    # the average and the standard deviation of the accuracy are expressed in percents (+ specifies a higher-the-better metric)
-    accuracy = ['mean%+', 'std%'],
-    # the duration is averaged over folds (* requests statistical analysis, - specifies a lower-the-better metric)
-    duration = ['mean*-']
-  )
+  experiment.set_metric(
+    name = 'accuracy',
+    percent=True,
+    higher_the_better= True,
+    significance = True
+    )
+
+  experiment.set_metric(
+    name = 'acc_std',
+    output = 'accuracy',
+    func = np.std,
+    percent=True
+    )
+
+  experiment.set_metric(
+    name = 'duration',
+    higher_the_better= False
+    ) 
+
   return experiment
 
 def step(setting, experiment):
