@@ -667,14 +667,16 @@ class Experiment():
     func = np.mean,
     percent=False,
     higher_the_better=False,
-    significance=False
+    significance=False,
+    precision=None
     ):
 
     if name is None:
       raise 'A metric must of a name.'
     if not isinstance(name, str):
       raise 'A metric name must be a string.'
-
+    if precision is None:
+      precision = self._display.metric_precision
     if output is None:
       output = name
 
@@ -683,7 +685,8 @@ class Experiment():
       'func':func,
       'percent':percent,
       'higher_the_better':higher_the_better,
-      'significance': significance
+      'significance': significance,
+      'precision':precision
       })
 
   

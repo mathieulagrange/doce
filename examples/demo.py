@@ -32,7 +32,8 @@ def set():
     name = 'accuracy',
     percent=True,
     higher_the_better= True,
-    significance = True
+    significance = True,
+    precision = 10
     )
 
   experiment.set_metric(
