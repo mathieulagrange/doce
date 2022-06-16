@@ -114,7 +114,10 @@ class Metric():
           reduction_type=self.__getattribute__(metric)
           reduced_metrics[nb_reduced_metrics] = True
           nb_reduced_metrics+=1
-          row.append(self.reduce_metric(data, getattr(self, metric)))
+          value = reduction_type['func'](data)
+          if reduction_type['percent']:
+            value *= 100
+          row.append(value)
           if reduction_type['significance']:
             raw_data_row.append(data)
         else:
@@ -186,6 +189,9 @@ class Metric():
 
     """
     import tables as tb
+    import warnings
+    from tables import NaturalNameWarning
+    warnings.filterwarnings('ignore', category=NaturalNameWarning)
 
     table = []
     raw_data = []
@@ -226,10 +232,10 @@ class Metric():
               raw_data_row.append(np.nan)
             nb_reduced_metrics+=1
           else:
-            row.append(
-              self.reduce_metric(np.array(data), 
-              reduction_type)
-              )
+            value = reduction_type['func'](np.array(data))
+            if reduction_type['percent']:
+              value *= 100
+            row.append(value)
         if row and not all(np.isnan(c) for c in row):
           for factor_name in reversed(settings.factors()):
             row.insert(0, setting.__getattribute__(factor_name))
@@ -245,28 +251,6 @@ class Metric():
       do_testing
       )
     return (table, metric_has_data, reduced_metrics, p_values)
-
-  def reduce_metric(
-    self,
-    data,
-    metric
-    ):
-    """Apply reduction directive to an output data after potentially pruning
-    non wanted items.
-
-    Parameters
-    ----------
-
-    data : numpy array
-      Array to be reduced.
-
-    reduction_type : function
-      reduction to be applied to the data vector. 
-    """
-    value = metric['func'](data)
-    if metric['percent']:
-      value *= 100
-    return value
 
   def reduce(
     self,
@@ -598,9 +582,13 @@ class Metric():
     >>> h5.close()
     """
     import tables as tb
+    import warnings
+    from tables import NaturalNameWarning
+    warnings.filterwarnings('ignore', category=NaturalNameWarning)
 
     if not setting_encoding:
-      setting_encoding={'factor_separator':'_', 'modality_separator':'_'}
+      setting_encoding={}
+    #   setting_encoding={'factor_separator':'_', 'modality_separator':'_'}
     group_name = setting.identifier(**setting_encoding)
     # print(group_name)
     if not file_id.__contains__('/'+group_name):

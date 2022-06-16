@@ -437,7 +437,10 @@ class Plan():
     please see its documentation for usage.
     """
     import tables as tb
-
+    import warnings
+    from tables import NaturalNameWarning
+    warnings.filterwarnings('ignore', category=NaturalNameWarning)
+    
     if not setting_encoding:
       setting_encoding = {'factor_separator':'_', 'modality_separator':'_'}
 

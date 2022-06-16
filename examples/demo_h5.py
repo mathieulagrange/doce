@@ -19,23 +19,36 @@ def set():
   )
 
 # set acces paths (here only storage is needed)
-  experiment.setPath('output', '/tmp/'+experiment.name+'.h5')
+  experiment.set_path('output', '/tmp/'+experiment.name+'.h5')
   # set some non varying parameters (here the number of cross validation folds)
   experiment.n_cross_validation_folds = 10
   # set the plan (factor : modalities)
-  experiment.addPlan('plan',
+  experiment.add_plan('plan',
     nn_type = ['cnn', 'lstm'],
     n_layers = np.arange(2, 10, 3),
     learning_rate = [0.001, 0.0001, 0.00001],
     dropout = [0, 1]
   )
-  # set the metrics
-  experiment.setMetrics(
-    # the average and the standard deviation of the accuracy are expressed in percents (+ specifies a higher-the-better metric)
-    accuracy = ['mean%+', 'std%'],
-    # the duration is averaged over folds (* requests statistical analysis, - specifies a lower-the-better metric)
-    duration = ['mean*-']
-  )
+    # set the metrics
+  experiment.set_metric(
+    name = 'accuracy',
+    percent=True,
+    higher_the_better= True,
+    significance = True,
+    precision = 10
+    )
+
+  experiment.set_metric(
+    name = 'acc_std',
+    output = 'accuracy',
+    func = np.std,
+    percent=True
+    )
+
+  experiment.set_metric(
+    name = 'duration',
+    higher_the_better= False
+    ) 
   return experiment
 
 def step(setting, experiment):
@@ -47,12 +60,11 @@ def step(setting, experiment):
   # storage of outputs (the string between _ and .npy must be the name of the metric defined in the set function)
 
   h5 = tb.open_file(experiment.path.output, mode='a')
-  sg = experiment.metric.addSettingGroup(h5, setting, metricDimension = {'accuracy':experiment.n_cross_validation_folds})
+  sg = experiment.metric.add_setting_group(h5, setting, metric_dimension = {'accuracy':experiment.n_cross_validation_folds})
 
   # write to statically allocated array
   for ai, a in enumerate(accuracy):
     sg.accuracy[ai] = a
   # write to dynamically allocated array
   sg.duration.append(duration)
-
   h5.close()

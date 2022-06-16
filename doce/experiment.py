@@ -882,6 +882,9 @@ def get_from_path(
   """
 
   import tables as tb
+  import warnings
+  from tables import NaturalNameWarning
+  warnings.filterwarnings('ignore', category=NaturalNameWarning)
 
   setting_metric = []
   setting_descriptions = []

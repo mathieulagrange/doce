@@ -105,7 +105,7 @@ def main():
       action='store_true'
   )
   parser.add_argument(
-      '-E',
+      '-e',
       '--export',
       type=str,
       help=r'Export the display of reduced metrics \
