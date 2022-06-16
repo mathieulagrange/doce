@@ -502,6 +502,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
   c_minus = []
   c_no_minus = []
   c_metric = []
+  c_metric_precision = []
   bool_selector = []
   c_int = {}
   precision_format = {}
@@ -512,9 +513,11 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
       c_metric.append(column)
       precision = getattr(experiment.metric, column.split(' ')[0])['precision']
       if '%' in column:
+        c_metric_precision.append(precision-2)
         precision_format[column] = f'{{:0.{str(precision-2)}f}}'
         c_percent.append(column)
       else:
+        c_metric_precision.append(precision)
         precision_format[column] = f'{{:0.{str(precision)}f}}'
         c_no_percent.append(column)
       if column[-1] == '-':
@@ -522,15 +525,8 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
       else:
         c_no_minus.append(column)
 
-  d_percent = pd.Series([experiment._display.metric_precision - 2]
-                       * len(c_percent), index=c_percent, dtype=np.intc)
-  d_no_percent = pd.Series([experiment._display.metric_precision]
-                           * len(c_no_percent), index=c_no_percent, dtype=np.intc)
-  print('-----------')
-  print(d_percent)
-  print(d_no_percent)
-  print('-----------')
-  data_frame = data_frame.round(d_percent).round(d_no_percent)
+  d_precision = pd.Series(c_metric_precision, index=c_metric, dtype=np.intc)
+  data_frame = data_frame.round(d_precision) # d_percent).round(d_no_percent)
 
   for column in columns:
     if isinstance(data_frame[column][0], float):
