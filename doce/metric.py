@@ -207,28 +207,26 @@ class Metric():
       row = []
       raw_data_row = []
       nb_reduced_metrics = 0
-      if verbose:
-        print('Seeking Group '+setting.identifier(**setting_encoding))
+      
       if h5_fid.root.__contains__(setting.identifier(**setting_encoding)):
+        if verbose:
+          print('Found setting '+setting.identifier(**setting_encoding))
         setting_group = h5_fid.root._f_get_child(setting.identifier(**setting_encoding))
-        # print(setting_group._v_name)
-        # print(setting.identifier(**setting_encoding))
         for metric_index, metric in enumerate(self.name()):
           reduction_type=self.__getattribute__(metric)
-          # value = np.nan
           no_data = True
-          if setting_group.__contains__(metric):
-            data = setting_group._f_get_child(metric)
+          if setting_group.__contains__(reduction_type['output']):
+            data = setting_group._f_get_child(reduction_type['output'])
             if data.shape[0] > 0:
               metric_has_data[metric_index] = True
               reduced_metrics[nb_reduced_metrics] = True
               nb_reduced_metrics+=1
               no_data = False
-            if isinstance(reduction_type, str) and '*' in reduction_type:
+            if reduction_type['significance']:
               raw_data_row.append(np.array(data))
           if no_data:
             row.append(np.nan)
-            if isinstance(reduction_type, str) and '*' in reduction_type:
+            if reduction_type['significance']:
               raw_data_row.append(np.nan)
             nb_reduced_metrics+=1
           else:
@@ -241,6 +239,8 @@ class Metric():
             row.insert(0, setting.__getattribute__(factor_name))
         table.append(row)
         raw_data.append(raw_data_row)
+      elif verbose:
+        print('** Not found setting '+setting.identifier(**setting_encoding))
     h5_fid.close()
     p_values = significance(
       settings,
@@ -440,7 +440,8 @@ class Metric():
 
     if self.name():
       if path.endswith('.h5'):
-        setting_encoding = {'factor_separator':'_', 'modality_separator':'_'}
+        # setting_encoding = {'factor_separator':'_', 'modality_separator':'_'}
+        setting_encoding = {}
         modification_time_stamp = []
         (setting_description,
         metric_has_data,

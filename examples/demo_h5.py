@@ -35,14 +35,15 @@ def set():
     percent=True,
     higher_the_better= True,
     significance = True,
-    precision = 10
+    precision = 4
     )
 
   experiment.set_metric(
     name = 'acc_std',
     output = 'accuracy',
     func = np.std,
-    percent=True
+    percent=True,
+    precision = 4
     )
 
   experiment.set_metric(
