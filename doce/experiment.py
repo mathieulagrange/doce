@@ -668,7 +668,9 @@ class Experiment():
     percent=False,
     higher_the_better=False,
     significance=False,
-    precision=None
+    precision=None,
+    description = '',
+    unit = ''
     ):
 
     if name is None:
@@ -681,12 +683,15 @@ class Experiment():
       output = name
 
     self.metric.__setattr__(name, {
+      'name':name,
       'output':output,
       'func':func,
       'percent':percent,
       'higher_the_better':higher_the_better,
       'significance': significance,
-      'precision':precision
+      'precision':precision,
+      'description':description,
+      'unit':unit
       })
 
   
@@ -901,25 +906,26 @@ class Experiment():
     else:
       setting_group = file_id.root._f_get_child(group_name)
     for metric in self.metric.name():
-      if hasattr(self.metric._description, metric):
-        description = getattr(self.metric._description, metric)
+      output = getattr(self.metric, metric)['output']
+      if getattr(self.metric, metric)['description']:
+        description = getattr(self.metric, metric)['description']
       else:
-        description = metric
+        description = output
 
-      if hasattr(self.metric._unit, metric):
-        description += ' in ' + getattr(self.metric._unit, metric)
+      if getattr(self.metric, metric)['unit']:
+        description += ' in ' + getattr(self.metric, metric)['unit']
 
-      if output_dimension and metric in output_dimension:
-        if not setting_group.__contains__(metric):
+      if output_dimension and output in output_dimension:
+        if not setting_group.__contains__(output):
           file_id.create_array(
             setting_group,
-            metric,
-            np.zeros((output_dimension[metric]))*np.nan,
+            output,
+            np.zeros((output_dimension[output]))*np.nan,
             description)
       else:
-        if setting_group.__contains__(metric):
-          setting_group._f_get_child(metric)._f_remove()
-        file_id.create_earray(setting_group, metric, tb.Float64Atom(), (0,), description)
+        if setting_group.__contains__(output):
+          setting_group._f_get_child(output)._f_remove()
+        file_id.create_earray(setting_group, output, tb.Float64Atom(), (0,), description)
 
     return setting_group
 

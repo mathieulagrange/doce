@@ -346,7 +346,10 @@ class Metric():
     >>> experiment.name = 'example'
     >>> experiment.set_path('output', '/tmp/'+experiment.name+'/', force=True)
     >>> experiment.add_plan('plan', f1 = [1, 2], f2 = [1, 2, 3])
-    >>> experiment.set_metrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
+    >>> experiment.set_metric(name = 'm1_mean', output = 'm1', func = np.mean)
+    >>> experiment.set_metric(name = 'm1_std', output = 'm1', func = np.std)
+    >>> experiment.set_metric(name = 'm2_min', output = 'm2', func = np.min)
+    >>> experiment.set_metric(name = 'm2_argmin', output = 'm2', func = np.argmin)
     >>> def process(setting, experiment):
     ...   metric1 = setting.f1+setting.f2+np.random.randn(100)
     ...   metric2 = setting.f1*setting.f2*np.random.randn(100)
@@ -366,7 +369,7 @@ class Metric():
     >>> print(constant_setting_description)
     f1: 2
     >>> print(df)
-       f2  m1Mean  m1Std  m2Min  m2Argmin
+      f2  m1_mean  m1_std  m2_min  m2_argmin
     0   1    2.87   1.00  -4.49        35
     1   2    3.97   0.93  -8.19        13
     2   3    5.00   0.91 -12.07        98
@@ -384,12 +387,15 @@ class Metric():
     >>> experiment.name = 'example'
     >>> experiment.set_path('output', '/tmp/'+experiment.name+'.h5', force=True)
     >>> experiment.add_plan('plan', f1 = [1, 2], f2 = [1, 2, 3])
-    >>> experiment.set_metrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
+    >>> experiment.set_metric(name = 'm1_mean', output = 'm1', func = np.mean)
+    >>> experiment.set_metric(name = 'm1_std', output = 'm1', func = np.std)
+    >>> experiment.set_metric(name = 'm2_min', output = 'm2', func = np.min)
+    >>> experiment.set_metric(name = 'm2_argmin', output = 'm2', func = np.argmin)
     >>> def process(setting, experiment):
     ...   h5 = tb.open_file(experiment.path.output, mode='a')
     ...   setting_group = experiment.add_setting_group(
-    ...     h5, 
-    ...     setting, 
+    ...     h5,
+    ...     setting,
     ...     output_dimension = {'m1':100, 'm2':100}
     ...   )
     ...   setting_group.m1[:] = setting.f1+setting.f2+np.random.randn(100)
@@ -402,24 +408,24 @@ class Metric():
     Last modif.: '...'
         Object Tree:
     / (RootGroup) ''
-    /f1_1_f2_1 (Group) 'f1=1+f2=1'
-    /f1_1_f2_1/m1 (Array(100,)) 'm1'
-    /f1_1_f2_1/m2 (EArray(100,)) 'm2'
-    /f1_1_f2_2 (Group) 'f1=1+f2=2'
-    /f1_1_f2_2/m1 (Array(100,)) 'm1'
-    /f1_1_f2_2/m2 (EArray(100,)) 'm2'
-    /f1_1_f2_3 (Group) 'f1=1+f2=3'
-    /f1_1_f2_3/m1 (Array(100,)) 'm1'
-    /f1_1_f2_3/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_1 (Group) 'f1=2+f2=1'
-    /f1_2_f2_1/m1 (Array(100,)) 'm1'
-    /f1_2_f2_1/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_2 (Group) 'f1=2+f2=2'
-    /f1_2_f2_2/m1 (Array(100,)) 'm1'
-    /f1_2_f2_2/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_3 (Group) 'f1=2+f2=3'
-    /f1_2_f2_3/m1 (Array(100,)) 'm1'
-    /f1_2_f2_3/m2 (EArray(100,)) 'm2'
+    /f1=1+f2=1 (Group) 'f1=1+f2=1'
+    /f1=1+f2=1/m1 (Array(100,)) 'm1'
+    /f1=1+f2=1/m2 (Array(100,)) 'm2'
+    /f1=1+f2=2 (Group) 'f1=1+f2=2'
+    /f1=1+f2=2/m1 (Array(100,)) 'm1'
+    /f1=1+f2=2/m2 (Array(100,)) 'm2'
+    /f1=1+f2=3 (Group) 'f1=1+f2=3'
+    /f1=1+f2=3/m1 (Array(100,)) 'm1'
+    /f1=1+f2=3/m2 (Array(100,)) 'm2'
+    /f1=2+f2=1 (Group) 'f1=2+f2=1'
+    /f1=2+f2=1/m1 (Array(100,)) 'm1'
+    /f1=2+f2=1/m2 (Array(100,)) 'm2'
+    /f1=2+f2=2 (Group) 'f1=2+f2=2'
+    /f1=2+f2=2/m1 (Array(100,)) 'm1'
+    /f1=2+f2=2/m2 (Array(100,)) 'm2'
+    /f1=2+f2=3 (Group) 'f1=2+f2=3'
+    /f1=2+f2=3/m1 (Array(100,)) 'm1'
+    /f1=2+f2=3/m2 (Array(100,)) 'm2'
     >>> h5.close()
 
     >>> (setting_description,
@@ -434,7 +440,7 @@ class Metric():
     >>> print(constant_setting_description)
     f1: 1
     >>> print(df)
-      f2  m1Mean  m1Std  m2Min  m2Argmin
+      f2  m1_mean  m1_std  m2_min  m2_argmin
     0   1    2.06   1.01  -2.22        83
     1   2    2.94   0.95  -5.32        34
     2   3    3.99   1.04  -9.14        89
