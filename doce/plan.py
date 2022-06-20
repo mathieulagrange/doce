@@ -9,7 +9,7 @@ import glob
 import logging
 import time
 from itertools import groupby
-from subprocess import call
+import subprocess
 import numpy as np
 import doce.util as eu
 import doce.setting as es
@@ -440,9 +440,12 @@ class Plan():
     import warnings
     from tables import NaturalNameWarning
     warnings.filterwarnings('ignore', category=NaturalNameWarning)
-    
+
     if not setting_encoding:
-      setting_encoding = {'factor_separator':'_', 'modality_separator':'_'}
+      # setting_encoding = {'factor_separator':'_', 'modality_separator':'_'}
+      setting_encoding = {}
+
+    changed = False
 
     if archive_path:
       print(path)
@@ -458,30 +461,56 @@ class Plan():
         verbose=verbose)
     if not keep:
       h_5 = tb.open_file(path, mode='a')
+      groups = []
       if reverse:
         ids = [setting.identifier(**setting_encoding) for setting in self]
         for group in h_5.iter_nodes('/'):
           if group._v_name not in ids:
-            h_5.remove_node(h_5.root, group._v_name, recursive=True)
+            groups.append(group._v_name)
       else:
         for setting in self:
           group_name = setting.identifier(**setting_encoding)
           if h_5.root.__contains__(group_name):
-            h_5.remove_node(h_5.root, group_name, recursive=True)
+            groups.append(group_name)
+      print(f'About to remove {len(groups)} settings.')
+      if not groups:
+        print('No settings to remove.')
+        return
+      if eu.query_yes_no('List them ?'):
+        [print(g) for g in groups]
+      if eu.query_yes_no('Proceed to removal ?'):
+        changed = True
+        if reverse:
+          ids = [setting.identifier(**setting_encoding) for setting in self]
+          for group in h_5.iter_nodes('/'):
+            if group._v_name not in ids:
+              h_5.remove_node(h_5.root, group._v_name, recursive=True)
+        else:
+          for setting in self:
+            group_name = setting.identifier(**setting_encoding)
+            if h_5.root.__contains__(group_name):
+              h_5.remove_node(h_5.root, group_name, recursive=True)
+      
       h_5.close()
-      if verbose:
-        print('repacking')
+ 
       # repack
-      outfilename = path+'Tmp'
-      command = ["ptrepack", "-o", "--chunkshape=auto", "--propindexes", path, outfilename]
-      if verbose:
-        print('Original size is %.2f_mi_b' % (float(os.stat(path).st_size)/1024**2))
-      if call(command) != 0:
-        print('Unable to repack. Is ptrepack installed ?')
-      else:
-        if verbose:
-          print('Repacked size is %.2f_mi_b' % (float(os.stat(outfilename).st_size)/1024**2))
-        os.rename(outfilename, path)
+      if changed:
+        outfilename = path+'Tmp'
+        command = f'ptrepack -o --chunkshape=auto --propindexes {path} {outfilename}'
+        print('Original size is %.2f MB' % (float(os.stat(path).st_size)/1024**2))
+        print('Repacking ... (requires ptrepack utility)')
+
+        p = subprocess.Popen(
+            command,
+            shell=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        if os.path.exists(outfilename):
+          print('Repacked size is %.2f MB' % (float(os.stat(outfilename).st_size)/1024**2))
+          os.rename(outfilename, path)
+        else:
+          print('Call to ptrepack failed. Is ptrepack available ?')
 
 
   def clean_data_sink(
@@ -505,7 +534,7 @@ class Plan():
       setting_encoding = {}
     path = os.path.expanduser(path)
     if path.endswith('.h5'):
-      setting_encoding={'factor_separator':'_', 'modality_separator':'_'}
+      setting_encoding={} #'factor_separator':'_', 'modality_separator':'_'}
       self.clean_h5(path, reverse, force, keep, setting_encoding, archive_path, verbose)
     else:
       file_names = []
