@@ -207,28 +207,29 @@ class Metric():
       row = []
       raw_data_row = []
       nb_reduced_metrics = 0
-      if verbose:
-        print('Seeking Group '+setting.identifier(**setting_encoding))
-      if h5_fid.root.__contains__(setting.identifier(**setting_encoding)):
+      
+      if not h5_fid.root.__contains__(setting.identifier(**setting_encoding)):
+        if verbose:
+          print('** Not found Group '+setting.identifier(**setting_encoding))
+      else:
+        if verbose:
+          print('Found Group '+setting.identifier(**setting_encoding))
         setting_group = h5_fid.root._f_get_child(setting.identifier(**setting_encoding))
-        # print(setting_group._v_name)
-        # print(setting.identifier(**setting_encoding))
         for metric_index, metric in enumerate(self.name()):
           reduction_type=self.__getattribute__(metric)
-          # value = np.nan
           no_data = True
-          if setting_group.__contains__(metric):
-            data = setting_group._f_get_child(metric)
+          if setting_group.__contains__(reduction_type['output']):
+            data = setting_group._f_get_child(reduction_type['output'])
             if data.shape[0] > 0:
               metric_has_data[metric_index] = True
               reduced_metrics[nb_reduced_metrics] = True
               nb_reduced_metrics+=1
               no_data = False
-            if isinstance(reduction_type, str) and '*' in reduction_type:
+            if reduction_type['significance']:
               raw_data_row.append(np.array(data))
           if no_data:
             row.append(np.nan)
-            if isinstance(reduction_type, str) and '*' in reduction_type:
+            if reduction_type['significance']:
               raw_data_row.append(np.nan)
             nb_reduced_metrics+=1
           else:
@@ -440,7 +441,7 @@ class Metric():
 
     if self.name():
       if path.endswith('.h5'):
-        setting_encoding = {'factor_separator':'_', 'modality_separator':'_'}
+        setting_encoding = {} #'factor_separator':'_', 'modality_separator':'_'}
         modification_time_stamp = []
         (setting_description,
         metric_has_data,
@@ -766,6 +767,8 @@ def significance(
   do_testing):
 
   from scipy import stats
+
+  print(raw_data)
 
   p_values = np.zeros((len(table),len(reduced_metrics)))
   metric_stat_index = 0

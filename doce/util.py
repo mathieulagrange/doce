@@ -3,6 +3,45 @@
 import sys
 import re
 
+def special_caracter_natural_naming(modality):
+  modifier = {' ': 'space',
+              '!': 'exclamationmark',
+              '"': 'doublequote',
+              '#': 'sharp',
+              '$': 'dollar',
+              '%': 'percent',
+              '&': 'ampersand',
+              '\'': 'simplequote',
+              '(': 'leftparenthesis',
+              ')': 'rightparenthesis',
+              '*': 'asterisk',
+              '+': 'plus',
+              ',': 'comma',
+              '-': 'dash',
+              '.': 'dot',
+              '/': 'slash',
+              ':': 'colon',
+              ';': 'semicolon',
+              '<': 'less',
+              '=': 'equal',
+              '>': 'greater',
+              '?': 'questionmark',
+              '@': 'arobace',
+              '[': 'leftbracket',
+              '\\': 'backslash',
+              ']': 'rightbracket',
+              '^': 'caret',
+              '_': 'underscore',
+              '`': 'acute',
+              '{': 'leftbrace',
+              '|': 'pipe',
+              '}': 'rightbrace',
+              '~': 'tilde'
+              }
+  for key, value in modifier.items():
+    modality = modality.replace(key, value)
+  return modality
+
 def constant_column(
   table=None
 ):
