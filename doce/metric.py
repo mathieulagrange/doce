@@ -387,10 +387,10 @@ class Metric():
     >>> experiment.set_metrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
     >>> def process(setting, experiment):
     ...   h5 = tb.open_file(experiment.path.output, mode='a')
-    ...   setting_group = experiment.metric.add_setting_group(
+    ...   setting_group = experiment.add_setting_group(
     ...     h5, 
     ...     setting, 
-    ...     metric_dimension = {'m1':100, 'm2':100}
+    ...     output_dimension = {'m1':100, 'm2':100}
     ...   )
     ...   setting_group.m1[:] = setting.f1+setting.f2+np.random.randn(100)
     ...   setting_group.m2[:] = setting.f1*setting.f2*np.random.randn(100)
@@ -495,131 +495,7 @@ class Metric():
         p_values)
     return ([], [], '', 0, [], [])
 
-  def add_setting_group(
-    self,
-    file_id,
-    setting,
-    metric_dimension=None,
-    setting_encoding=None
-    ):
-    """adds a group to the root of a valid py_tables Object in order to
-    store the metrics corresponding to the specified setting.
-
-    adds a group to the root of a valid py_tables Object in order to
-    store the metrics corresponding to the specified setting.
-    The encoding of the setting is used to set the name of the group.
-    For each metric, a Floating point Pytable Array is created.
-    For any metric, if no dimension is provided in the metric_dimension dict,
-    an expandable array is instantiated. If a dimension is available, 
-    a static size array is instantiated.
-
-    Parameters
-    ----------
-
-    file_id: py_tables file Object
-    a valid py_tables file Object, leading to an .h5 file opened with writing permission.
-
-    setting: :class:`doce.Plan`
-    an instantiated Factor object describing a setting.
-
-    metric_dimension: dict
-    for metrics for which the dimensionality of the storage vector is known,
-    each key of the dict is a valid metric name and each corresponding value
-    is the size of the storage vector.
-
-    setting_encoding : dict
-    Encoding of the setting. See doce.Plan.id for references.
-
-    Returns
-    -------
-
-    setting_group: a Pytables Group
-      where metrics corresponding to the specified setting are stored.
-
-    Examples
-    --------
-
-    >>> import doce
-    >>> import numpy as np
-    >>> import tables as tb
-
-    >>> experiment = doce.experiment.Experiment()
-    >>> experiment.name = 'example'
-    >>> experiment.set_path('output', '/tmp/'+experiment.name+'.h5')
-    >>> experiment.add_plan('plan', f1 = [1, 2], f2 = [1, 2, 3])
-    >>> experiment.set_metrics (m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
-
-    >>> def process(setting, experiment):
-    ...  h5 = tb.open_file(experiment.path.output, mode='a')
-    ...  sg = experiment.metric.add_setting_group(h5, setting, metric_dimension = {'m1':100})
-    ...  sg.m1[:] = setting.f1+setting.f2+np.random.randn(100)
-    ...  sg.m2.append(setting.f1*setting.f2*np.random.randn(100))
-    ...  h5.close()
-    >>> nb_failed = experiment.perform([], process, progress='')
-
-    >>> h5 = tb.open_file(experiment.path.output, mode='r')
-    >>> print(h5)
-    /tmp/example.h5 (File) ''
-    Last modif.: '...'
-    Object Tree:
-    / (RootGroup) ''
-    /f1_1_f2_1 (Group) 'f1=1+f2=1'
-    /f1_1_f2_1/m1 (Array(100,)) 'm1'
-    /f1_1_f2_1/m2 (EArray(100,)) 'm2'
-    /f1_1_f2_2 (Group) 'f1=1+f2=2'
-    /f1_1_f2_2/m1 (Array(100,)) 'm1'
-    /f1_1_f2_2/m2 (EArray(100,)) 'm2'
-    /f1_1_f2_3 (Group) 'f1=1+f2=3'
-    /f1_1_f2_3/m1 (Array(100,)) 'm1'
-    /f1_1_f2_3/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_1 (Group) 'f1=2+f2=1'
-    /f1_2_f2_1/m1 (Array(100,)) 'm1'
-    /f1_2_f2_1/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_2 (Group) 'f1=2+f2=2'
-    /f1_2_f2_2/m1 (Array(100,)) 'm1'
-    /f1_2_f2_2/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_3 (Group) 'f1=2+f2=3'
-    /f1_2_f2_3/m1 (Array(100,)) 'm1'
-    /f1_2_f2_3/m2 (EArray(100,)) 'm2'
-
-    >>> h5.close()
-    """
-    import tables as tb
-    import warnings
-    from tables import NaturalNameWarning
-    warnings.filterwarnings('ignore', category=NaturalNameWarning)
-
-    if not setting_encoding:
-      setting_encoding={}
-    #   setting_encoding={'factor_separator':'_', 'modality_separator':'_'}
-    group_name = setting.identifier(**setting_encoding)
-    # print(group_name)
-    if not file_id.__contains__('/'+group_name):
-      setting_group = file_id.create_group('/', group_name, str(setting))
-    else:
-      setting_group = file_id.root._f_get_child(group_name)
-    for metric in self.name():
-      if hasattr(self._description, metric):
-        description = getattr(self._description, metric)
-      else:
-        description = metric
-
-      if hasattr(self._unit, metric):
-        description += ' in ' + getattr(self._unit, metric)
-
-      if metric_dimension and metric in metric_dimension:
-        if not setting_group.__contains__(metric):
-          file_id.create_array(
-            setting_group,
-            metric,
-            np.zeros((metric_dimension[metric]))*np.nan,
-            description)
-      else:
-        if setting_group.__contains__(metric):
-          setting_group._f_get_child(metric)._f_remove()
-        file_id.create_earray(setting_group, metric, tb.Float64Atom(), (0,), description)
-
-    return setting_group
+  
 
   def get_column_header(
     self,

@@ -29,9 +29,11 @@ def set():
     n_layers = [2, 4, 8],
     dropout = [0, 1]
   )
-  # set the metrics
-  experiment.set_metrics(
-    accuracy = ['mean%']
+  experiment.set_metric(
+    name = 'accuracy',
+    percent=True,
+    higher_the_better= True,
+    significance = True
   )
   return experiment
 

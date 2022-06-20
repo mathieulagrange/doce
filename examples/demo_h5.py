@@ -62,7 +62,7 @@ def step(setting, experiment):
   # storage of outputs (the string between _ and .npy must be the name of the metric defined in the set function)
 
   h5 = tb.open_file(experiment.path.output, mode='a')
-  sg = experiment.metric.add_setting_group(h5, setting, metric_dimension = {'accuracy':experiment.n_cross_validation_folds})
+  sg = experiment.add_setting_group(h5, setting, output_dimension = {'accuracy':experiment.n_cross_validation_folds})
 
   # write to statically allocated array
   for ai, a in enumerate(accuracy):

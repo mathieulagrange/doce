@@ -25,4 +25,5 @@ ax.set_xlabel('Accuracy')
 ax.set_title(header)
 
 fig.tight_layout()
-plt.show()
+plt.savefig('metric_display.png')
+print('The figure is available: metric_display.png')
