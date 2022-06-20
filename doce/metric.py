@@ -208,12 +208,18 @@ class Metric():
       raw_data_row = []
       nb_reduced_metrics = 0
       
+<<<<<<< HEAD
       if not h5_fid.root.__contains__(setting.identifier(**setting_encoding)):
         if verbose:
           print('** Not found Group '+setting.identifier(**setting_encoding))
       else:
         if verbose:
           print('Found Group '+setting.identifier(**setting_encoding))
+=======
+      if h5_fid.root.__contains__(setting.identifier(**setting_encoding)):
+        if verbose:
+          print('Found setting '+setting.identifier(**setting_encoding))
+>>>>>>> eec02a3d3c72a9b17d376f7088cea72a0087a2c1
         setting_group = h5_fid.root._f_get_child(setting.identifier(**setting_encoding))
         for metric_index, metric in enumerate(self.name()):
           reduction_type=self.__getattribute__(metric)
@@ -242,6 +248,8 @@ class Metric():
             row.insert(0, setting.__getattribute__(factor_name))
         table.append(row)
         raw_data.append(raw_data_row)
+      elif verbose:
+        print('** Not found setting '+setting.identifier(**setting_encoding))
     h5_fid.close()
     p_values = significance(
       settings,
@@ -441,7 +449,12 @@ class Metric():
 
     if self.name():
       if path.endswith('.h5'):
+<<<<<<< HEAD
         setting_encoding = {} #'factor_separator':'_', 'modality_separator':'_'}
+=======
+        # setting_encoding = {'factor_separator':'_', 'modality_separator':'_'}
+        setting_encoding = {}
+>>>>>>> eec02a3d3c72a9b17d376f7088cea72a0087a2c1
         modification_time_stamp = []
         (setting_description,
         metric_has_data,
