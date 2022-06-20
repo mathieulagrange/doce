@@ -425,7 +425,7 @@ class Plan():
     self,
     path,
     reverse=False,
-    force=False,
+    force=True,
     keep=False,
     setting_encoding=None,
     archive_path='',
@@ -448,8 +448,6 @@ class Plan():
     changed = False
 
     if archive_path:
-      print(path)
-      print(archive_path)
       sh.copyfile(path, archive_path)
       self.clean_h5(
         path=archive_path,
@@ -459,6 +457,7 @@ class Plan():
         setting_encoding=setting_encoding,
         archive_path='',
         verbose=verbose)
+      print(f'Archived data should be available at: {archive_path}')
     if not keep:
       h_5 = tb.open_file(path, mode='a')
       groups = []
@@ -472,13 +471,14 @@ class Plan():
           group_name = setting.identifier(**setting_encoding)
           if h_5.root.__contains__(group_name):
             groups.append(group_name)
-      print(f'About to remove {len(groups)} settings.')
-      if not groups:
+      if not force:
+        print(f'About to remove {len(groups)} settings.')
+      if not force and not groups:
         print('No settings to remove.')
         return
-      if eu.query_yes_no('List them ?'):
+      if not force and eu.query_yes_no('List them ?'):
         [print(g) for g in groups]
-      if eu.query_yes_no('Proceed to removal ?'):
+      if force or eu.query_yes_no('Proceed to removal ?'):
         changed = True
         if reverse:
           ids = [setting.identifier(**setting_encoding) for setting in self]
@@ -497,17 +497,19 @@ class Plan():
       if changed:
         outfilename = path+'Tmp'
         command = f'ptrepack -o --chunkshape=auto --propindexes {path} {outfilename}'
-        print('Original size is %.2f MB' % (float(os.stat(path).st_size)/1024**2))
-        print('Repacking ... (requires ptrepack utility)')
+        if not force:
+          print('Original size is %.2f MB' % (float(os.stat(path).st_size)/1024**2))
+          print('Repacking ... (requires ptrepack utility)')
 
-        p = subprocess.Popen(
+        subprocess.Popen(
             command,
             shell=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
         if os.path.exists(outfilename):
-          print('Repacked size is %.2f MB' % (float(os.stat(outfilename).st_size)/1024**2))
+          if not force:
+            print('Repacked size is %.2f MB' % (float(os.stat(outfilename).st_size)/1024**2))
           os.rename(outfilename, path)
         else:
           print('Call to ptrepack failed. Is ptrepack available ?')

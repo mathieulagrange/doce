@@ -18,6 +18,7 @@ def set():
   )
 # set acces paths (here only storage is needed)
   experiment.set_path('output', '/tmp/'+experiment.name+'/', force=True)
+  experiment.set_path('archive', '/tmp/'+experiment.name+'_archive/', force=True)
   # set some non varying parameters (here the number of cross validation folds)
   experiment.n_cross_validation_folds = 10
   # set the plan (factor : modalities)

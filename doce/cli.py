@@ -304,7 +304,6 @@ def main():
           args.archive,
           experiment.selector,
           keep=True,
-          setting_encoding=experiment._setting_encoding,
           archive_path=experiment.path.archive,
           verbose=experiment.status.verbose
       )
