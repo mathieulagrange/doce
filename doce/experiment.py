@@ -575,7 +575,8 @@ class Experiment():
     >>> e=doce.Experiment()
     >>> e.set_path('output', '/tmp/test.h5')
     >>> e.add_plan('plan', factor1=[1, 3], factor2=[2, 4])
-    >>> e.set_metrics(sum = [''], mult = [''])
+    >>> e.set_metric(name = 'sum')
+    >>> e.set_metric(name = 'mult')
     >>> def my_function(setting, experiment):
     ...   h5 = tb.open_file(experiment.path.output, mode='a')
     ...   sg = experiment.add_setting_group(
@@ -591,18 +592,18 @@ class Experiment():
     Last modif.: '...'
     Object Tree:
     / (RootGroup) ''
-    /factor1_1_factor2_2 (Group) 'factor1=1+factor2=2'
-    /factor1_1_factor2_2/mult (Array(1,)) 'mult'
-    /factor1_1_factor2_2/sum (Array(1,)) 'sum'
-    /factor1_1_factor2_4 (Group) 'factor1=1+factor2=4'
-    /factor1_1_factor2_4/mult (Array(1,)) 'mult'
-    /factor1_1_factor2_4/sum (Array(1,)) 'sum'
-    /factor1_3_factor2_2 (Group) 'factor1=3+factor2=2'
-    /factor1_3_factor2_2/mult (Array(1,)) 'mult'
-    /factor1_3_factor2_2/sum (Array(1,)) 'sum'
-    /factor1_3_factor2_4 (Group) 'factor1=3+factor2=4'
-    /factor1_3_factor2_4/mult (Array(1,)) 'mult'
-    /factor1_3_factor2_4/sum (Array(1,)) 'sum'
+    /factor1=1+factor2=2 (Group) 'factor1=1+factor2=2'
+    /factor1=1+factor2=2/mult (Array(1,)) 'mult'
+    /factor1=1+factor2=2/sum (Array(1,)) 'sum'
+    /factor1=1+factor2=4 (Group) 'factor1=1+factor2=4'
+    /factor1=1+factor2=4/mult (Array(1,)) 'mult'
+    /factor1=1+factor2=4/sum (Array(1,)) 'sum'
+    /factor1=3+factor2=2 (Group) 'factor1=3+factor2=2'
+    /factor1=3+factor2=2/mult (Array(1,)) 'mult'
+    /factor1=3+factor2=2/sum (Array(1,)) 'sum'
+    /factor1=3+factor2=4 (Group) 'factor1=3+factor2=4'
+    /factor1=3+factor2=4/mult (Array(1,)) 'mult'
+    /factor1=3+factor2=4/sum (Array(1,)) 'sum'
     >>> h5.close()
 
     >>> e.clean_data_sink('output', [0], force=True)
@@ -612,12 +613,12 @@ class Experiment():
     Last modif.: '...'
     Object Tree:
     / (RootGroup) ''
-    /factor1_3_factor2_2 (Group) 'factor1=3+factor2=2'
-    /factor1_3_factor2_2/mult (Array(1,)) 'mult'
-    /factor1_3_factor2_2/sum (Array(1,)) 'sum'
-    /factor1_3_factor2_4 (Group) 'factor1=3+factor2=4'
-    /factor1_3_factor2_4/mult (Array(1,)) 'mult'
-    /factor1_3_factor2_4/sum (Array(1,)) 'sum'
+    /factor1=3+factor2=2 (Group) 'factor1=3+factor2=2'
+    /factor1=3+factor2=2/mult (Array(1,)) 'mult'
+    /factor1=3+factor2=2/sum (Array(1,)) 'sum'
+    /factor1=3+factor2=4 (Group) 'factor1=3+factor2=4'
+    /factor1=3+factor2=4/mult (Array(1,)) 'mult'
+    /factor1=3+factor2=4/sum (Array(1,)) 'sum'
     >>> h5.close()
 
     >>> e.clean_data_sink('output', [1, 1], force=True, reverse=True, wildcard='*mult*')
@@ -627,9 +628,9 @@ class Experiment():
     Last modif.: '...'
     Object Tree:
     / (RootGroup) ''
-    /factor1_3_factor2_4 (Group) 'factor1=3+factor2=4'
-    /factor1_3_factor2_4/mult (Array(1,)) 'mult'
-    /factor1_3_factor2_4/sum (Array(1,)) 'sum'
+    /factor1=3+factor2=4 (Group) 'factor1=3+factor2=4'
+    /factor1=3+factor2=4/mult (Array(1,)) 'mult'
+    /factor1=3+factor2=4/sum (Array(1,)) 'sum'
     >>> h5.close()
 
     Here, the same operations are conducted on a h5 file.
@@ -754,7 +755,10 @@ class Experiment():
     >>> experiment.name = 'example'
     >>> experiment.set_path('output', '/tmp/{experiment.name}/', force=True)
     >>> experiment.add_plan('plan', f1 = [1, 2], f2 = [1, 2, 3])
-    >>> experiment.set_metrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
+    >>> experiment.set_metric(name = 'm1_mean', output = 'm1', func = np.mean)
+    >>> experiment.set_metric(name = 'm1_std', output = 'm1', func = np.std)
+    >>> experiment.set_metric(name = 'm2_min', output = 'm2', func = np.min)
+    >>> experiment.set_metric(name = 'm2_argmin', output = 'm2', func = np.argmin)
 
     >>> def process(setting, experiment):
     ...  metric1 = setting.f1+setting.f2+np.random.randn(100)
@@ -854,7 +858,10 @@ class Experiment():
     >>> experiment.name = 'example'
     >>> experiment.set_path('output', '/tmp/'+experiment.name+'.h5')
     >>> experiment.add_plan('plan', f1 = [1, 2], f2 = [1, 2, 3])
-    >>> experiment.set_metrics (m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
+    >>> experiment.set_metric(name = 'm1_mean', output = 'm1', func = np.mean)
+    >>> experiment.set_metric(name = 'm1_std', output = 'm1', func = np.std)
+    >>> experiment.set_metric(name = 'm2_min', output = 'm2', func = np.min)
+    >>> experiment.set_metric(name = 'm2_argmin', output = 'm2', func = np.argmin)
 
     >>> def process(setting, experiment):
     ...  h5 = tb.open_file(experiment.path.output, mode='a')
@@ -870,24 +877,24 @@ class Experiment():
     Last modif.: '...'
     Object Tree:
     / (RootGroup) ''
-    /f1_1_f2_1 (Group) 'f1=1+f2=1'
-    /f1_1_f2_1/m1 (Array(100,)) 'm1'
-    /f1_1_f2_1/m2 (EArray(100,)) 'm2'
-    /f1_1_f2_2 (Group) 'f1=1+f2=2'
-    /f1_1_f2_2/m1 (Array(100,)) 'm1'
-    /f1_1_f2_2/m2 (EArray(100,)) 'm2'
-    /f1_1_f2_3 (Group) 'f1=1+f2=3'
-    /f1_1_f2_3/m1 (Array(100,)) 'm1'
-    /f1_1_f2_3/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_1 (Group) 'f1=2+f2=1'
-    /f1_2_f2_1/m1 (Array(100,)) 'm1'
-    /f1_2_f2_1/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_2 (Group) 'f1=2+f2=2'
-    /f1_2_f2_2/m1 (Array(100,)) 'm1'
-    /f1_2_f2_2/m2 (EArray(100,)) 'm2'
-    /f1_2_f2_3 (Group) 'f1=2+f2=3'
-    /f1_2_f2_3/m1 (Array(100,)) 'm1'
-    /f1_2_f2_3/m2 (EArray(100,)) 'm2'
+    /f1=1+f2=1 (Group) 'f1=1+f2=1'
+    /f1=1+f2=1/m1 (Array(100,)) 'm1'
+    /f1=1+f2=1/m2 (EArray(100,)) 'm2'
+    /f1=1+f2=2 (Group) 'f1=1+f2=2'
+    /f1=1+f2=2/m1 (Array(100,)) 'm1'
+    /f1=1+f2=2/m2 (EArray(100,)) 'm2'
+    /f1=1+f2=3 (Group) 'f1=1+f2=3'
+    /f1=1+f2=3/m1 (Array(100,)) 'm1'
+    /f1=1+f2=3/m2 (EArray(100,)) 'm2'
+    /f1=2+f2=1 (Group) 'f1=2+f2=1'
+    /f1=2+f2=1/m1 (Array(100,)) 'm1'
+    /f1=2+f2=1/m2 (EArray(100,)) 'm2'
+    /f1=2+f2=2 (Group) 'f1=2+f2=2'
+    /f1=2+f2=2/m1 (Array(100,)) 'm1'
+    /f1=2+f2=2/m2 (EArray(100,)) 'm2'
+    /f1=2+f2=3 (Group) 'f1=2+f2=3'
+    /f1=2+f2=3/m1 (Array(100,)) 'm1'
+    /f1=2+f2=3/m2 (EArray(100,)) 'm2'
 
     >>> h5.close()
     """
@@ -988,8 +995,10 @@ def get_from_path(
   >>> experiment.name = 'example'
   >>> experiment.set_path('output', f'/tmp/{experiment.name}/', force=True)
   >>> experiment.add_plan('plan', f1 = [1, 2], f2 = [1, 2, 3])
-  >>> experiment.set_metrics(m1 = ['mean', 'std'], m2 = ['min', 'argmin'])
-
+  >>> experiment.set_metric(name = 'm1_mean', output = 'm1', func = np.mean)
+  >>> experiment.set_metric(name = 'm1_std', output = 'm1', func = np.std)
+  >>> experiment.set_metric(name = 'm2_min', output = 'm2', func = np.min)
+  >>> experiment.set_metric(name = 'm2_argmin', output = 'm2', func = np.argmin)
   >>> def process(setting, experiment):
   ...  metric1 = setting.f1+setting.f2+np.random.randn(100)
   ...  metric2 = setting.f1*setting.f2*np.random.randn(100)
