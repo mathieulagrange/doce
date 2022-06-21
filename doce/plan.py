@@ -480,23 +480,14 @@ class Plan():
         [print(g) for g in groups]
       if force or eu.query_yes_no('Proceed to removal ?'):
         changed = True
-        if reverse:
-          ids = [setting.identifier(**setting_encoding) for setting in self]
-          for group in h_5.iter_nodes('/'):
-            if group._v_name not in ids:
-              h_5.remove_node(h_5.root, group._v_name, recursive=True)
-        else:
-          for setting in self:
-            group_name = setting.identifier(**setting_encoding)
-            if h_5.root.__contains__(group_name):
-              h_5.remove_node(h_5.root, group_name, recursive=True)
+        [h_5.remove_node(h_5.root, g, recursive=True) for g in groups]
       
       h_5.close()
  
       # repack
-      if changed:
+      if not changed:
         outfilename = path+'Tmp'
-        command = f'ptrepack -o --chunkshape=auto --propindexes {path} {outfilename}'
+        command = f'ptrepack -o {path} {outfilename}'
         if not force:
           print('Original size is %.2f MB' % (float(os.stat(path).st_size)/1024**2))
           print('Repacking ... (requires ptrepack utility)')
