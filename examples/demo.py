@@ -46,7 +46,7 @@ def set():
 
   experiment.set_metric(
     name = 'duration',
-    higher_the_better= False
+    lower_the_better= True
     ) 
 
   return experiment

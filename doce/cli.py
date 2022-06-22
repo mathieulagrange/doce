@@ -537,6 +537,10 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
         c_int[column] = 'int32'
 
   data_frame = data_frame.astype(c_int).applymap(remove_special)
+ 
+  data_frame.columns = data_frame.columns.to_series().apply(metric_direction, **{'metrics': experiment.metric, 'output_type':'html'})
+  data_frame = data_frame.rename(columns={'duration':'dur'})
+
   styler = data_frame.applymap(pretty_bool).style.set_properties(subset=data_frame.columns[numeric_col_selector],
                                    **{'width': '10em', 'text-align': 'right'})\
       .set_properties(subset=data_frame.columns[~numeric_col_selector],
@@ -547,12 +551,15 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
                       **{'border-right': '.1rem solid'})\
       .set_table_styles([table_style])\
       .format(precision_format).applymap(lambda x: 'color: white' if pd.isnull(x) else '')
+
   if not experiment._display.show_row_index:
     styler.hide_index()
   if experiment._display.bar:
     styler.bar(subset=data_frame.columns[nb_factor_columns:],
                align='mid', color=['#d65f5f', '#5fba7d'])
   if experiment._display.highlight:
+    for c_metric_index, c_metric_name in enumerate(c_metric):
+      c_metric[c_metric_index] = metric_direction(c_metric_name, experiment.metric, 'html')
     styler.apply(highlight_stat, subset=c_metric, axis=None,
                  **{'significance': significance})
     styler.apply(highlight_best, subset=c_metric, axis=None,
@@ -592,6 +599,8 @@ def highlight_stat(data_frame, significance):
   return data_frame
 
 def tex(data_col, significance, metric_names):
+  print(metric_names)
+  print(data_col.name)
   if data_col.name in metric_names:
     metric_index = metric_names.index(data_col.name)
     for data_index, data in enumerate(data_col):
@@ -599,6 +608,7 @@ def tex(data_col, significance, metric_names):
         data_col[data_index] = f'\textbf{{{data_col[data_index]}}}'
       if significance[data_index, metric_index] == 1:
         data_col[data_index] = f'\textcolor{{blue}}{{{data_col[data_index]}}}'
+    print(data_col.name)
   return data_col
 
 
@@ -608,6 +618,23 @@ def highlight_best(data_frame, significance):
   if significance is not None:
     data_frame = data_frame.where(significance > -1, 'font-weight: bold')
   return data_frame
+
+def metric_direction(val, metrics, output_type):
+
+  for metric in metrics.name():
+    if len(val) >= len(getattr(metrics, metric)['name']) and getattr(metrics, metric)['name'] == val[:len(getattr(metrics, metric)['name'])]:
+      if getattr(metrics, metric)['higher_the_better']:
+        if output_type == 'tex':
+          return val+' \\uparrow'
+        else:
+          return val+' &#8593'   
+      if getattr(metrics, metric)['lower_the_better']:
+        if output_type == 'tex':
+          return val+' \\downarrow'
+        else:
+          return val+' &#8595'
+  return val
+
 
 def export_data_frame(experiment, args, data_frame, styler, header, significance, c_metric):
   if not os.path.exists(experiment.path.export):
@@ -642,12 +669,14 @@ def export_data_frame(experiment, args, data_frame, styler, header, significance
   #               )
   #   print(f'excel export: {export_file_name}.xls')
   if 'tex' in args.export or args.export == 'all':
-    data_frame.columns = data_frame.columns.to_series().apply(escape_tex)
-    data_frame.applymap(escape_tex).apply(tex, **{'significance': significance, 'metric_names': c_metric}).to_latex(buf=f'{export_file_name}.tex',
+    data_frame.apply(tex, **{'significance': significance, 'metric_names': c_metric}).applymap(escape_tex)
+    data_frame.columns = data_frame.columns.to_series().apply(metric_direction, **{'metrics': experiment.metric, 'output_type':'tex'}).apply(escape_tex)
+    data_frame.to_latex(
+                buf=f'{export_file_name}.tex',
                 index=experiment._display.show_row_index,
                 bold_rows=True,
                 escape = False,
-                caption=header
+                caption=header.replace('_', '\_').replace('%', '\%').replace('$', '\$').replace('{', '\{').replace('}', '\}')
                 )
     print(f'tex export: {export_file_name}.tex')
     print('please add \\usepackage{booktabs, textcolor} to the preamble of your main .tex file')
