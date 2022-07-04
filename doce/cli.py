@@ -496,10 +496,6 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
   # Construct a selector of which columns are numeric
   numeric_col_selector = data_frame.dtypes.apply(
       lambda d: issubclass(np.dtype(d).type, np.number))
-  c_percent = []
-  c_no_percent = []
-  c_minus = []
-  c_no_minus = []
   c_metric = []
   c_metric_precision = []
   bool_selector = []
@@ -513,20 +509,14 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
       precision = getattr(experiment.metric, column.split(' ')[0])['precision']
       if '%' in column:
         c_metric_precision.append(precision-2)
-        precision_format[column] = f'{{:0.{str(precision-2)}f}}'
-        c_percent.append(column)
+        precision_format[metric_direction(column, experiment.metric, 'html')] = f'{{:0.{str(precision-2)}f}}'
       else:
         c_metric_precision.append(precision)
-        precision_format[column] = f'{{:0.{str(precision)}f}}'
-        c_no_percent.append(column)
-      if column[-1] == '-':
-        c_minus.append(column)
-      else:
-        c_no_minus.append(column)
+        precision_format[metric_direction(column, experiment.metric, 'html')] = f'{{:0.{str(precision)}f}}'
 
   d_precision = pd.Series(c_metric_precision, index=c_metric, dtype=np.intc)
-  data_frame = data_frame.round(d_precision) # d_percent).round(d_no_percent)
-
+  data_frame = data_frame.round(d_precision)
+ 
   for column in columns:
     if isinstance(data_frame[column][0], float):
       is_integer = True
@@ -537,10 +527,9 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
         c_int[column] = 'int32'
 
   data_frame = data_frame.astype(c_int).applymap(remove_special)
- 
+  columns = data_frame.columns.to_series()
   data_frame.columns = data_frame.columns.to_series().apply(metric_direction, **{'metrics': experiment.metric, 'output_type':'html'})
-  data_frame = data_frame.rename(columns={'duration':'dur'})
-
+  
   styler = data_frame.applymap(pretty_bool).style.set_properties(subset=data_frame.columns[numeric_col_selector],
                                    **{'width': '10em', 'text-align': 'right'})\
       .set_properties(subset=data_frame.columns[~numeric_col_selector],
@@ -565,6 +554,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
     styler.apply(highlight_best, subset=c_metric, axis=None,
                  **{'significance': significance})
 
+  data_frame.columns = columns.apply(metric_direction, **{'metrics': experiment.metric, 'output_type':'text'})
   return (data_frame.fillna('-').applymap(int_bool), header, styler, significance, c_metric)
 
 def pretty_bool(val):
@@ -620,17 +610,20 @@ def highlight_best(data_frame, significance):
   return data_frame
 
 def metric_direction(val, metrics, output_type):
-
   for metric in metrics.name():
     if len(val) >= len(getattr(metrics, metric)['name']) and getattr(metrics, metric)['name'] == val[:len(getattr(metrics, metric)['name'])]:
       if getattr(metrics, metric)['higher_the_better']:
         if output_type == 'tex':
           return val+' \\uparrow'
+        elif output_type == 'text':
+          return val+' +'  
         else:
           return val+' &#8593'   
       if getattr(metrics, metric)['lower_the_better']:
         if output_type == 'tex':
           return val+' \\downarrow'
+        elif output_type == 'text':
+          return val+' -'  
         else:
           return val+' &#8595'
   return val
@@ -652,6 +645,7 @@ def export_data_frame(experiment, args, data_frame, styler, header, significance
       args.export = str(args_split[1])
     else:
       args.export = 'all'
+      
   export_file_name = f'{experiment.path.export}/{export_file_name}'
   reload_header = '<script> window.onblur= function()\
     {window.onfocus= function () {location.reload(true)}}; </script>'

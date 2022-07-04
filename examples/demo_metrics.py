@@ -5,10 +5,10 @@ experiment = demo.set()
 selector = {"nn_type":["cnn", "lstm"],"n_layers":2,"learning_rate":0.001}
 
 
-(data, settings, header) = experiment.get(
-  metric = 'accuracy',
+(data, settings, header) = experiment.get_output(
+  output = 'accuracy',
   selector = selector,
-  path = 'output'
+  path = 'outputs'
   )
 
 import numpy as np
@@ -26,4 +26,4 @@ ax.set_title(header)
 
 fig.tight_layout()
 plt.savefig('metric_display.png')
-print('The figure is available: metric_display.png')
+print('The figure is available here: ./metric_display.png')

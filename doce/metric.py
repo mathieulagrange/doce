@@ -161,7 +161,7 @@ class Metric():
     
       if reduction_type['higher_the_better']:
         metric_direction.append(-1)
-      else:
+      elif reduction_type['lower_the_better']:
         metric_direction.append(1)
 
     reduced_metrics = [False] * nb_reduced_metrics
@@ -660,14 +660,13 @@ def significance(
       mean_values.append(table_row[len(settings.factors())+direction_index])
     if not np.isnan(mean_values).all() and direction!=0:
       if metric_direction[direction_index]<0:
-        best_index = np.argwhere(mean_values==np.nanmin(mean_values)).flatten()
-      else:
         best_index = np.argwhere(mean_values==np.nanmax(mean_values)).flatten()
+      else:
+        best_index = np.argwhere(mean_values==np.nanmin(mean_values)).flatten()
       p_values[best_index, direction_index] = -1
       if do_testing[direction_index] != 0:
         for raw_data_row_index, raw_data_row in enumerate(raw_data):
-          if (raw_data_row_index!=best_index[0] and
-              mean_values[metric_stat_index] != mean_values[raw_data_row_index]):
+          if p_values[raw_data_row_index, direction_index] != -1: # raw_data_row_index!=best_index[0] and and mean_values[metric_stat_index] != mean_values[raw_data_row_index])
             if not np.isnan(raw_data[raw_data_row_index][metric_stat_index]).all():
               (_, p_value) = stats.ttest_rel(
                 raw_data_row[metric_stat_index],

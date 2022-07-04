@@ -17,7 +17,7 @@ def set():
     address = 'john.doe@no-log.org',
   )
 # set acces paths (here only storage is needed)
-  experiment.set_path('output', '/tmp/'+experiment.name+'/', force=True)
+  experiment.set_path('outputs', '/tmp/'+experiment.name+'/', force=True)
   experiment.set_path('archive', '/tmp/'+experiment.name+'_archive/', force=True)
   # set some non varying parameters (here the number of cross validation folds)
   experiment.n_cross_validation_folds = 10
@@ -57,5 +57,5 @@ def step(setting, experiment):
   # duration is a function of cnn_type, and n_layers
   duration = len(setting.nn_type)+setting.n_layers+np.random.randn(experiment.n_cross_validation_folds)
   # storage of outputs (the string between _ and .npy must be the name of the metric defined in the set function)
-  np.save(experiment.path.output+setting.identifier()+'_accuracy.npy', accuracy)
-  np.save(experiment.path.output+setting.identifier()+'_duration.npy', duration)
+  np.save(experiment.path.outputs+setting.identifier()+'_accuracy.npy', accuracy)
+  np.save(experiment.path.outputs+setting.identifier()+'_duration.npy', duration)

@@ -713,16 +713,16 @@ class Experiment():
               return True
     return False
 
-  def get(self, metric='', selector=None, path=''):
-    """ Get the metric vector from an .npy or a group of a .h5 file.
+  def get_output(self, output='', selector=None, path=''):
+    """ Get the output vector from an .npy or a group of a .h5 file.
 
-    Get the metric vector as a numpy array from an .npy or a group of a .h5 file.
+    Get the output vector as a numpy array from an .npy or a group of a .h5 file.
 
     Parameters
     ----------
 
-    metric: str
-      The name of the metric. Must be a member of the doce.metric.Metric object.
+    output: str
+      The name of the output. 
 
     selector: list
       Settings selector.
@@ -763,23 +763,23 @@ class Experiment():
     >>> experiment.set_metric(name = 'm2_argmin', output = 'm2', func = np.argmin)
 
     >>> def process(setting, experiment):
-    ...  metric1 = setting.f1+setting.f2+np.random.randn(100)
-    ...  metric2 = setting.f1*setting.f2*np.random.randn(100)
-    ...  np.save(f'{experiment.path.output+setting.identifier()}_m1.npy', metric1)
-    ...  np.save(f'{experiment.path.output+setting.identifier()}_m2.npy', metric2)
+    ...  output1 = setting.f1+setting.f2+np.random.randn(100)
+    ...  output2 = setting.f1*setting.f2*np.random.randn(100)
+    ...  np.save(f'{experiment.path.output+setting.identifier()}_m1.npy', output1)
+    ...  np.save(f'{experiment.path.output+setting.identifier()}_m2.npy', output2)
     >>> nb_failed = experiment.perform([], process, progress='')
 
-    >>> (setting_metric,
+    >>> (setting_output,
     ...  setting_description,
     ...  constant_setting_description
-    ... ) = experiment.get(metric = 'm1', selector = [1], path='output')
+    ... ) = experiment.get(output = 'm1', selector = [1], path='output')
     >>> print(constant_setting_description)
     f1=2
     >>> print(setting_description)
     ['f2=1', 'f2=2', 'f2=3']
-    >>> print(len(setting_metric))
+    >>> print(len(setting_output))
     3
-    >>> print(setting_metric[0].shape)
+    >>> print(setting_output[0].shape)
     (100,)
     """
 
@@ -787,7 +787,7 @@ class Experiment():
       if not (r'\/' in path or r'\\' in path):
         path = getattr(self.path, path)
       return get_from_path(
-        metric,
+        output,
         settings=self._plan.select(selector),
         path=path
         )
@@ -797,7 +797,7 @@ class Experiment():
       if not path.endswith('_raw'):
         path_iterator = getattr(self.path, path_iterator)
         (data_path, setting_path, header_path) = get_from_path(
-          metric,
+          output,
           settings=self._plan.select(selector),
           path=path_iterator
           )
