@@ -3,7 +3,6 @@
 import sys
 import argparse
 import ast
-import importlib
 import os
 import copy
 import subprocess
@@ -12,20 +11,16 @@ import time
 import re
 import numpy as np
 import doce
-from doce.metric import significance
 
-def main():
+def main(experiment = None, func = None, display_func = None):
   """This method shall be called from the main script of the experiment
   to control the experiment using the command line.
 
   This method provides a front-end for running a doce experiment.
   It should be called from the main script of the experiment.
-  The main script must define a **set** function that will be called before processing
-  and a **step** function that will be processed for each setting.
+  The main script must define the **experiment** object that will be called before processing
+  and a **func** function that will be run for each setting.
 
-  It may also define a **display** function that will used to monitor the results.
-  This main script can define any functions that can be used
-  within the **set**, **step**, and **display** functions.
 
   Examples
 
@@ -164,6 +159,7 @@ def main():
       nargs='?',
       default='-1'
   )
+
   parser.add_argument(
       '-p',
       '--plan',
@@ -241,16 +237,14 @@ def main():
   except:
     pass
 
-  module = sys.argv[0][:-3]
-  try:
-    config = importlib.import_module(module)
-  except:
-    print(f'{sys.argv[0]} should implement a valid python module.')
-    raise ValueError
+  # module = sys.argv[0][:-3]
+  # try:
+  #   config = importlib.import_module(module)
+  # except:
+  #   print(f'{sys.argv[0]} should implement a valid python module.')
+  #   raise ValueError
 
-  if hasattr(config, 'set'):
-    experiment = config.set()
-  else:
+  if not experiment:
     experiment = doce.Experiment()
 
   if isinstance(args.user_data, dict):
@@ -348,10 +342,10 @@ def main():
       f'{args.select} has started.',
       f'<div> Selector = {args.select}</div>'
       )
-  if args.compute and hasattr(config, 'step'):
+  if args.compute and func:
     experiment.perform(
       experiment.selector,
-      config.step,
+      func,
       nb_jobs=args.compute,
       log_file_name=log_file_name,
       progress=args.progress,
@@ -360,7 +354,6 @@ def main():
 
   select_display = []
   select_factor = ''
-  display_method = ''
   display = True
   if args.display == '-1':
     display = False
@@ -376,12 +369,14 @@ def main():
 
   body = '<div> Selector = {args.select}</div>'
   if display:
-    if hasattr(config, display_method):
-      getattr(config, display_method)(
-          experiment, experiment._plan.select(experiment.selector))
+    if display_func:
+      display_func(
+          experiment,
+          experiment._plan.select(experiment.selector)
+          )
     else:
       (data_frame, header, styler, significance, c_metric) = data_frame_display(
-          experiment, args, config, select_display, select_factor)
+          experiment, args, select_display, select_factor)
       if data_frame is not None:
         print(header)
         # pd.set_option('precision', 2)
@@ -404,7 +399,7 @@ def main():
     experiment.send_mail(f'{args.select} is over.', body)
 
 
-def data_frame_display(experiment, args, config, select_display, select_factor):
+def data_frame_display(experiment, args, select_display, select_factor):
 
   import pandas as pd
 
@@ -425,7 +420,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
 
   (table, columns, header, nb_factor_columns, modification_time_stamp, significance) = experiment.metric.reduce(
     experiment._plan.select(selector),
-    experiment.path.output,
+    experiment.path,
     factor_display=experiment._display.factor_format_in_reduce,
     metric_display=experiment._display.metric_format_in_reduce,
     factor_display_length=experiment._display.factor_format_in_reduce_length,
@@ -457,8 +452,7 @@ def data_frame_display(experiment, args, config, select_display, select_factor):
         metric_display=experiment._display.metric_format_in_reduce,
         factor_display_length=experiment._display.factor_format_in_reduce_length,
         metric_display_length=experiment._display.metric_format_in_reduce_length,
-        verbose=args.verbose,
-        reduction_directive_module=config
+        verbose=args.verbose
         )
       modification_time_stamp += setting_modification_time_stamp # ???
       significance[setting_index, :] = setting_p_values[:, select_display[0]]

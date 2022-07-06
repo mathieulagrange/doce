@@ -103,7 +103,8 @@ class Metric():
       nb_reduced_metrics = 0
       for metric_index, metric in enumerate(self.name()):
         output = getattr(self, metric)['output']
-        file_name = path+setting.identifier(**setting_encoding)+'_'+output+'.npy'
+        output_path = getattr(path, getattr(self, metric)['path'])
+        file_name = output_path+setting.identifier(**setting_encoding)+'_'+output+'.npy'
         if os.path.exists(file_name):
           mod = os.path.getmtime(file_name)
           modification_time_stamp.append(mod)
@@ -195,7 +196,7 @@ class Metric():
 
     table = []
     raw_data = []
-    h5_fid = tb.open_file(path, mode='r')
+    h5_fid = tb.open_file(path.output, mode='r')
     metric_has_data = [False] * len(self.name())
 
     if not setting_encoding:
@@ -447,7 +448,7 @@ class Metric():
     """
 
     if self.name():
-      if path.endswith('.h5'):
+      if path.output.endswith('.h5'):
         # setting_encoding = {'factor_separator':'_', 'modality_separator':'_'}
         setting_encoding = {}
         modification_time_stamp = []
@@ -562,7 +563,8 @@ class Metric():
     for metric_index, metric in enumerate(self.name()):
       if self.__getattribute__(metric)['percent']:
         metric+=(' %')
-      column_header.append(eu.compress_description(metric, metric_display, metric_display_length))
+      if metric_has_data[metric_index]:
+        column_header.append(eu.compress_description(metric, metric_display, metric_display_length))
     return column_header
 
   def name(

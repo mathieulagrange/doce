@@ -666,6 +666,7 @@ class Experiment():
     name = None,
     output = None,
     func = np.mean,
+    path = 'output',
     percent=False,
     higher_the_better=False,
     lower_the_better=False,
@@ -687,6 +688,7 @@ class Experiment():
     self.metric.__setattr__(name, {
       'name':name,
       'output':output,
+      'path':path,
       'func':func,
       'percent':percent,
       'higher_the_better':higher_the_better,

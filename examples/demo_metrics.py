@@ -1,14 +1,12 @@
 # your experiment file shall be in the current directory or in the python path
 import demo
 
-experiment = demo.set()
 selector = {"nn_type":["cnn", "lstm"],"n_layers":2,"learning_rate":0.001}
 
-
-(data, settings, header) = experiment.get_output(
+(data, settings, header) = demo.experiment.get_output(
   output = 'accuracy',
   selector = selector,
-  path = 'outputs'
+  path = 'output'
   )
 
 import numpy as np
