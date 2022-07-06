@@ -774,7 +774,7 @@ class Experiment():
     >>> (setting_output,
     ...  setting_description,
     ...  constant_setting_description
-    ... ) = experiment.get(output = 'm1', selector = [1], path='output')
+    ... ) = experiment.get_output(output = 'm1', selector = [1], path='output')
     >>> print(constant_setting_description)
     f1=2
     >>> print(setting_description)

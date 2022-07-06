@@ -363,7 +363,7 @@ class Metric():
     ... nb_column_factor,
     ... modification_time_stamp,
     ... p_values
-    ... ) = experiment.metric.reduce(experiment._plan.select([1]), experiment.path.output)
+    ... ) = experiment.metric.reduce(experiment._plan.select([1]), experiment.path)
 
     >>> df = pd.DataFrame(setting_description, columns=column_header)
     >>> df[column_header[nb_column_factor:]] = df[column_header[nb_column_factor:]].round(decimals=2)
@@ -434,7 +434,7 @@ class Metric():
     ... constant_setting_description,
     ... nb_column_factor,
     ... modification_time_stamp,
-    ... p_values) = experiment.metric.reduce(experiment.plan.select([0]), experiment.path.output)
+    ... p_values) = experiment.metric.reduce(experiment.plan.select([0]), experiment.path)
 
     >>> df = pd.DataFrame(setting_description, columns=column_header)
     >>> df[column_header[nb_column_factor:]] = df[column_header[nb_column_factor:]].round(decimals=2)
