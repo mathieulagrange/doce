@@ -143,7 +143,8 @@ class Plan():
     nb_jobs=1,
     progress='d',
     log_file_name='',
-    mail_interval=0):
+    mail_interval=0
+    ):
     r"""iterate over the setting set and run the function given as parameter.
 
     This function is wrapped by :meth:`doce.experiment.Experiment.do`,
@@ -187,7 +188,7 @@ class Plan():
     See Also
     --------
 
-    doce.experiment.Experiment.do
+    doce.experiment.Experiment.perform
 
     """
     nb_failed = 0

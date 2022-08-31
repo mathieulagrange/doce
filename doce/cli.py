@@ -207,6 +207,15 @@ def main(experiment = None, func = None, display_func = None):
       that will be available in experiment.user_data (user_data.test=1).',
       default='{}'
   )
+
+  parser.add_argument(
+    '-t',
+    '--tag',
+    type=str,
+    help=r'define a computation tag to be added to the names of the outputs.',
+    default=''
+  )
+
   parser.add_argument(
       '-v',
       '--version',
@@ -246,6 +255,14 @@ def main(experiment = None, func = None, display_func = None):
 
   if not experiment:
     experiment = doce.Experiment()
+
+  if args.tag:
+    for path in experiment.path.__dict__.keys():
+      if not path.endswith('_raw') and path != 'code' and path != 'archive'and path != 'export': 
+        experiment.set_path(path, getattr(experiment.path, path)+'/'+args.tag)
+    for path in experiment.path.__dict__.keys():
+      print(path)
+      print(getattr(experiment.path, path))
 
   if isinstance(args.user_data, dict):
     experiment.user_data = args.user_data

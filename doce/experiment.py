@@ -343,7 +343,8 @@ class Experiment():
     nb_jobs=1,
     progress='d',
     log_file_name='',
-    mail_interval=0
+    mail_interval=0,
+    tag=''
     ):
     r"""Operate the function with parameters on the :term:`settings<setting>` set
     generated using :term:`selector`.
@@ -401,6 +402,9 @@ class Experiment():
 
       It >0, an email is sent as soon as an setting is done and the difference
       between the current time and the time the last mail was sent is larger than mail_interval.
+    
+    tag : string (optional)
+      specify a tag to be added to the output names
 
     See Also
     --------
