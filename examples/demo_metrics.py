@@ -1,9 +1,10 @@
 # your experiment file shall be in the current directory or in the python path
-import demo_h5
+import demo
+# import demo_h5 as demo uncomment to display the data computed using demo_h5.py
 
 selector = {"nn_type":["cnn", "lstm"],"n_layers":2,"learning_rate":0.001}
 
-(data, settings, header) = demo_h5.experiment.get_output(
+(data, settings, header) = demo.experiment.get_output(
   output = 'accuracy',
   selector = selector,
   path = 'output',
