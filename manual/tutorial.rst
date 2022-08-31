@@ -42,21 +42,18 @@ In a .py file, ideally named after the name of your experiment, you have to impl
 .. code-block:: python
     :linenos:
 
-    # define the doce environnment
-    def set():
-      # define the experiment
-      experiment = doce.Experiment(
-        name = 'demo',
-        purpose = 'hello world of the doce package',
-        author = 'mathieu Lagrange',
-        address = 'mathieu.lagrange@ls2n.fr',
-      )
-      # set acces paths (here only storage is needed)
-      experiment.setPath('output', '/tmp/'+experiment.name+'/')
-      # set some non varying parameters (here the number of cross validation folds)
-      experiment.n_cross_validation_folds = 10
+    # define the experiment
+    experiment = doce.Experiment(
+      name = 'demo',
+      purpose = 'hello world of the doce package',
+      author = 'mathieu Lagrange',
+      address = 'mathieu.lagrange@ls2n.fr',
+    )
+    # set acces paths (here only storage is needed)
+    experiment.set_path('output', '/tmp/'+experiment.name+'/')
+    # set some non varying parameters (here the number of cross validation folds)
+    experiment.n_cross_validation_folds = 10
 
-      return experiment
 
 Define the plan
 ===============
@@ -66,16 +63,14 @@ In *doce*, the parametrization of the processing code is called a *setting*. Eac
 .. code-block:: python
     :linenos:
 
-    def set():
-      ...
       # set the plan (factor : modalities)
-      experiment.addPlan('plan',
+      experiment.add_plan('plan',
         nn_type = ['cnn', 'lstm'],
         n_layers = np.arange(2, 10, 3),
         learning_rate = [0.001, 0.0001],
         dropout = [0, 1]
       )
-      ...
+
 
 
 Interact with your experiment
@@ -88,7 +83,9 @@ The *doce* package have a convenient way of interacting with experiments, throug
 
     # invoke the command line management of the doce package
     if __name__ == "__main__":
-      doce.cli.main()
+      doce.cli.main(experiment = experiment,
+              func = step
+              )
 
 Now you can interact with your experiment. For example you can display the plan:
 
@@ -106,7 +103,7 @@ You can also access to a reference list of each pre-defined argument:
 .. code-block:: console
 
   $ python demo.py -h
-  usage: demo.py [-h] [-A [ARCHIVE]] [-C] [-d [DISPLAY]] [-E [EXPORT]] [-H HOST] [-i] [-K [KEEP]] [-l]
+  usage: demo.py [-h] [-A [ARCHIVE]] [-C] [-d [DISPLAY]] [-e [EXPORT]] [-H HOST] [-i] [-K [KEEP]] [-l]
                  [-M [MAIL]] [-p] [-P [PROGRESS]] [-r [RUN]] [-R [REMOVE]] [-s SELECT] [-S] [-u USERDATA]
                  [-v] [-V]
 
@@ -205,7 +202,7 @@ You must define which code shall be processed for any setting, given the computi
       np.save(experiment.path.output+setting.id()+'_accuracy.npy', accuracy)
       np.save(experiment.path.output+setting.id()+'_duration.npy', duration)
 
-In this demo, the processing code simply stores some dummy metrics to the disk.
+In this demo, the processing code simply stores some dummy outputs to the disk.
 
 Perform computation
 ===================
@@ -231,21 +228,38 @@ Once fixed, you can be interested in computing only the settings that have faile
 Define metrics
 ==============
 
-Before inspecting the results of our computation, we have to define how the metrics stored on disc shall be reduced and interpreted.
+Before inspecting the results of our computation, we have to define how the output stored on disc shall be reduced to metrics for interpretation purposes.
 
-To do so, we have to add some lines to the set function:
+To do so, we have to use the :meth:`~doce.Experiment.set_metric` method.
 
 .. code-block:: python
     :linenos:
 
-    def set():
-      ...
-      # set the metrics
-      experiment.setMetrics(
-        # the average and the standard deviation of the accuracy are expressed in percents (+ specifies a higher-the-better metric)
-        accuracy = ['mean%+', 'std%'],
-        # the duration is averaged over folds (* requests statistical analysis, - specifies a lower-the-better metric)
-        duration = ['mean*-']
+    # set the metrics
+    experiment.set_metric(
+      name = 'accuracy',
+      percent=True,
+      higher_the_better= True,
+      significance = True,
+      precision = 10
+      )
+
+    experiment.set_metric(
+      name = 'acc_std',
+      output = 'accuracy',
+      func = np.std,
+      percent=True
+      )
+
+    # custom metric function shall input an np.nd_array and output a scalar
+    def my_metric(data):
+      return np.sum(data)
+
+    experiment.set_metric(
+      name = 'acc_my_metric',
+      output = 'accuracy',
+      func = my_metric,
+      percent=True
       )
 
 Display metrics
@@ -321,12 +335,12 @@ The table can exported in various format:
 To export the table in files called demo, please type :
 .. code-block:: console
 
-  $ python demo.py -d -E demo
+  $ python demo.py -d -e demo
 
 To only generate the html output, please type :
 .. code-block:: console
 
-  $ python demo.py -d -E demo.html
+  $ python demo.py -d -e demo.html
 
 For visualization purposes, the html output is perhaps the most interesting one, as it shows best values per metrics and statistical analysis :
 

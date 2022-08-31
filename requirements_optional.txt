@@ -6,3 +6,4 @@ scipy
 tables
 tqdm
 numpydoc
+sphinx-rtd-theme

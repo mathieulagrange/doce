@@ -39,6 +39,17 @@ experiment.set_metric(
   percent=True
   )
 
+# custom metric function shall input an np.nd_array and output a scalar
+def my_metric(data):
+  return np.sum(data)
+
+experiment.set_metric(
+  name = 'acc_my_metric',
+  output = 'accuracy',
+  func = my_metric,
+  percent=True
+  )
+
 experiment.set_metric(
   name = 'duration',
   path = 'output2',
@@ -53,6 +64,7 @@ def step(setting, experiment):
   # storage of outputs (the string between _ and .npy must be the name of the metric defined in the set function)
   np.save(experiment.path.output+setting.identifier()+'_accuracy.npy', accuracy)
   np.save(experiment.path.output2+setting.identifier()+'_duration.npy', duration)
+
 
 
 # invoke the command line management of the doce package
