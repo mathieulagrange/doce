@@ -1,12 +1,13 @@
 # your experiment file shall be in the current directory or in the python path
-import demo
+import demo_h5
 
 selector = {"nn_type":["cnn", "lstm"],"n_layers":2,"learning_rate":0.001}
 
-(data, settings, header) = demo.experiment.get_output(
+(data, settings, header) = demo_h5.experiment.get_output(
   output = 'accuracy',
   selector = selector,
-  path = 'output'
+  path = 'output',
+  tag='test'
   )
 
 import numpy as np

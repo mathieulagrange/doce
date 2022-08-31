@@ -259,7 +259,12 @@ def main(experiment = None, func = None, display_func = None):
   if args.tag:
     for path in experiment.path.__dict__.keys():
       if not path.endswith('_raw') and path != 'code' and path != 'archive'and path != 'export': 
-        experiment.set_path(path, getattr(experiment.path, path)+'/'+args.tag)
+        new_path = getattr(experiment.path, path)
+        if new_path.endswith('.h5'):
+          new_path = new_path[:-3]+'_'+args.tag+'.h5'
+        else:
+          new_path += '/'+args.tag
+        experiment.set_path(path, new_path)
     # for path in experiment.path.__dict__.keys():
     #   print(path)
     #   print(getattr(experiment.path, path))

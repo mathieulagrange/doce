@@ -1049,6 +1049,8 @@ def get_from_path(
 
   if isinstance(path, str):
     if path.endswith('.h5'):
+      if tag:
+        path = path[:-3]+'_'+tag+'.h5'
       h5_fid = tb.open_file(path, mode='r')
       for setting in settings:
         if h5_fid.root.__contains__(setting.identifier(**setting_encoding)):
