@@ -260,9 +260,9 @@ def main(experiment = None, func = None, display_func = None):
     for path in experiment.path.__dict__.keys():
       if not path.endswith('_raw') and path != 'code' and path != 'archive'and path != 'export': 
         experiment.set_path(path, getattr(experiment.path, path)+'/'+args.tag)
-    for path in experiment.path.__dict__.keys():
-      print(path)
-      print(getattr(experiment.path, path))
+    # for path in experiment.path.__dict__.keys():
+    #   print(path)
+    #   print(getattr(experiment.path, path))
 
   if isinstance(args.user_data, dict):
     experiment.user_data = args.user_data

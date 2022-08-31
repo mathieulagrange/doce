@@ -682,107 +682,22 @@ Display of metric is conveniently done using the merged plan:
 Advanced usage
 ~~~~~~~~~~~~~~
 
-Composing operators for reducing the metrics
-============================================
+Tagging computations
+====================
 
-Reduction can be composed with any numpy function that has a numpy array is input and scalar as ouput.
+During development, it is sometimes useful to differentiate between several runs of the experiment.
+For example, you might want to try out a new tweak or play around with some parameters that you do
+not want to add to the plan.
 
-**Important**: prior to any processing, the array is first flattened if it has more than one dimension.
+You can do so by tagging. The tag will add a level of hierarchy in your output paths. Let us assume
+that you have python file demo.py that defines a storage path named output pointing to /tmp/experiment/. 
+When running python demo.py --tag my_tag, the storage path will now be /tmp/experiment/my_tag.
 
-For example, let us consider that the step function saves a metric *m* that is a 10x10 matrix with all values equal to 2:
+This gives you the freedom to switch easily to compare relative performance. For replication purposes, 
+this tag can conveniently be defined as an id of your prefered code versioning system.
 
-.. code-block:: python
-    :linenos:
-
-    def step(setting, experiment):
-        # metric is a matrix of 3 rows of 10 values
-        m = np.ones((10, 10))*2
-        np.save(experiment.path.output+setting.id()+'_m.npy', m)
-
-The way the metric *m* will be reduced for display in a table is controlled by the reduction directives provided in the set function:
-
-.. code-block:: python
-    :linenos:
-
-    def set(None):
-    ...
-    experiment.setMetrics(
-      m = [
-      'sum', # compute the sum over the flattened array
-      'square|sum', # compute the square of the sum over the flattened array
-      'sum|square', # compute the sum of the square of the flattened array
-      'sqrt|square|sum', # compute the square root of the square of the sum over the flattened array
-      ]
-    )
-    ...
-
-The pipe (|) allows you to chain operators from right to left. That is 'square|sum' is interpreted as numpy.square(numpy.sum(x)).
-
-The complete example is available in the examples directory: demo_compose_metrics.py_
-
-For this set of directives, the reduced table is :
-
-.. code-block:: console
-
-  $ python demo_compose_metrics.py -c -d
-
-  Displayed data generated from Tue May  3 09:34:42 2022 to Tue May  3 09:34:42 2022
-
-       factor   mSum  mSquare|sum  mSum|square  mSqrt|square|sum
-  0  modality  200.0      40000.0        400.0             200.0
-
-.. _demo_compose_metrics.py: https://github.com/mathieulagrange/doce/tree/main/examples/demo_compose_metrics.py
-
-
-Define your own metric reduction directive
-==========================================
-
-Let us assume that we want to reduce a metric that is represented as a matrix using the following directive: compute the average of the minimal value of each row.
-
-A custom reduction directive has to be defined for such a purpose, since operators from numpy operates on a flattened version of the metric.
-
-The custom reduction directive is simply provided in your root python file:
-
-.. code-block:: python
-    :linenos:
-
-    def mean_min(data): # average over the minimal values of each row
-        return np.mean(np.min(data, axis = 1))
-
-The setMetrics function shall refer to it:
-
-.. code-block:: python
-    :linenos:
-
-    def set(None):
-    ...
-    experiment.setMetrics(
-      m = [
-      'min', # mimimal value of the flattened array
-      'mean', # average value of the flattened array
-      'mean|min', # average of the mimimal value of the flattened array (same as min, since the output of min is scalar)
-      'mean_min' # defined in root python file
-      ]
-    )
-    ...
-
-
-For this set of directives, the reduced table is :
-
-.. code-block:: console
-
-  $ python demo_custom_metrics.py -c -d
-
-  Displayed data generated from Tue May  3 09:39:07 2022 to Tue May  3 09:39:07 2022
-
-     factor  mMin  mMean  mMean|min  mMean_min
-  0  modality   2.0    8.0        2.0        4.0
-
-
-The complete example is available in the examples directory: demo_custom_metrics.py_
-
-.. _demo_custom_metrics.py: https://github.com/mathieulagrange/doce/tree/main/examples/demo_custom_metrics.py
-
+If you want tag outputs to become the default outputs, you simply have to move file from the tag directory
+to the root directory. In this example, mv  /tmp/experiment/my_tag/* /tmp/experiment.
 
 Storage within an hdf5 file
 ===========================

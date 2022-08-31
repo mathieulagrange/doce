@@ -719,7 +719,7 @@ class Experiment():
               return True
     return False
 
-  def get_output(self, output='', selector=None, path=''):
+  def get_output(self, output='', selector=None, path='', tag=''):
     """ Get the output vector from an .npy or a group of a .h5 file.
 
     Get the output vector as a numpy array from an .npy or a group of a .h5 file.
@@ -795,7 +795,8 @@ class Experiment():
       return get_from_path(
         output,
         settings=self._plan.select(selector),
-        path=path
+        path=path,
+        tag=tag
         )
     data = []
     settings = []
@@ -805,7 +806,8 @@ class Experiment():
         (data_path, setting_path, header_path) = get_from_path(
           output,
           settings=self._plan.select(selector),
-          path=path_iterator
+          path=path_iterator,
+          tag=tag
           )
         if data_path:
           for data_setting in data_path:
@@ -949,6 +951,7 @@ def get_from_path(
   metric,
   settings = None,
   path = '',
+  tag='',
   setting_encoding=None,
   verbose=False
   ):
@@ -1059,6 +1062,8 @@ def get_from_path(
           print(f'** Unable to find group {setting.identifier(**setting_encoding)}')
       h5_fid.close()
     else:
+      if tag:
+        path += tag+'/'
       for setting in settings:
         file_name = f'{path}{setting.identifier(**setting_encoding)}_{metric}.npy'
         if os.path.exists(file_name):
