@@ -190,7 +190,7 @@ def main(experiment = None, func = None, display_func = None):
       '-s',
       '--select',
       type=str,
-      help=r'selection of settings',
+      help=r'selection of plan and settings, for example plan_name/factor1=modality2+factor4=modality1',
       default='[]'
   )
   parser.add_argument(

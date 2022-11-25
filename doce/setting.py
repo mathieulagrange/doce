@@ -238,7 +238,7 @@ class Setting():
   def replace(self, factor, value=None, positional=0, relative=0):
     """returns a new doce.Plan object with one factor with modified modality.
 
-    Returns a new doce.Plan object with with one factor with modified modality.
+    Returns a new doce.Plan object with one factor with modified modality.
     The value of the requested new modality can requested by 3 exclusive means:
     its value, its position in the modality array, or its relative position
     in the array with respect to the position of the current modality.
