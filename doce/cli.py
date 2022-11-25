@@ -384,8 +384,8 @@ def main(experiment = None, func = None, display_func = None):
       select_display = ast.literal_eval(args.display)
     elif ':' in args.display:
       display_split = args.display.split(':')
-      select_display = [int(display_split[0])]
-      select_factor = display_split[1]
+      select_display = [int(display_split[1])]
+      select_factor = display_split[0]
     else:
       select_display = [int(args.display)]
 
@@ -469,7 +469,7 @@ def data_frame_display(experiment, args, select_display, select_factor):
     for setting_index, setting in enumerate(settings):
       (setting_descriptions, _, _, _, setting_modification_time_stamp, setting_p_values) = experiment.metric.reduce(
         experiment._plan.select(setting),
-        experiment.path.output,
+        experiment.path,
         factor_display=experiment._display.factor_format_in_reduce,
         metric_display=experiment._display.metric_format_in_reduce,
         factor_display_length=experiment._display.factor_format_in_reduce_length,
@@ -522,7 +522,10 @@ def data_frame_display(experiment, args, select_display, select_factor):
       bool_selector.append(column)
     if column_index >= nb_factor_columns:
       c_metric.append(column)
-      precision = getattr(experiment.metric, column.split(' ')[0])['precision']
+      if select_factor:
+        precision = getattr(experiment.metric, experiment.metric.name()[select_display[0]])['precision']
+      else:
+        precision = getattr(experiment.metric, column.split(' ')[0])['precision']
       if '%' in column:
         c_metric_precision.append(precision-2)
         precision_format[metric_direction(column, experiment.metric, 'html')] = f'{{:0.{str(precision-2)}f}}'
