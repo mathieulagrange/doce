@@ -241,6 +241,13 @@ class Plan():
         print('Error: = and + are not allowed for naming factors')
         raise ValueError
 
+  def order_factor(self, order):
+    p = {}
+    factors = [self.factors()[i] for i in order]
+    for f in factors:
+      p[f] = getattr(self, f)
+    return Plan(**p)
+  
   def select(
     self,
     selector=None,

@@ -161,6 +161,16 @@ def main(experiment = None, func = None, display_func = None):
   )
 
   parser.add_argument(
+      '-o',
+      '--order',
+      type=str,
+      help=r'specify the order of the factors as a permutation array of indices. \
+      [4, 3, 2, 1] inver the factors of a 4 factor plan',
+      nargs='?',
+      const=''
+  )
+
+  parser.add_argument(
       '-p',
       '--plan',
       help=r'show the active plan of the experiment.',
@@ -279,7 +289,7 @@ def main(experiment = None, func = None, display_func = None):
   experiment.status.verbose = args.verbose
   experiment._resume = args.skip
 
-  experiment.select(selector, show=args.plan)
+  experiment.select(selector, show=args.plan, plan_order_factor=ast.literal_eval(args.order))
 
   if args.information:
     print(experiment)

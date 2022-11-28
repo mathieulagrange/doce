@@ -449,7 +449,7 @@ class Experiment():
       mail_interval=mail_interval
       )
 
-  def select(self, selector, show=False):
+  def select(self, selector, show=False, plan_order_factor=None):
     experiment_id = 'all'
     if '/' in selector:
       selector_split = selector.split('/')
@@ -485,6 +485,9 @@ class Experiment():
         print(f'Plan {experiment_id} is selected')
         self._plan = getattr(self, experiment_id)
     self._plan.check()
+
+    if plan_order_factor:
+      self._plan = self._plan.order_factor(plan_order_factor)
     if show:
       print(self._plan.as_panda_frame())
     if self._check_setting_length:
