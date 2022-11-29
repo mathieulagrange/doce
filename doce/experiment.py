@@ -684,9 +684,11 @@ class Experiment():
     ):
 
     if name is None:
-      raise 'A metric must of a name.'
+      raise Exception('A metric must of a name.')
     if not isinstance(name, str):
-      raise 'A metric name must be a string.'
+      raise Exception('A metric name must be a string.')
+    if significance and not lower_the_better and not higher_the_better:
+      raise Exception('Significance analysis either lower_the_better or higher_the_better to set be to True.')
     if precision is None:
       precision = self._display.metric_precision
     if output is None:

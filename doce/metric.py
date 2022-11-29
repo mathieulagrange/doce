@@ -120,7 +120,7 @@ class Metric():
             value *= 100
           row.append(value)
           if reduction_type['significance']:
-            raw_data_row.append(data)
+            raw_data_row.append(data.flatten())
         else:
           if verbose:
             print('** Unable to find '+file_name)

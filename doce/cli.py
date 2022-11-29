@@ -139,7 +139,7 @@ def main(experiment = None, func = None, display_func = None):
       type=str,
       help=r'Launch one job per setting with provided template. Template must contain two keys. \
       one is the launch key with the command that is used for launching the job\
-      <DOCE_LAUNCH_KEY>slurm</DOCE_LAUNCH_KEY>, and the other <DOCE_SETTING> match the location\
+      <DOCE_LAUNCH>slurm<DOCE_LAUNCH>, and the other <DOCE_SETTING> match the location\
       where the doce command should be inserted.',
       nargs='?',
       const=''
@@ -317,12 +317,43 @@ def main(experiment = None, func = None, display_func = None):
         e: print(s)
     )
 
+  def job_managment(setting, experiment):
+    if not os.path.isdir('jobs'):
+      os.makedirs('jobs')
+    job_file_name = 'jobs/'+setting.identifier()+'.slurm'
+
+    job_template_file = open(experiment.job_template_file_name, 'r')
+    job_template_lines = job_template_file.readlines()
+    job_file = open(job_file_name, 'w')
+    launch_command = ''
+    lines = []
+    for line in job_template_lines:
+      m = re.search('<DOCE_LAUNCH>(.+?)<DOCE_LAUNCH>', line)
+      if m:
+        launch_command = m.group(1)
+      command = 'python3 -c -s '+setting.identifier()
+      line = line.replace('<DOCE_SETTING>', command)
+      lines.append(line)
+
+    launch_command += ' '+job_file_name
+    job_file.writelines(lines)
+    job_file.close()
+    if experiment.job_launch:
+      os.system(launch_command)
+    else:
+      print(launch_command)
+    # os.rmdir('jobs')
+
   if args.job:
+    experiment.job_template_file_name = args.job
+    if args.compute:
+      experiment.job_launch = True
+    else:
+      experiment.job_launch = False
     experiment.perform(
         experiment.selector,
         progress='',
-        function=lambda s,
-        e: print(s)
+        function=job_managment
     )
   
   if args.files:
@@ -705,7 +736,7 @@ def export_data_frame(experiment, args, data_frame, styler, header, significance
   with open(f'{export_file_name}.html', "w") as out_file:
     out_file.write(reload_header)
     out_file.write(f'<br><u>{header}</u><br><br>')
-    out_file.write(styler.render())
+    out_file.write(styler.to_html())
   if 'csv' in args.export or args.export == 'all':
     data_frame.to_csv(path_or_buf=f'{export_file_name}.csv',
               index=experiment._display.show_row_index)

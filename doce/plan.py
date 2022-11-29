@@ -197,6 +197,8 @@ class Plan():
                 level=logging.DEBUG,
                 format='%(levelname)s: %(asctime)s %(message)s',
                 datefmt='%m/%d/%Y %I:%M:%S')
+    
+      
     if progress:
       print('Number of settings: '+str(len(self)))
 
