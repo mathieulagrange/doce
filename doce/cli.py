@@ -319,8 +319,7 @@ def main(experiment = None, func = None, display_func = None):
     )
 
   def job_managment(setting, experiment):
-    if not os.path.isdir('jobs'):
-      os.makedirs('jobs')
+    
     job_file_name = 'jobs/'+setting.identifier()+'.slurm'
 
     job_template_file = open(experiment.job_template_file_name, 'r')
@@ -334,6 +333,7 @@ def main(experiment = None, func = None, display_func = None):
         launch_command = m.group(1)
       command = 'python3 -c -s '+setting.identifier()
       line = line.replace('<DOCE_SETTING>', command)
+      line = line.replace('<DOCE_NAME>', experiment.name)
       lines.append(line)
 
     launch_command += ' '+job_file_name
@@ -343,9 +343,12 @@ def main(experiment = None, func = None, display_func = None):
       os.system(launch_command)
     else:
       print(launch_command)
-      os.rmdir('jobs')
+      
 
   if args.job:
+    if os.path.isdir('jobs'):
+      shutil.rmtree('jobs')
+    os.makedirs('jobs')
     experiment.job_template_file_name = args.job
     if args.compute:
       experiment.job_launch = True
@@ -356,8 +359,8 @@ def main(experiment = None, func = None, display_func = None):
         progress='',
         function=job_managment
     )
-    if not experiment.job_launch:
-      os.rmdir('jobs')
+    if experiment.job_launch:
+      shutil.rmtree('jobs')
   
   if args.files:
     experiment.perform(
