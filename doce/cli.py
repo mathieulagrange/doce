@@ -338,7 +338,7 @@ def main(experiment = None, func = None, display_func = None):
       lines.append(line)
 
     script_file_name = inspect.stack()[-1].filename
-    launch_command += ' '+script_file_name' '+job_file_name
+    launch_command += ' '+script_file_name+' '+job_file_name
     job_file.writelines(lines)
     job_file.close()
     if experiment.job_launch:
