@@ -10,6 +10,7 @@ import shutil
 import time
 import re
 import numpy as np
+import inspect
 import doce
 
 def main(experiment = None, func = None, display_func = None):
@@ -336,7 +337,8 @@ def main(experiment = None, func = None, display_func = None):
       line = line.replace('<DOCE_NAME>', experiment.name)
       lines.append(line)
 
-    launch_command += ' '+job_file_name
+    script_file_name = inspect.stack()[-1].filename
+    launch_command += ' '+script_file_name' '+job_file_name
     job_file.writelines(lines)
     job_file.close()
     if experiment.job_launch:
