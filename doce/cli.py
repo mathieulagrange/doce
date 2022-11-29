@@ -140,7 +140,8 @@ def main(experiment = None, func = None, display_func = None):
       help=r'Launch one job per setting with provided template. Template must contain two keys. \
       one is the launch key with the command that is used for launching the job\
       <DOCE_LAUNCH>slurm<DOCE_LAUNCH>, and the other <DOCE_SETTING> match the location\
-      where the doce command should be inserted.',
+      where the doce command should be inserted. Jobs files are stored in the jobs folder. \
+      If -c or --compute is set, a command is issued per job file and the jobs directory is deleted.',
       nargs='?',
       const=''
   )
@@ -342,7 +343,7 @@ def main(experiment = None, func = None, display_func = None):
       os.system(launch_command)
     else:
       print(launch_command)
-    # os.rmdir('jobs')
+      os.rmdir('jobs')
 
   if args.job:
     experiment.job_template_file_name = args.job
@@ -355,6 +356,8 @@ def main(experiment = None, func = None, display_func = None):
         progress='',
         function=job_managment
     )
+    if not experiment.job_launch:
+      os.rmdir('jobs')
   
   if args.files:
     experiment.perform(
