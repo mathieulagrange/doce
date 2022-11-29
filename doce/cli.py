@@ -134,6 +134,17 @@ def main(experiment = None, func = None, display_func = None):
       action='store_true'
   )
   parser.add_argument(
+      '-j',
+      '--job',
+      type=str,
+      help=r'Launch one job per setting with provided template. Template must contain two keys. \
+      one is the launch key with the command that is used for launching the job\
+      <DOCE_LAUNCH_KEY>slurm</DOCE_LAUNCH_KEY>, and the other <DOCE_SETTING> match the location\
+      where the doce command should be inserted.',
+      nargs='?',
+      const=''
+  )
+  parser.add_argument(
       '-K',
       '--keep',
       type=str,
@@ -165,9 +176,9 @@ def main(experiment = None, func = None, display_func = None):
       '--order',
       type=str,
       help=r'specify the order of the factors as a permutation array of indices. \
-      [4, 3, 2, 1] inver the factors of a 4 factor plan',
+      For example -o \'[4, 3, 2, 1]\' invert the factors of a plan of 4 factors.',
       nargs='?',
-      const=''
+      default='None'
   )
 
   parser.add_argument(
@@ -288,8 +299,12 @@ def main(experiment = None, func = None, display_func = None):
 
   experiment.status.verbose = args.verbose
   experiment._resume = args.skip
-
-  experiment.select(selector, show=args.plan, plan_order_factor=ast.literal_eval(args.order))
+  print(args.order)
+  if args.order:
+    plan_order_factor = ast.literal_eval(args.order)
+  else:
+    plan_order_factor = None
+  experiment.select(selector, show=args.plan, plan_order_factor=plan_order_factor)
 
   if args.information:
     print(experiment)
@@ -301,6 +316,15 @@ def main(experiment = None, func = None, display_func = None):
         function=lambda s,
         e: print(s)
     )
+
+  if args.job:
+    experiment.perform(
+        experiment.selector,
+        progress='',
+        function=lambda s,
+        e: print(s)
+    )
+  
   if args.files:
     experiment.perform(
         experiment.selector,
