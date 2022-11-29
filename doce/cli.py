@@ -343,7 +343,6 @@ def main(experiment = None, func = None, display_func = None):
     job_file.close()
     if experiment.job_launch:
       os.system(launch_command)
-      return
     else:
       print(launch_command)
       
@@ -364,6 +363,7 @@ def main(experiment = None, func = None, display_func = None):
     )
     if experiment.job_launch:
       shutil.rmtree('jobs')
+      exit()
   
   if args.files:
     experiment.perform(
