@@ -320,8 +320,8 @@ def main(experiment = None, func = None, display_func = None):
     )
 
   def job_managment(setting, experiment):
-    
-    job_file_name = 'jobs/'+setting.identifier()+'.slurm'
+    _, file_extension = os.path.splitext(experiment.job_template_file_name)
+    job_file_name = 'jobs/'+setting.identifier()+file_extension
 
     job_template_file = open(experiment.job_template_file_name, 'r')
     job_template_lines = job_template_file.readlines()
@@ -332,13 +332,13 @@ def main(experiment = None, func = None, display_func = None):
       m = re.search('<DOCE_LAUNCH>(.+?)<DOCE_LAUNCH>', line)
       if m:
         launch_command = m.group(1)
-      command = 'python3 -c -s '+setting.identifier()
+      script_file_name = inspect.stack()[-1].filename
+      command = 'python3 '+script_file_name+' -c -s '+setting.identifier()
       line = line.replace('<DOCE_SETTING>', command)
       line = line.replace('<DOCE_NAME>', experiment.name)
       lines.append(line)
 
-    script_file_name = inspect.stack()[-1].filename
-    launch_command += ' '+script_file_name+' '+job_file_name
+    launch_command += ' '+job_file_name
     job_file.writelines(lines)
     job_file.close()
     if experiment.job_launch:
