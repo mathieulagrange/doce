@@ -301,7 +301,6 @@ def main(experiment = None, func = None, display_func = None):
 
   experiment.status.verbose = args.verbose
   experiment._resume = args.skip
-  print(args.order)
   if args.order:
     plan_order_factor = ast.literal_eval(args.order)
   else:
@@ -363,8 +362,9 @@ def main(experiment = None, func = None, display_func = None):
     )
     if experiment.job_launch:
       shutil.rmtree('jobs')
-      exit()
-  
+    else:
+      print('Up are the commands available.\nPlease inspect scripts files available in the jobs directory.\nIf correct please add -c or --compute to the command line for launching the jobs.')
+    exit()
   if args.files:
     experiment.perform(
         experiment.selector,
