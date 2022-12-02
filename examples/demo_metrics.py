@@ -7,8 +7,7 @@ selector = {"nn_type":["cnn", "lstm"],"n_layers":2,"learning_rate":0.001}
 (data, settings, header) = demo.experiment.get_output(
   output = 'accuracy',
   selector = selector,
-  path = 'output',
-  tag='test'
+  path = 'output'
   )
 
 import numpy as np

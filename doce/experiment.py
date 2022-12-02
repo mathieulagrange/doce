@@ -724,7 +724,7 @@ class Experiment():
               return True
     return False
 
-  def get_output(self, output='', selector=None, path='', tag=''):
+  def get_output(self, output='', selector=None, path='', tag='', plan=None):
     """ Get the output vector from an .npy or a group of a .h5 file.
 
     Get the output vector as a numpy array from an .npy or a group of a .h5 file.
@@ -742,6 +742,9 @@ class Experiment():
       Name of path as defined in the experiment,
       or a valid path to a directory in the case of .npy storage,
       or a valid path to an .h5 file in the case of hdf5 storage.
+
+    plan: str
+      Name of plan to be considered.
 
     Returns
     -------
@@ -794,12 +797,17 @@ class Experiment():
     (100,)
     """
 
+    if plan:
+      plan = getattr(self, plan)
+    else:
+      plan = self._plan
+
     if path:
       if not (r'\/' in path or r'\\' in path):
         path = getattr(self.path, path)
       return get_from_path(
         output,
-        settings=self._plan.select(selector),
+        settings=plan.select(selector),
         path=path,
         tag=tag
         )
@@ -810,7 +818,7 @@ class Experiment():
         path_iterator = getattr(self.path, path_iterator)
         (data_path, setting_path, header_path) = get_from_path(
           output,
-          settings=self._plan.select(selector),
+          settings=plan.select(selector),
           path=path_iterator,
           tag=tag
           )
