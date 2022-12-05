@@ -800,6 +800,11 @@ class Experiment():
     if plan:
       plan = getattr(self, plan)
     else:
+      if len(self.plans()) > 1:
+        o_plans = []
+        for plan in self.plans():
+          o_plans.append(getattr(self, plan))
+        self._plan = self._plan.merge(o_plans)
       plan = self._plan
 
     if path:
