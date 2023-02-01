@@ -32,11 +32,22 @@ class Setting():
 
   """
 
-  def __init__(self, plan, setting_array = None):
+  def __init__(self, plan, setting_array = None, positional=True):
     self._plan = plan
     # underscore = ['_non_singleton', '_default', '_plans', '_setting']
     # for f in underscore:
     #   self.__setattr__(f, getattr(plan, f))
+
+    if setting_array is not None and positional == False:
+      setting_array_string = setting_array
+      for factor_index, factor in enumerate(plan.factors()):
+        modality_indexes = np.where(getattr(plan, factor)==setting_array_string[factor_index])
+        if len(modality_indexes[0])>0:
+          setting_array[factor_index] = modality_indexes[0][0]
+        else:
+          print(f'Unable to identify {setting_array_string[factor_index]} as a modality of factor {factor}')
+          raise SystemExit
+         
 
     if setting_array:
       self._setting = copy.deepcopy(setting_array)
