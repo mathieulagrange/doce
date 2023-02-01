@@ -101,7 +101,7 @@ class Experiment():
     ):
     # list of attributes
     self._atrs = []
-    self._plan = doce.Plan()
+    self._plan = doce.Plan('test')
     self._plans = []
     self.name = ''
     self.description = ''
@@ -667,9 +667,12 @@ class Experiment():
     return self._plans
 
   def add_plan(self, name, **kwargs):
-    self.__setattr__(name, doce.Plan(**kwargs))
+    self.__setattr__(name, doce.Plan(name, **kwargs))
     self._plan = getattr(self, name)
     self._plans.append(name)
+  
+  def get_current_plan(self):
+    return self._plan
 
   def set_metric(self,
     name = None,

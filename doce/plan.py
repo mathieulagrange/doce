@@ -32,7 +32,7 @@ class Plan():
 
   >>> import doce
 
-  >>> p = doce.Plan()
+  >>> p = doce.Plan('')
   >>> p.factor1=[1, 3]
   >>> p.factor2=[2, 4]
 
@@ -47,7 +47,8 @@ class Plan():
   factor1=3+factor2=2
   factor1=3+factor2=4
   """
-  def __init__(self, **factors):
+  def __init__(self, name, **factors):
+    self._name = name
     self._setting = None
     self._changed = False
     self._current_setting = 0
@@ -95,7 +96,7 @@ class Plan():
 
     >>> import doce
 
-    p = doce.Plan()
+    p = doce.Plan('')
 
     p.f1 = ['a', 'b']
     p.f2 = [1, 2, 3]
@@ -248,7 +249,10 @@ class Plan():
     factors = [self.factors()[i] for i in order]
     for f in factors:
       p[f] = getattr(self, f)
-    return Plan(**p)
+    return Plan(self.name, **p)
+  
+  def get_name(self):
+    return self._name
   
   def select(
     self,
@@ -385,7 +389,7 @@ class Plan():
 
     >>> import doce
 
-    >>> p = doce.Plan()
+    >>> p = doce.Plan('')
     >>> p.f1=['a', 'b']
     >>> p.f2=[1, 2]
     >>> p.f3=[0, 1]
@@ -418,7 +422,7 @@ class Plan():
 
     >>> import doce
 
-    >>> p = doce.Plan()
+    >>> p = doce.Plan('')
     >>> p.one = ['a', 'b']
     >>> p.two = list(range(10))
 
@@ -588,7 +592,7 @@ class Plan():
 
   def merge(self, plans):
     # build temporary plan
-    tmp = Plan()
+    tmp = Plan('merged')
     for plan in plans:
       for factor in plan.factors():
         setattr(tmp, factor, np.empty([0]))
@@ -614,7 +618,7 @@ class Plan():
       for plan in plans:
         if not factor in plan.factors():
           have[factor_index] = False
-    plan = Plan()
+    plan = Plan('merged')
     plan._default = tmp._default
     for factor_index, factor in enumerate(tmp.factors()):
       modalities = getattr(tmp, factor)
@@ -648,7 +652,7 @@ class Plan():
 
     >>> import doce
 
-    >>> p = doce.Plan()
+    >>> p = doce.Plan('')
     >>> p.one = ['a', 'b']
     >>> p.two = list(range(10))
 

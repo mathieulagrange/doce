@@ -35,7 +35,6 @@ def step(setting, experiment):
     accuracy = setting.c*np.random.random_sample(10)/6
   else:
     accuracy = (len(setting.classifier)+setting.dropout+np.random.random_sample(10))/6
-
   np.save(experiment.path.output+setting.identifier()+'_accuracy.npy', accuracy)
 
 # invoke the command line management of the doce package
