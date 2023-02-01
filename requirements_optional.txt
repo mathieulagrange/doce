@@ -7,3 +7,5 @@ tables
 tqdm
 numpydoc
 sphinx-rtd-theme
+matplotlib
+dataframe_image

@@ -5,3 +5,5 @@ pandas
 scipy
 tables
 tqdm
+matplotlib
+dataframe_image

@@ -132,6 +132,7 @@ class Experiment():
     self._check_setting_length = True
 
     self._display = types.SimpleNamespace()
+    self._display.export_png = 'wkhtmltoimage' # could be 'chrome' or 'matplotlib'
     self._display.factor_format_in_reduce = 'long'
     self._display.metric_format_in_reduce = 'long'
     self._display.metric_precision = 2

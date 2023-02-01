@@ -11,6 +11,7 @@ import time
 import re
 import numpy as np
 import inspect
+import dataframe_image
 import doce
 
 def main(experiment = None, func = None, display_func = None):
@@ -769,17 +770,26 @@ def export_data_frame(experiment, args, data_frame, styler, header, significance
     print('please add \\usepackage{booktabs, textcolor} to the preamble of your main .tex file')
 
   if 'png' in args.export or args.export == 'all':
-    print('Creating image...')
-    if shutil.which('wkhtmltoimage') is not None:
-      subprocess.call(
-          f'wkhtmltoimage -f png --width 0 {export_file_name}.html {export_file_name}.png',
-          shell=True
-          )
-      print(f'png export: {export_file_name}.png')
-    else:
-      print('Generation of png is handled by converting the html output.')
-      print('It uses the wkhtmltoimage tool to do so.')
-      print('This tool must be installed and reachable from you path.')
+    print('Creating image using '+experiment._display.export_png)
+    if experiment._display.export_png == 'wkhtmltoimage':
+      if shutil.which('wkhtmltoimage') is not None:
+        subprocess.call(
+            f'wkhtmltoimage -f png --width 0 {export_file_name}.html {export_file_name}.png',
+            shell=True
+            )
+        print(f'png export: {export_file_name}.png')
+        # 
+        # 
+        # dfi.export(styler, f'{export_file_name}_3.png', dpi = 600, table_conversion='matplotlib')
+      else:
+        print('Generation of png is handled by converting the html output.')
+        print('By default, doce uses wkhtmltoimage tool to do so.')
+        print('This tool must be installed and reachable from you path.')
+        print('Alternatively you can set experiment._display.export_png to \'chrome\' for an export with layout without the need of external depencencies aside from a reachable chrome. If you want ot rely only on python librairies, please use \'matlplotlib\' but the layout will be lost.')
+    if experiment._display.export_png == 'chrome':
+      dataframe_image.export(styler, f'{export_file_name}.png', dpi = 300)
+    if experiment._display.export_png == 'matplotlib':
+      dataframe_image.export(styler, f'{export_file_name}.png', dpi = 300, table_conversion='matplotlib')
   if 'pdf' in args.export or args.export == 'all':
     print('Creating pdf...')
     if shutil.which('wkhtmltopdf'):

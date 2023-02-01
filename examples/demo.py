@@ -16,6 +16,8 @@ experiment.set_path('output2', '/tmp/'+experiment.name+'/output2/', force=True)
 experiment.set_path('archive', '/tmp/'+experiment.name+'_archive/', force=True)
 # set some non varying parameters (here the number of cross validation folds)
 experiment.n_cross_validation_folds = 10
+
+experiment._display.export_png = 'matplotlib'
 # set the plan (factor : modalities)
 experiment.add_plan('plan',
   nn_type = ['cnn', 'lstm'],
@@ -53,7 +55,8 @@ experiment.set_metric(
 experiment.set_metric(
   name = 'duration',
   path = 'output2',
-  lower_the_better= True
+  lower_the_better= True,
+  precision = 2
   )
 
 def step(setting, experiment):
@@ -63,7 +66,7 @@ def step(setting, experiment):
   duration = len(setting.nn_type)+setting.n_layers+np.random.randn(experiment.n_cross_validation_folds)
   # storage of outputs (the string between _ and .npy must be the name of the metric defined in the set function)
   np.save(experiment.path.output+setting.identifier()+'_accuracy.npy', accuracy)
-  np.save(experiment.path.output2+setting.identifier()+'_duration.npy', duration)
+  np.save(experiment.path.output2+setting.identifier()+'_duration.npy', -duration)
 
 
 
