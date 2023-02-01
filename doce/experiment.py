@@ -133,6 +133,7 @@ class Experiment():
 
     self._display = types.SimpleNamespace()
     self._display.export_png = 'wkhtmltoimage' # could be 'chrome' or 'matplotlib'
+    self._display.export_pdf = 'wkhtmltopdf' # could be 'chrome' or 'latex'
     self._display.factor_format_in_reduce = 'long'
     self._display.metric_format_in_reduce = 'long'
     self._display.metric_precision = 2

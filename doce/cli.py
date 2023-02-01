@@ -791,14 +791,18 @@ def export_data_frame(experiment, args, data_frame, styler, header, significance
     if experiment._display.export_png == 'matplotlib':
       dataframe_image.export(styler, f'{export_file_name}.png', dpi = 300, table_conversion='matplotlib')
   if 'pdf' in args.export or args.export == 'all':
-    print('Creating pdf...')
-    if shutil.which('wkhtmltopdf'):
-      subprocess.call(
-          f'wkhtmltopdf {export_file_name}.html {export_file_name}.pdf', shell=True)
-    else:
-      print('Generation of pdf is handled by converting the html output.')
-      print('It uses the wkhtmltoimage tool to do so.')
-      print('This tool must be installed and reachable from you path.')
+    print('Creating pdf unsing '+experiment._display.export_pdf)
+    if experiment._display.export_pdf == 'wkhtmltopdf':
+      if shutil.which('wkhtmltopdf'):
+        subprocess.call(
+            f'wkhtmltopdf {export_file_name}.html {export_file_name}.pdf', shell=True)
+      else:
+        print('Generation of pdf is handled by converting the html output.')
+        print('It uses the wkhtmltopdf tool to do so.')
+        print('This tool must be installed and reachable from you path.')
+        print('Alternatively you can set experiment._display.export_pdf to \'chrome\' for an export with layout without the need of external depencencies aside from a reachable chrome.')
+    if experiment._display.export_pdf == 'chrome':
+      dataframe_image.export(styler, f'{export_file_name}.pdf')
 
     print('Cropping {export_file_name}.pdf')
     if shutil.which('pdfcrop') is not None:

@@ -17,7 +17,7 @@ experiment.set_path('archive', '/tmp/'+experiment.name+'_archive/', force=True)
 # set some non varying parameters (here the number of cross validation folds)
 experiment.n_cross_validation_folds = 10
 
-experiment._display.export_png = 'matplotlib'
+experiment._display.export_pdf = 'latex'
 # set the plan (factor : modalities)
 experiment.add_plan('plan',
   nn_type = ['cnn', 'lstm'],
