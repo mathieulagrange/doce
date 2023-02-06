@@ -747,6 +747,14 @@ class Plan():
 
     """
     integer_selectors = []
+    # print(selectors)
+    # if ';' in dict_selector[0]:
+    #   new_selector = []
+    #   print(dict_selector[0].split(';'))
+    #   for selector in dict_selector[0].split(';'):
+    #     selector_int = self._str2list([selector])
+    #     integer_selectors.append(selector_int[0])
+    # else:
     for selector in dict_selector:
       integer_selector = [-1]*len(self._factors)
       for factor in selector.keys():
@@ -781,7 +789,6 @@ class Plan():
     # print(selectors)
     if ',' in selector_str[0]:
       new_selector = []
-      print(selector_str[0].split(','))
       for selector in selector_str[0].split(','):
         selector_int = self._str2list([selector])
         new_selector.append(selector_int[0])
