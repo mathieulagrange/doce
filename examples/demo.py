@@ -68,7 +68,6 @@ def step(setting, experiment):
   np.save(experiment.path.output+setting.identifier()+'_accuracy.npy', accuracy)
   np.save(experiment.path.output2+setting.identifier()+'_duration.npy', -duration)
 
-
 # invoke the command line management of the doce package
 if __name__ == "__main__":
   doce.cli.main(experiment = experiment,

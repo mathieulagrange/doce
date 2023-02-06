@@ -778,12 +778,14 @@ class Plan():
 
     """
     selector = []
-    print(selector_str)
     # print(selectors)
     if ',' in selector_str[0]:
+      new_selector = []
+      print(selector_str[0].split(','))
       for selector in selector_str[0].split(','):
-        selector_int = self._str2list(selector)
-        selector.append(selector_int[0])
+        selector_int = self._str2list([selector])
+        new_selector.append(selector_int[0])
+      selector = new_selector
     else:
       # for factor_selector in selectors:
       selector = [-1]*len(self._factors)
