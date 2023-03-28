@@ -16,7 +16,7 @@ experiment.set_path('output', '/tmp/'+experiment.name+'/', force=True)
 experiment.add_plan('plan',
   a = [True, False],
   b = [True, False],
-  c = [True, False]
+  c = [0, 1]
 )
 # set the metrics
 experiment.set_metric(name='m')

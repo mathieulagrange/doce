@@ -593,8 +593,12 @@ def data_frame_display(experiment, args, select_display, select_factor):
   c_int = {}
   precision_format = {}
   for column_index, column in enumerate(columns):
-    if data_frame[column].dtypes == 'bool':
+    # if data_frame[column].dtypes == 'bool':
+    #   bool_selector.append(column) 
+    if np.sum(np.array(data_frame[column])==-99999)+np.sum(np.array(data_frame[column])==0)+np.sum(np.array(data_frame[column])==1) == np.array((data_frame[column])).size:
       bool_selector.append(column)
+      data_frame[column] = data_frame[column].replace({-99999: 0})
+      data_frame = data_frame.astype({column: 'bool'})
     if column_index >= nb_factor_columns:
       c_metric.append(column)
       if select_factor:

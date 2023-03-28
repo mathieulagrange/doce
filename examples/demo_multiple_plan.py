@@ -19,7 +19,7 @@ experiment.add_plan('svm',
 experiment.add_plan('deep',
   classifier = ['cnn', 'lstm'],
   n_layers = [2, 4, 8],
-  dropout = [0, 1]
+  dropout = [False, True]
 )
 experiment.set_metric(
   name = 'accuracy',

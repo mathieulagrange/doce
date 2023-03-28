@@ -622,6 +622,7 @@ class Plan():
     plan._default = tmp._default
     for factor_index, factor in enumerate(tmp.factors()):
       modalities = getattr(tmp, factor)
+      print(modalities)
       if (not isinstance(modalities[0], str) and
           all(np.array([val.is_integer() for val in modalities]))
           ):
@@ -883,9 +884,9 @@ class Plan():
           f'All the modalities of the factor {name} must be of the same type (str, int, bool, or float)')
       if value and isinstance(value[0], str):
         value = np.array(value)
-      elif value and isinstance(value[0], bool):
-        value = np.array(value, dtype=bool)
-      elif value and isinstance(value[0], int) and not isinstance(value[0], bool):
+      # elif value and isinstance(value[0], bool):
+      #   value = np.array(value, dtype=bool)
+      elif value and isinstance(value[0], int) or isinstance(value[0], bool):
         value = np.array(value, dtype=np.intc)
       elif value and isinstance(value[0], float):
         value = np.array(value, dtype=np.float)
