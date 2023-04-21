@@ -787,9 +787,9 @@ def export_data_frame(experiment, args, data_frame, styler, header, significance
         # dfi.export(styler, f'{export_file_name}_3.png', dpi = 600, table_conversion='matplotlib')
       else:
         print('Generation of png is handled by converting the html output.')
-        print('By default, doce uses wkhtmltoimage tool to do so.')
+        print('By default, doce tries to use wkhtmltoimage tool to do so.')
         print('This tool must be installed and reachable from you path.')
-        print('Alternatively you can set experiment._display.export_png to \'chrome\' for an export with layout without the need of external depencencies aside from a reachable chrome. If you want ot rely only on python librairies, please use \'matlplotlib\' but the layout will be lost.')
+        print('Alternatively you can set experiment._display.export_png to \'chrome\' for an export with layout without the need of external depencencies aside from a reachable chrome. If you want ot rely only on python librairies, please use \'matlplotlib\' but most of the layout will be lost.')
     if experiment._display.export_png == 'chrome':
       dataframe_image.export(styler, f'{export_file_name}.png', dpi = 300)
     if experiment._display.export_png == 'matplotlib':

@@ -39,7 +39,9 @@ setup(
         'pandas',
         'scipy',
         'tables',
-        'tqdm'
+        'tqdm',
+        'matplotlib',
+        'dataframe_image'
     ],
     python_requires='>=3.6',
     extras_require={
