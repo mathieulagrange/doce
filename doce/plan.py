@@ -202,7 +202,6 @@ class Plan():
       
     if progress:
       print('Number of settings: '+str(len(self)))
-
     if nb_jobs>1 or nb_jobs<0:
       from joblib import Parallel, delayed
       Parallel(n_jobs=nb_jobs, require='sharedmem')(delayed(setting.perform)(
@@ -889,7 +888,7 @@ class Plan():
       elif value and isinstance(value[0], int) or isinstance(value[0], bool):
         value = np.array(value, dtype=np.intc)
       elif value and isinstance(value[0], float):
-        value = np.array(value, dtype=np.float)
+        value = np.array(value, dtype=np.float64)
     return object.__setattr__(self, name, value)
 
   def __delattr__(
