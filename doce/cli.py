@@ -14,7 +14,7 @@ import inspect
 import dataframe_image
 import doce
 
-def main(experiment = None, func = None, display_func = None):
+def main(experiment = None, func = None, display_func = None, arg_str = None):
   """This method shall be called from the main script of the experiment
   to control the experiment using the command line.
 
@@ -38,9 +38,9 @@ def main(experiment = None, func = None, display_func = None):
   >>> def step(setting, experiment):
   ...   print(setting.identifier())
 
-  Executing this file with the --run option gives:
+  Executing this file with the --compute option gives:
 
-  $ python experiment_run.py -r
+  $ python experiment_run.py -c
    factor1_1_factor2_2
    factor1_1_factor2_4
    factor1_3_factor2_2
@@ -252,7 +252,10 @@ def main(experiment = None, func = None, display_func = None):
       help=r'level of verbosity (default 0: silent).',
       action='store_true'
   )
-  args = parser.parse_args()
+  if arg_str:
+    args = parser.parse_args(arg_str.split())
+  else:
+    args = parser.parse_args()
 
   if args.mail is None:
     args.mail = 0
