@@ -10,13 +10,19 @@ experiment = doce.Experiment(
 )
 # set acces paths (here only storage is needed)
 experiment.set_path('output', '/tmp/'+experiment.name+'/', force=True)
+
+# optionally have shared factors
+shared_factors = {'dataset': ['d1', 'd2', 'd3']}
+
 # set the "svm" plan
 experiment.add_plan('svm',
+  **shared_factors,
   classifier = ['svm'],
   c = [1., 0.1, 0.01]
 )
 # set the "deep" plan
 experiment.add_plan('deep',
+  **shared_factors,
   classifier = ['cnn', 'lstm'],
   n_layers = [2, 4, 8],
   dropout = [False, True]

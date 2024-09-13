@@ -779,17 +779,19 @@ class Plan():
   def _str2list(
     self,
     selector_str,
-    factor_separator = '+',
-    modality_identifier = '='
+    selector_separator = ':',
+    factor_separator = ',',
+    modality_identifier = '=',
+    modality_separator = '+'
     ):
     """convert string based selector to list based selector
 
     """
     selector = []
     # print(selectors)
-    if ',' in selector_str[0]:
+    if selector_separator in selector_str[0]:
       new_selector = []
-      for selector in selector_str[0].split(','):
+      for selector in selector_str[0].split(selector_separator):
         selector_int = self._str2list([selector])
         new_selector.append(selector_int[0])
       selector = new_selector
@@ -800,17 +802,19 @@ class Plan():
       for factor_modality_pair in factor_modality_pairs:
         factor_modality_pair_split = factor_modality_pair.split(modality_identifier)
         factor = factor_modality_pair_split[0]
-        modality = factor_modality_pair_split[1]
-        if factor in self._factors:
-          reference_modality_string = []
-          for reference_modality in list(getattr(self, factor)):
-            reference_modality_string.append(str(reference_modality))
-          if modality in reference_modality_string:
-            selector[self._factors.index(factor)] = reference_modality_string.index(modality)
+        modalities = factor_modality_pair_split[1].split(modality_separator)
+        selector[self._factors.index(factor)] = []
+        for modality in modalities:
+          if factor in self._factors:
+            reference_modality_string = []
+            for reference_modality in list(getattr(self, factor)):
+              reference_modality_string.append(str(reference_modality))
+            if modality in reference_modality_string:
+              selector[self._factors.index(factor)].append(reference_modality_string.index(modality))
+            else:
+              raise Exception(f'Error: {modality} is not a modality of factor {factor}.')
           else:
-            raise Exception(f'Error: {modality} is not a modality of factor {factor}.')
-        else:
-          raise Exception(f'Error: {factor} is not a factor.')
+            raise Exception(f'Error: {factor} is not a factor.')
       selector = [selector]
     return selector
 
