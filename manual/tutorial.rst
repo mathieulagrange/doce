@@ -133,7 +133,7 @@ Suppose you want to select the settings with n_layers=2 and no dropout, you can 
 
 .. code-block:: console
 
-  python demo.py -l -s n_layers=2+dropout=0
+  python demo.py -l -s n_layers=2,dropout=0
   nn_type=cnn+n_layers=2+learning_rate=0dot001+dropout=0
   nn_type=cnn+n_layers=2+learning_rate=0dot0001+dropout=0
   nn_type=cnn+n_layers=2+learning_rate=1edash05+dropout=0
@@ -141,19 +141,22 @@ Suppose you want to select the settings with n_layers=2 and no dropout, you can 
   nn_type=lstm+n_layers=2+learning_rate=0dot0001+dropout=0
   nn_type=lstm+n_layers=2+learning_rate=1edash05+dropout=0
 
-Suppose you want to select the settings with nn_type=cnn, n_layers=2, n_layers=8 and no dropout with the string format, the only way is to chain selectors:
+You can also select multiple modalities with "+" and chain selectors with ":":
 
 .. code-block:: console
 
-  $ python demo.py -l -s nn_type=cnn+n_layers=2+dropout=0,nn_type=cnn+n_layers=5+dropout=0
-  nn_type=cnn+n_layers=2+learning_rate=0dot001+dropout=0
-  nn_type=cnn+n_layers=2+learning_rate=0dot0001+dropout=0
-  nn_type=cnn+n_layers=2+learning_rate=1edash05+dropout=0
-  nn_type=cnn+n_layers=5+learning_rate=0dot001+dropout=0
-  nn_type=cnn+n_layers=5+learning_rate=0dot0001+dropout=0
-  nn_type=cnn+n_layers=5+learning_rate=1edash05+dropout=0
+  python demo.py -l -s nn_type=cnn,n_layers=2+5,dropout=0:nn_type=cnn,n_layers=5,dropout=1
+  nn_type=cnn+n_layers=2+learning_rate=0.001+dropout=0
+  nn_type=cnn+n_layers=2+learning_rate=0.0001+dropout=0
+  nn_type=cnn+n_layers=2+learning_rate=0.00001+dropout=0
+  nn_type=cnn+n_layers=5+learning_rate=0.001+dropout=0
+  nn_type=cnn+n_layers=5+learning_rate=0.0001+dropout=0
+  nn_type=cnn+n_layers=5+learning_rate=0.00001+dropout=0
+  nn_type=cnn+n_layers=5+learning_rate=0.001+dropout=1
+  nn_type=cnn+n_layers=5+learning_rate=0.0001+dropout=1
+  nn_type=cnn+n_layers=5+learning_rate=0.00001+dropout=1
 
-This can get tedious when you want to select multiple modalities for multiple factors. For example, suppose you want to select the settings with nn_type=cnn, n_layers=[2, 4] and learning_rate= [0.001, 0.00001], you can do that conveniently with a dictionary formatted selector:
+You can have more flexibility with a dict selector. For example, suppose you want to select the settings with nn_type=cnn, n_layers=[2, 4] and learning_rate= [0.001, 0.00001], you can do that conveniently with a dictionary formatted selector:
 
 .. code-block:: console
 
