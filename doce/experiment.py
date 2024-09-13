@@ -812,33 +812,49 @@ class Experiment():
         self._plan = self._plan.merge(o_plans)
       plan = self._plan
 
-    if path:
-      if not (r'\/' in path or r'\\' in path):
-        path = getattr(self.path, path)
-      return get_from_path(
-        output,
-        settings=plan.select(selector),
-        path=path,
-        tag=tag
-        )
-    data = []
-    settings = []
-    for path_iterator in self.path.__dict__:
-      if not path.endswith('_raw'):
-        path_iterator = getattr(self.path, path_iterator)
-        (data_path, setting_path, header_path) = get_from_path(
+    d = {}
+    s = {}
+    h = {}
+    if isinstance(output, str):
+      outputs = [output]
+    else:
+      outputs = output
+    
+    for output in outputs:
+      if path:
+        if not (r'\/' in path or r'\\' in path):
+          full_path = getattr(self.path, path)
+        (data, settings, header_path) =  get_from_path(
           output,
           settings=plan.select(selector),
-          path=path_iterator,
+          path=full_path,
           tag=tag
           )
-        if data_path:
-          for data_setting in data_path:
-            data.append(data_setting)
-          for setting_description in setting_path:
-            settings.append(setting_description)
-
-    return (data, settings, header_path)
+      else:
+        data = []
+        settings = []
+        for path_iterator in self.path.__dict__:
+          if not path.endswith('_raw'):
+            path_iterator = getattr(self.path, path_iterator)
+            (data_path, setting_path, header_path) = get_from_path(
+              output,
+              settings=plan.select(selector),
+              path=path_iterator,
+              tag=tag
+              )
+            if data_path:
+              for data_setting in data_path:
+                data.append(data_setting)
+              for setting_description in setting_path:
+                settings.append(setting_description)
+      d[output] = data
+      s[output] = settings
+      h[output] = header_path
+    if len(s.keys())==1:
+      d = d[list(h.keys())[0]]
+      s = s[list(h.keys())[0]]
+      h = h[list(h.keys())[0]]
+    return (d, s, h)
 
   def add_setting_group(
     self,   file_id,

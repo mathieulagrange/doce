@@ -7,8 +7,13 @@ selector = {"nn_type":["cnn", "lstm"],"n_layers":2,"learning_rate":0.001}
 (data, settings, header) = demo.experiment.get_output(
   output = 'accuracy',
   selector = selector,
-  path = 'output'
+  # path = 'output'
   )
+
+
+# data = data['accuracy']
+# settings = settings['accuracy']
+# header = header['accuracy']
 
 import numpy as np
 import matplotlib.pyplot as plt
