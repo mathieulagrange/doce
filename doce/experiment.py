@@ -820,6 +820,7 @@ class Experiment():
     else:
       outputs = output
     
+    print(outputs)
     for output in outputs:
       if path:
         if not (r'\/' in path or r'\\' in path):
@@ -834,7 +835,7 @@ class Experiment():
         data = []
         settings = []
         for path_iterator in self.path.__dict__:
-          if not path.endswith('_raw'):
+          if not path_iterator.endswith('_raw'):
             path_iterator = getattr(self.path, path_iterator)
             (data_path, setting_path, header_path) = get_from_path(
               output,
@@ -854,6 +855,7 @@ class Experiment():
       d = d[list(h.keys())[0]]
       s = s[list(h.keys())[0]]
       h = h[list(h.keys())[0]]
+    print(d)
     return (d, s, h)
 
   def add_setting_group(
