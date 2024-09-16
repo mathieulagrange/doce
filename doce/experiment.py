@@ -646,19 +646,26 @@ class Experiment():
     Here, the same operations are conducted on a h5 file.
     """
 
-    if '/' not in path and '\\' not in path:
-      path = self.__getattribute__('path').__getattribute__(path)
-    if path:
-      self._plan.select(selector).clean_data_sink(
-        path,
-        reverse=reverse,
-        force=force,
-        keep=keep,
-        wildcard=wildcard,
-        setting_encoding=setting_encoding,
-        archive_path=archive_path,
-        verbose=verbose
-        )
+    if path == ' ':
+      paths = self.path.__dict__
+    else:
+      paths = [path]
+    for path in paths:
+      if not path.endswith('_raw') and path not in ['archive', 'code', 'export']:
+        print('About to process path: '+path)
+        if '/' not in path and '\\' not in path:
+          path = self.__getattribute__('path').__getattribute__(path)
+        if path:
+          self._plan.select(selector).clean_data_sink(
+            path,
+            reverse=reverse,
+            force=force,
+            keep=keep,
+            wildcard=wildcard,
+            setting_encoding=setting_encoding,
+            archive_path=archive_path,
+            verbose=verbose
+            )
 
   def plans(self):
     # names = []

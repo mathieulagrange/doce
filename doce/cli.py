@@ -156,7 +156,7 @@ def main(experiment = None, func = None, display_func = None, arg_str = None):
       interpreted as a member of the experiments path. Unwanted files are moved \
       to the path experiment.path.archive if set, deleted otherwise.',
       nargs='?',
-      const=''
+      const=' '
   )
   parser.add_argument(
       '-l',
@@ -208,7 +208,7 @@ def main(experiment = None, func = None, display_func = None, arg_str = None):
       as a member of the experiments \ path. Unwanted files are moved \
       to the path experiment.path.archive if set, \ deleted otherwise.',
       nargs='?',
-      const=''
+      const=' '
   )
   parser.add_argument(
       '-s',
@@ -670,7 +670,7 @@ def pretty_bool(val):
 
 def escape_tex(val):
   if isinstance(val, str):
-    val = val.replace('_', '\_').replace('%', '\%').replace('$', '\$').replace('{', '\{').replace('}', '\}')
+    val = val.replace('_', r'\_').replace('%', r'\%').replace('$', r'\$').replace('{', r'\{').replace('}', r'\}')
   return val
 
 
@@ -773,7 +773,7 @@ def export_data_frame(experiment, args, data_frame, styler, header, significance
                 index=experiment._display.show_row_index,
                 bold_rows=True,
                 escape = False,
-                caption=header.replace('_', '\_').replace('%', '\%').replace('$', '\$').replace('{', '\{').replace('}', '\}')
+                caption=header.replace('_', r'\_').replace('%', r'\%').replace('$', r'\$').replace('{', r'\{').replace('}', r'\}')
                 )
     print(f'tex export: {export_file_name}.tex')
     print('please add \\usepackage{booktabs, textcolor} to the preamble of your main .tex file')

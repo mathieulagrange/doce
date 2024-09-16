@@ -552,7 +552,8 @@ class Plan():
       if reverse:
         complete = []
         for output_file in glob.glob(path+'/'+wildcard):
-          complete.append(output_file)
+          if not os.path.isdir(output_file):
+            complete.append(output_file)
         # print(file_names)
         file_names = [i for i in complete if i not in file_names]
       #   print(complete)
