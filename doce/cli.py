@@ -525,6 +525,7 @@ def data_frame_display(experiment, args, select_display, select_factor):
     metric_display=experiment._display.metric_format_in_reduce,
     factor_display_length=experiment._display.factor_format_in_reduce_length,
     metric_display_length=experiment._display.metric_format_in_reduce_length,
+    metric_delimiter = experiment.metric_delimiter,
     verbose=args.verbose
     )
 
@@ -552,6 +553,7 @@ def data_frame_display(experiment, args, select_display, select_factor):
         metric_display=experiment._display.metric_format_in_reduce,
         factor_display_length=experiment._display.factor_format_in_reduce_length,
         metric_display_length=experiment._display.metric_format_in_reduce_length,
+        metric_delimiter = experiment.metric_delimiter,
         verbose=args.verbose
         )
       modification_time_stamp += setting_modification_time_stamp # ???

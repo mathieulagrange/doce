@@ -118,6 +118,7 @@ class Experiment():
 
     self.parameter = types.SimpleNamespace()
     self.metric = doce.Metric()
+    self.metric_delimiter = '_'
     self.path = Path()
     self.path.code = os.getcwd()
     self.path.archive = ''
@@ -829,7 +830,8 @@ class Experiment():
           output,
           settings=plan.select(selector),
           path=full_path,
-          tag=tag
+          tag=tag,
+          metric_delimiter=self.metric_delimiter
           )
       else:
         data = []
@@ -841,7 +843,8 @@ class Experiment():
               output,
               settings=plan.select(selector),
               path=path_iterator,
-              tag=tag
+              tag=tag,
+              metric_delimiter=self.metric_delimiter
               )
             if data_path:
               for data_setting in data_path:
@@ -994,7 +997,8 @@ def get_from_path(
   path = '',
   tag='',
   setting_encoding=None,
-  verbose=False
+  verbose=False,
+  metric_delimiter = '_'
   ):
   """ Get the metric vector from an .npy or a group of a .h5 file.
 
@@ -1108,7 +1112,7 @@ def get_from_path(
       if tag:
         path += tag+'/'
       for setting in settings:
-        file_name = f'{path}{setting.identifier(**setting_encoding)}_{metric}.npy'
+        file_name = f'{path}{setting.identifier(**setting_encoding)}{metric_delimiter}{metric}.npy'
         if os.path.exists(file_name):
           if verbose:
             print(f'Found {file_name}')

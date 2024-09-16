@@ -25,7 +25,10 @@ experiment.add_plan('plan',
   learning_rate = [0.001, 0.0001, 0.00001],
   dropout = [0, 1]
 )
+
 # set the metrics
+experiment.metric_delimiter = '<>'
+
 experiment.set_metric(
   name = 'accuracy',
   percent=True,
@@ -65,8 +68,8 @@ def step(setting, experiment):
   # duration is a function of cnn_type, and n_layers
   duration = len(setting.nn_type)+setting.n_layers+np.random.randn(experiment.n_cross_validation_folds)
   # storage of outputs (the string between _ and .npy must be the name of the metric defined in the set function)
-  np.save(experiment.path.output+setting.identifier()+'_accuracy.npy', accuracy)
-  np.save(experiment.path.output2+setting.identifier()+'_duration.npy', -duration)
+  np.save(experiment.path.output+setting.identifier()+experiment.metric_delimiter+'accuracy.npy', accuracy)
+  np.save(experiment.path.output2+setting.identifier()+experiment.metric_delimiter+'duration.npy', -duration)
 
 # invoke the command line management of the doce package
 if __name__ == "__main__":

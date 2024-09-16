@@ -69,6 +69,7 @@ class Metric():
     settings,
     path,
     setting_encoding=None,
+    metric_delimiter = '_',
     verbose = False,
     ):
     """Handle reduction of the metrics when considering numpy storage.
@@ -104,7 +105,7 @@ class Metric():
       for metric_index, metric in enumerate(self.name()):
         output = getattr(self, metric)['output']
         output_path = getattr(path, getattr(self, metric)['path'])
-        file_name = output_path+setting.identifier(**setting_encoding)+'_'+output+'.npy'
+        file_name = output_path+setting.identifier(**setting_encoding)+metric_delimiter+output+'.npy'
         if os.path.exists(file_name):
           mod = os.path.getmtime(file_name)
           modification_time_stamp.append(mod)
@@ -265,6 +266,7 @@ class Metric():
     metric_display = 'long',
     metric_display_length = 2,
     reduced_metric_display = 'capitalize',
+    metric_delimiter = '_',
     verbose = False
     ):
     """Apply the reduction directives described in each members of doce.metric.
@@ -469,6 +471,7 @@ class Metric():
           settings,
           path,
           setting_encoding,
+          metric_delimiter,
           verbose)
 
       nb_factors = len(settings.factors())
