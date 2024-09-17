@@ -19,7 +19,7 @@ class Setting():
 
   >>> import doce
 
-  >>> p = doce.Plan()
+  >>> p = doce.Plan('plan')
   >>> p.f1=['a', 'b']
   >>> p.f2=[1, 2]
 
@@ -71,7 +71,7 @@ class Setting():
 
     >>> import doce
 
-    >>> p = doce.Plan()
+    >>> p = doce.Plan('plan')
     >>> p.one = ['a', 'b']
     >>> p.two = [1, 2]
 
@@ -152,7 +152,7 @@ class Setting():
 
     >>> import doce
 
-    >>> p = doce.Plan()
+    >>> p = doce.Plan('plan')
     >>> p.one = ['a', 'b']
     >>> p.two = [0,1]
     >>> p.three = ['none', 'c']
@@ -281,7 +281,7 @@ class Setting():
 
     >>> import doce
 
-    >>> p = doce.Plan()
+    >>> p = doce.Plan('plan')
     >>> p.one = ['a', 'b', 'c']
     >>> p.two = [1, 2, 3]
 
@@ -379,5 +379,5 @@ class Setting():
 
 if __name__ == '__main__':
   import doctest
-  doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+  doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.REPORT_ONLY_FIRST_FAILURE)
   # doctest.run_docstring_examples(Setting.id, globals())

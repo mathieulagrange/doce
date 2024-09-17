@@ -413,22 +413,22 @@ class Metric():
     / (RootGroup) ''
     /f1=1+f2=1 (Group) 'f1=1+f2=1'
     /f1=1+f2=1/m1 (Array(100,)) 'm1'
-    /f1=1+f2=1/m2 (EArray(100,)) 'm2'
+    /f1=1+f2=1/m2 (Array(100,)) 'm2'
     /f1=1+f2=2 (Group) 'f1=1+f2=2'
     /f1=1+f2=2/m1 (Array(100,)) 'm1'
-    /f1=1+f2=2/m2 (EArray(100,)) 'm2'
+    /f1=1+f2=2/m2 (Array(100,)) 'm2'
     /f1=1+f2=3 (Group) 'f1=1+f2=3'
     /f1=1+f2=3/m1 (Array(100,)) 'm1'
-    /f1=1+f2=3/m2 (EArray(100,)) 'm2'
+    /f1=1+f2=3/m2 (Array(100,)) 'm2'
     /f1=2+f2=1 (Group) 'f1=2+f2=1'
     /f1=2+f2=1/m1 (Array(100,)) 'm1'
-    /f1=2+f2=1/m2 (EArray(100,)) 'm2'
+    /f1=2+f2=1/m2 (Array(100,)) 'm2'
     /f1=2+f2=2 (Group) 'f1=2+f2=2'
     /f1=2+f2=2/m1 (Array(100,)) 'm1'
-    /f1=2+f2=2/m2 (EArray(100,)) 'm2'
+    /f1=2+f2=2/m2 (Array(100,)) 'm2'
     /f1=2+f2=3 (Group) 'f1=2+f2=3'
     /f1=2+f2=3/m1 (Array(100,)) 'm1'
-    /f1=2+f2=3/m2 (EArray(100,)) 'm2'
+    /f1=2+f2=3/m2 (Array(100,)) 'm2'
     >>> h5.close()
 
     >>> (setting_description,
@@ -685,7 +685,7 @@ def significance(
 
 if __name__ == '__main__':
   import doctest
-  doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+  doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.REPORT_ONLY_FIRST_FAILURE)
 
   # doctest.run_docstring_examples(
   #   _metric.add_setting_group,

@@ -49,6 +49,7 @@ class Experiment():
     selector: []
     parameter
     metric
+    metric_delimiter: ->
     path:
       code_raw: ...
       code: ...
@@ -80,6 +81,7 @@ class Experiment():
     selector: []
     parameter
     metric
+    metric_delimiter: ->
     path:
       code_raw: ...
       code: ...
@@ -254,6 +256,7 @@ class Experiment():
     selector: []
     parameter
     metric
+    metric_delimiter: ->
     path:
       code_raw: ...
       code: ...
@@ -265,7 +268,7 @@ class Experiment():
 
     >>> import doce
     >>> doce.Experiment().__str__(style='html')
-        '<div>name</div><div>description</div><div>author: no name</div><div>address: noname@noorg.org</div><div>version: 0.1</div><div>status:</div><div>  run_id: ...</div><div>  verbose: 0</div><div>selector: []</div><div>parameter</div><div>metric</div><div>path:</div><div>  code_raw: ...</div><div>  code: ...</div><div>  archive_raw: </div><div>  archive: </div><div>  export_raw: export</div><div>  export: export</div><div>host: []</div><div></div>'
+        '<div>name</div><div>description</div><div>author: no name</div><div>address: noname@noorg.org</div><div>version: 0.1</div><div>status:</div><div>  run_id: ...</div><div>  verbose: 0</div><div>selector: []</div><div>parameter</div><div>metric</div><div>metric_delimiter: -></div><div>path:</div><div>  code_raw: /Users/lagrange/tools/doce/doce</div><div>  code: /Users/lagrange/tools/doce/doce</div><div>  archive_raw: </div><div>  archive: </div><div>  export_raw: export</div><div>  export: export</div><div>host: []</div><div></div>'
     """
     description = ''
     for atr in self._atrs:
@@ -568,10 +571,12 @@ class Experiment():
     ['factor1=1+factor2=4_mult.npy', 'factor1=1+factor2=4_sum.npy', 'factor1=3+factor2=4_sum.npy', 'factor1=1+factor2=2_mult.npy', 'factor1=1+factor2=2_sum.npy', 'factor1=3+factor2=2_mult.npy', 'factor1=3+factor2=4_mult.npy', 'factor1=3+factor2=2_sum.npy']
 
     >>> e.clean_data_sink('output', [0], force=True)
+    About to process path: output
     >>> os.listdir(e.path.output)
     ['factor1=3+factor2=4_sum.npy', 'factor1=3+factor2=2_mult.npy', 'factor1=3+factor2=4_mult.npy', 'factor1=3+factor2=2_sum.npy']
 
     >>> e.clean_data_sink('output', [1, 1], force=True, reverse=True, wildcard='*mult*')
+    About to process path: output
     >>> os.listdir(e.path.output)
     ['factor1=3+factor2=4_sum.npy', 'factor1=3+factor2=4_mult.npy', 'factor1=3+factor2=2_sum.npy']
 
@@ -617,6 +622,7 @@ class Experiment():
     >>> h5.close()
 
     >>> e.clean_data_sink('output', [0], force=True)
+    About to process path: output
     >>> h5 = tb.open_file(e.path.output, mode='r')
     >>> print(h5)
     /tmp/test.h5 (File) ''
@@ -632,6 +638,7 @@ class Experiment():
     >>> h5.close()
 
     >>> e.clean_data_sink('output', [1, 1], force=True, reverse=True, wildcard='*mult*')
+    About to process path: output
     >>> h5 = tb.open_file(e.path.output, mode='r')
     >>> print(h5)
     /tmp/test.h5 (File) ''
@@ -792,8 +799,8 @@ class Experiment():
     >>> def process(setting, experiment):
     ...  output1 = setting.f1+setting.f2+np.random.randn(100)
     ...  output2 = setting.f1*setting.f2*np.random.randn(100)
-    ...  np.save(f'{experiment.path.output+setting.identifier()}_m1.npy', output1)
-    ...  np.save(f'{experiment.path.output+setting.identifier()}_m2.npy', output2)
+    ...  np.save(f'{experiment.path.output+setting.identifier()}{experiment.metric_delimiter}m1.npy', output1)
+    ...  np.save(f'{experiment.path.output+setting.identifier()}{experiment.metric_delimiter}m2.npy', output2)
     >>> nb_failed = experiment.perform([], process, progress='')
 
     >>> (setting_output,
@@ -828,7 +835,6 @@ class Experiment():
     else:
       outputs = output
     
-    print(outputs)
     for output in outputs:
       if path:
         if not (r'\/' in path or r'\\' in path):
@@ -865,7 +871,6 @@ class Experiment():
       d = d[list(h.keys())[0]]
       s = s[list(h.keys())[0]]
       h = h[list(h.keys())[0]]
-    print(d)
     return (d, s, h)
 
   def add_setting_group(
@@ -1154,4 +1159,4 @@ class Path:
 
 if __name__ == '__main__':
   import doctest
-  doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+  doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.REPORT_ONLY_FIRST_FAILURE)

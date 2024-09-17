@@ -281,7 +281,7 @@ class Plan():
 
     >>> import doce
 
-    >>> p = doce.Plan()
+    >>> p = doce.Plan('plan')
     >>> p.f1=['a', 'b', 'c']
     >>> p.f2=[1, 2, 3]
 
@@ -1033,4 +1033,4 @@ class Plan():
 
 if __name__ == '__main__':
   import doctest
-  doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE)
+  doctest.testmod(optionflags=doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.REPORT_ONLY_FIRST_FAILURE)
