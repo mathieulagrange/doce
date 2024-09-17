@@ -201,9 +201,9 @@ You must define which code shall be processed for any setting, given the computi
       accuracy = (len(setting.nn_type)+setting.dropout+np.random.random_sample(experiment.n_cross_validation_folds))/6
       # duration is a function of cnn_type, and n_layers
       duration = len(setting.nn_type)+setting.n_layers+np.random.randn(experiment.n_cross_validation_folds)
-      # storage of outputs (the string between _ and .npy must be the name of the metric defined in the set function)
-      np.save(experiment.path.output+setting.id()+'_accuracy.npy', accuracy)
-      np.save(experiment.path.output+setting.id()+'_duration.npy', duration)
+      # storage of outputs (the string between -> and .npy must be the name of the metric defined in the set function)
+      np.save(experiment.path.output+setting.id()+'->accuracy.npy', accuracy)
+      np.save(experiment.path.output+setting.id()+'->duration.npy', duration)
 
 In this demo, the processing code simply stores some dummy outputs to the disk.
 
@@ -444,9 +444,9 @@ You can also do *before* removing the modality in the array:
   $ python demo.py -R output -s learning_rate=0dot001
   INFORMATION: setting path.archive allows you to move the unwanted files to the archive path and not delete them.
   List the 24 files ? [Y/n]
-  /tmp/demo/dropout=0+learning_rate=0dot001+n_layers=8+nn_type=lstm_accuracy.npy
+  /tmp/demo/dropout=0+learning_rate=0dot001+n_layers=8+nn_type=lstm->accuracy.npy
   ...
-  /tmp/demo/dropout=0+learning_rate=0dot001+n_layers=8+nn_type=cnn_accuracy.npy
+  /tmp/demo/dropout=0+learning_rate=0dot001+n_layers=8+nn_type=cnn->accuracy.npy
   About to remove 24 files from /tmp/demo/
    Proceed ? [Y/n]
 
@@ -557,10 +557,10 @@ Let us assume that we have computed every settings, the files are:
 
   $ python factor_manipulation.py -c
   $ ls -1 /tmp/factor_manipulation/
-  dropout=1+nn_type=cnn_accuracy.npy
-  dropout=1+nn_type=lstm_accuracy.npy
-  nn_type=cnn_accuracy.npy
-  nn_type=lstm_accuracy.npy
+  dropout=1+nn_type=cnn->accuracy.npy
+  dropout=1+nn_type=lstm->accuracy.npy
+  nn_type=cnn->accuracy.npy
+  nn_type=lstm->accuracy.npy
 
 Keeping only the files of interest is done so:
 
@@ -569,8 +569,8 @@ Keeping only the files of interest is done so:
   $ python factor_manipulation.py -K output -s dropout=1
   INFORMATION: setting path.archive allows you to move the unwanted files to the archive path and not delete them.
   List the 2 files ? [Y/n]
-  /tmp/factor_manipulation/nn_type=cnn_accuracy.npy
-  /tmp/factor_manipulation/nn_type=lstm_accuracy.npy
+  /tmp/factor_manipulation/nn_type=cnn->accuracy.npy
+  /tmp/factor_manipulation/nn_type=lstm->accuracy.npy
   About to remove 2 files from /tmp/factor_manipulation/
    Proceed ? [Y/n]
 
@@ -580,9 +580,9 @@ To rename files by removing reference to the dropout setting.
 
   $ rename -n 's/(\+)?dropout=1(\+)?(_)?/$3/' /tmp/factor_manipulation/*npy
   Use of uninitialized value $3 in substitution (s///) at (eval 2) line 1.
-  '/tmp/factor_manipulation/dropout=1+nn_type=cnn_accuracy.npy' would be renamed to '/tmp/factor_manipulation/nn_type=cnn_accuracy.npy'
+  '/tmp/factor_manipulation/dropout=1+nn_type=cnn->accuracy.npy' would be renamed to '/tmp/factor_manipulation/nn_type=cnn->accuracy.npy'
   Use of uninitialized value $3 in substitution (s///) at (eval 2) line 1.
-  '/tmp/factor_manipulation/dropout=1+nn_type=lstm_accuracy.npy' would be renamed to '/tmp/factor_manipulation/nn_type=lstm_accuracy.npy'
+  '/tmp/factor_manipulation/dropout=1+nn_type=lstm->accuracy.npy' would be renamed to '/tmp/factor_manipulation/nn_type=lstm->accuracy.npy'
 
 Check that the correct files are targeted and remove the -n in the command. Now you can safely remove the dropout factor from the plan.
 

@@ -118,7 +118,7 @@ class Experiment():
 
     self.parameter = types.SimpleNamespace()
     self.metric = doce.Metric()
-    self.metric_delimiter = '_'
+    self.metric_delimiter = '->'
     self.path = Path()
     self.path.code = os.getcwd()
     self.path.archive = ''
