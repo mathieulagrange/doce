@@ -774,11 +774,11 @@ class Experiment():
 
     setting_description: list of list of str
       stores for each valid setting, a compact description of the modalities of each factors.
-      The factors with the same modality accross all the set of settings is stored
+      The factors with the same modality across all the set of settings is stored
       in constant_setting_description.
 
     constant_setting_description: str
-      compact description of the factors with the same modality accross all the set of settings.
+      compact description of the factors with the same modality across all the set of settings.
 
     Examples
     --------

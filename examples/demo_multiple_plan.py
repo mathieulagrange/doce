@@ -4,7 +4,7 @@ import numpy as np
 # define the experiment
 experiment = doce.Experiment(
   name = 'demo_multiple_plan',
-  purpose = 'using multple plans using the doce package',
+  purpose = 'using multiple plans using the doce package',
   author = 'mathieu Lagrange',
   address = 'mathieu.lagrange@ls2n.fr',
 )

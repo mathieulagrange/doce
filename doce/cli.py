@@ -629,11 +629,11 @@ def data_frame_display(experiment, args, select_display, select_factor):
       if is_integer:
         c_int[column] = 'int32'
 
-  data_frame = data_frame.astype(c_int).applymap(remove_special)
+  data_frame = data_frame.astype(c_int).map(remove_special)
   columns = data_frame.columns.to_series()
   data_frame.columns = data_frame.columns.to_series().apply(metric_direction, **{'metrics': experiment.metric, 'output_type':'html'})
   
-  styler = data_frame.applymap(pretty_bool).style.set_properties(subset=data_frame.columns[numeric_col_selector],
+  styler = data_frame.map(pretty_bool).style.set_properties(subset=data_frame.columns[numeric_col_selector],
                                    **{'width': '10em', 'text-align': 'right'})\
       .set_properties(subset=data_frame.columns[~numeric_col_selector],
                       **{'width': '10em', 'text-align': 'left'})\
@@ -642,7 +642,7 @@ def data_frame_display(experiment, args, select_display, select_factor):
       .set_properties(subset=data_frame.columns[nb_factor_columns-1],
                       **{'border-right': '.1rem solid'})\
       .set_table_styles([table_style])\
-      .format(precision_format).applymap(lambda x: 'color: white' if pd.isnull(x) else '')
+      .format(precision_format).map(lambda x: 'color: white' if pd.isnull(x) else '')
 
   if not experiment._display.show_row_index:
     styler.hide_index()
@@ -658,7 +658,7 @@ def data_frame_display(experiment, args, select_display, select_factor):
                  **{'significance': significance})
 
   data_frame.columns = columns.apply(metric_direction, **{'metrics': experiment.metric, 'output_type':'text'})
-  return (data_frame.fillna('-').applymap(int_bool), header, styler, significance, c_metric)
+  return (data_frame.fillna('-').map(int_bool), header, styler, significance, c_metric)
 
 def pretty_bool(val):
   if isinstance(val, bool):
@@ -766,7 +766,7 @@ def export_data_frame(experiment, args, data_frame, styler, header, significance
   #               )
   #   print(f'excel export: {export_file_name}.xls')
   if 'tex' in args.export or args.export == 'all':
-    data_frame.apply(tex, **{'significance': significance, 'metric_names': c_metric}).applymap(escape_tex)
+    data_frame.apply(tex, **{'significance': significance, 'metric_names': c_metric}).map(escape_tex)
     data_frame.columns = data_frame.columns.to_series().apply(metric_direction, **{'metrics': experiment.metric, 'output_type':'tex'}).apply(escape_tex)
     data_frame.to_latex(
                 buf=f'{export_file_name}.tex',

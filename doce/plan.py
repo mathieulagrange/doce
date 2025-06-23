@@ -622,7 +622,6 @@ class Plan():
     plan._default = tmp._default
     for factor_index, factor in enumerate(tmp.factors()):
       modalities = getattr(tmp, factor)
-      print(modalities)
       if (not isinstance(modalities[0], str) and
           all(np.array([val.is_integer() for val in modalities]))
           ):
@@ -813,8 +812,10 @@ class Plan():
             if modality in reference_modality_string:
               selector[self._factors.index(factor)].append(reference_modality_string.index(modality))
             else:
+              print(f'Error: {modality} is not a modality of factor {factor}.')
               raise Exception(f'Error: {modality} is not a modality of factor {factor}.')
           else:
+            print(f'Error: {factor} is not a factor.')
             raise Exception(f'Error: {factor} is not a factor.')
       selector = [selector]
     return selector
